@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createSchema } from "./schema";
+import { createSchema } from "./schema.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
