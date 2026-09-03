@@ -174,7 +174,7 @@ function Categorias() {
 
     // ELIMINAR
 
-    cconst eliminarCategoria =
+    const eliminarCategoria =
     async (id) => {
 
         const confirmar =
