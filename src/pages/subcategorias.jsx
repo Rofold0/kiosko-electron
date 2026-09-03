@@ -7,8 +7,7 @@ import {
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
 
-const nombreInputRef = useRef(null);
-const categoriaSelectRef = useRef(null);
+
 
 const columnasSubcategorias = [
     {
@@ -66,6 +65,10 @@ function Subcategorias() {
     const [categoriaId, setCategoriaId] = useState("");
 
     const [editandoId, setEditandoId] = useState(null);
+
+    const nombreInputRef = useRef(null);
+
+    const categoriaSelectRef = useRef(null);
 
     // CARGAR CATEGORÍAS
     const cargarCategorias = async () => {

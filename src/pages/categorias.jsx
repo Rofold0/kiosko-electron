@@ -41,6 +41,8 @@ function Categorias() {
     const [nombre, setNombre] = useState("");
 
     const [editandoId, setEditandoId] = useState(null);
+    
+
 
     // CARGAR CATEGORÍAS 
 
