@@ -1,13 +1,40 @@
-function Dashboard() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
+import { useNavigate }
+    from "react-router-dom";
 
-      <p>
-        Sistema de gestión del kiosko
-      </p>
-    </div>
-  );
+import { ROUTES }
+    from "../../shared/routes.js";
+
+function Dashboard() {
+
+    const navigate = useNavigate();
+
+    return (
+        <div>
+
+            <h1>Kiosko</h1>
+
+            <button
+                onClick={() =>
+                    navigate(
+                        ROUTES.categorias
+                    )
+                }
+            >
+                Categorías
+            </button>
+
+            <button
+                onClick={() =>
+                    navigate(
+                        ROUTES.subcategorias
+                    )
+                }
+            >
+                Subcategorías
+            </button>
+
+        </div>
+    );
 }
 
 export default Dashboard;

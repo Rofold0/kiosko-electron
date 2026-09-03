@@ -1,9 +1,9 @@
-import { HashRouter, Routes, Route, useNavigate} from "react-router-dom";
+import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Dashboard from "./pages/dashboard";
 import Categorias from "./pages/categorias";
 import Subcategorias from "./pages/subcategorias";
 import { useEffect } from "react";
-
+import { ROUTES } from "../shared/routes.js";
 
 function NavegacionElectron() {
 
@@ -46,20 +46,19 @@ function App() {
       <Routes>
 
         <Route
-          path="/"
+          path={ROUTES.dashboard}
           element={<Dashboard />}
         />
 
-
         <Route
-          path="/categorias"
+          path={ROUTES.categorias}
           element={<Categorias />}
         />
+
         <Route
-          path="/subcategorias"
+          path={ROUTES.subcategorias}
           element={<Subcategorias />}
         />
-
       </Routes>
 
     </HashRouter>

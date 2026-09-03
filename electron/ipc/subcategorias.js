@@ -11,10 +11,23 @@ export function registerSubcategoriasHandlers() {
   // LISTAR
   ipcMain.handle("subcategorias:listar", () => {
     return db.prepare(`
-      SELECT id, nombre
-      FROM subcategorias
-      WHERE activo = 1
-      ORDER BY nombre ASC
+      SELECT
+    s.id,
+    s.nombre,
+    s.categoria_id,
+    c.nombre AS categoria_nombre
+
+    FROM subcategorias s
+
+    JOIN categorias c
+    ON c.id = s.categoria_id
+    WHERE
+    s.activo = 1
+    AND c.activo = 1
+    
+    ORDER BY
+    c.nombre ASC,
+    s.nombre ASC
     `).all();
   });
 
@@ -33,10 +46,11 @@ export function registerSubcategoriasHandlers() {
     const subcategoriaExistente = db.prepare(`
         SELECT id
         FROM subcategorias
-        WHERE LOWER(nombre) = LOWER(?)
+        WHERE categoria_id = ?
+          AND LOWER(nombre) = LOWER(?)
           AND activo = 1
         LIMIT 1
-      `).get(nombre);
+      `).get(categoria_id, nombre);
 
 
     if (subcategoriaExistente) {

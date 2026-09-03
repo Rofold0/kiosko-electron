@@ -1,6 +1,32 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
+  subcategorias: {
+
+    listar: () =>
+        ipcRenderer.invoke(
+            "subcategorias:listar"
+        ),
+
+    crear: (subcategoria) =>
+        ipcRenderer.invoke(
+            "subcategorias:crear",
+            subcategoria
+        ),
+
+    actualizar: (subcategoria) =>
+        ipcRenderer.invoke(
+            "subcategorias:actualizar",
+            subcategoria
+        ),
+
+    eliminar: (id) =>
+        ipcRenderer.invoke(
+            "subcategorias:eliminar",
+            id
+        )
+
+},
   categorias: {
     listar: () =>
       ipcRenderer.invoke("categorias:listar"),

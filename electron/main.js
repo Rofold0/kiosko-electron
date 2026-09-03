@@ -1,81 +1,106 @@
-import { app, BrowserWindow, Menu } from 'electron'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { registerCategoriasHandlers } from './ipc/categorias.js'
-import { existsSync } from "node:fs";
-import { registerIpcHandlers } from "./ipc/index.js";
-import { createMenu } from "./menu/aplicationMenu.js";
+import {
+  app,
+  BrowserWindow
+} from "electron";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import {
+  registerIpcHandlers
+} from "./ipc/index.js";
+
+import {
+  createMenu
+} from "./menu/applicationMenu.js";
+
+const __filename =
+  fileURLToPath(import.meta.url);
+
+const __dirname =
+  path.dirname(__filename);
 
 let mainWindow = null;
 
-function createWindow() {
-  const preloadPath = path.join(__dirname, "preload.cjs");
 
-  console.log("Ruta preload:", preloadPath);
-  console.log("¿Existe preload?:", existsSync(preloadPath));
+function createWindow() {
+
+  const preloadPath =
+    path.join(
+      __dirname,
+      "preload.cjs"
+    );
 
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
+
     webPreferences: {
-      preload:preloadPath,
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false
     }
   });
 
- if (app.isPackaged) {
-  mainWindow.loadFile();
-} else {
-  mainWindow.loadURL("http://localhost:5173");
-}
 
-mainWindow.webContents.on(
-  "preload-error",
-  (event, preloadPath, error) => {
-    console.error("ERROR AL CARGAR PRELOAD");
-    console.error("Archivo:", preloadPath);
-    console.error(error);
+  if (app.isPackaged) {
+
+    mainWindow.loadFile(
+      path.join(
+        __dirname,
+        "../dist/index.html"
+      )
+    );
+
+  } else {
+
+    mainWindow.loadURL(
+      "http://localhost:5173"
+    );
+
   }
-);
+
+
+  createMenu(mainWindow);
+
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
-mainWindow.webContents.openDevTools();
-  createMenu();
-}
 
 
-
-//Navegacion
-function navigateTo(route) {
-  if (!mainWindow || mainWindow.isDestroyed()) {
-    return;
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools();
   }
-
-  mainWindow.webContents.send("navigate", route);
 }
 
-//Electron
+
 app.whenReady().then(() => {
-  registerCategoriasHandlers();
+
+  registerIpcHandlers();
+
   createWindow();
 
-  app.on("window-all-closed", () => {
 
-    if (process.platform !== "darwin") {
-      app.quit();
-    }
-
-  });
-  createMenu();
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+
+    if (
+      BrowserWindow
+        .getAllWindows()
+        .length === 0
+    ) {
       createWindow();
     }
+
   });
+
 });
 
+
+app.on("window-all-closed", () => {
+
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+
+});

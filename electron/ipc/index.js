@@ -1,9 +1,14 @@
-export const ROUTES = {
-    dashboard: "/",
-    categorias: "/categorias",
-    subcategorias: "/subcategorias",
-    productos: "/productos",
-    proveedores: "/proveedores",
-    compras: "/compras",
-    stock: "/stock",
-};
+import {
+    registerCategoriasHandlers
+} from "./categorias.js";
+
+import {
+    registerSubcategoriasHandlers
+} from "./subcategorias.js";
+
+export function registerIpcHandlers() {
+
+    registerCategoriasHandlers();
+    registerSubcategoriasHandlers();
+
+}

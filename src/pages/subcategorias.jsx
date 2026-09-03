@@ -8,6 +8,22 @@ function Subcategorias() {
 
     const [editandoId, setEditandoId] = useState(null);
 
+    const [categorias, setCategorias] = useState([]);
+
+    const [categoriaId, setCategoriaId] = useState("");
+
+    // CARGAR CATEGORÍAS
+    const cargarCategorias = async () => {
+
+        const data =
+            await window
+                .electronAPI
+                .categorias
+                .listar();
+
+        setCategorias(data);
+    };
+
     // CARGAR SUBCATEGORÍAS
 
     const cargarSubcategorias = async () => {
@@ -34,6 +50,7 @@ function Subcategorias() {
 
     useEffect(() => {
 
+        cargarCategorias();
         cargarSubcategorias();
 
     }, []);
@@ -66,9 +83,11 @@ function Subcategorias() {
             } else {
 
                 await window.electronAPI.subcategorias.crear({
+                    categoria_id:
+                        Number(categoriaId),
+
                     nombre
                 });
-
             }
 
 
