@@ -7,16 +7,7 @@ import {
     eliminarCategoria
 } from "../database/repositories/categoriasRepository.js";
 
-const columnasCategorias = [
-    {
-        key: "id",
-        label: "ID"
-    },
-    {
-        key: "nombre",
-        label: "Nombre"
-    }
-];
+
 const limpiarFormulario = () => {
 
     setNombre("");

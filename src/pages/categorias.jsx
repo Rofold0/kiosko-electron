@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
 
+const columnasCategorias = [
+    {
+        key: "id",
+        label: "ID"
+    },
+    {
+        key: "nombre",
+        label: "Nombre"
+    }
+];
 function ordenarCategorias(lista) {
 
     return [...lista].sort(
