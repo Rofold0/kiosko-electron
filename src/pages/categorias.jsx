@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState
+} from "react";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
 
@@ -28,6 +33,8 @@ function ordenarCategorias(lista) {
 }
 
 function Categorias() {
+
+    const inputRef = useRef(null);
 
     const [categorias, setCategorias] = useState([]);
 
@@ -146,29 +153,34 @@ function Categorias() {
     // EDITAR
 
 
-    const editarCategoria = (categoria) => {
+    const editarCategoria = useCallback(
+    (categoria) => {
 
         setEditandoId(categoria.id);
-
         setNombre(categoria.nombre);
 
-    };
+        requestAnimationFrame(() => {
+            inputRef.current?.focus();
+        });
+
+    },
+    []
+);
 
 
     // ELIMINAR
 
-    const eliminarCategoria = async (id) => {
+    const eliminarCategoria = useCallback(
+    async (id) => {
 
         const confirmar =
             window.confirm(
                 "¿Está seguro de eliminar esta categoría?"
             );
 
-
         if (!confirmar) {
             return;
         }
-
 
         try {
 
@@ -186,92 +198,104 @@ function Categorias() {
 
 
             if (editandoId === id) {
-                limpiarFormulario();
+
+                setNombre("");
+                setEditandoId(null);
+
             }
+
+
+            requestAnimationFrame(() => {
+                inputRef.current?.focus();
+            });
 
 
         } catch (error) {
 
             console.error(error);
-
             alert(error.message);
 
         }
 
-    };
+    },
+    [editandoId]
+);
 
-    // CANCELAR EDICIÓN
-    const limpiarFormulario = () => {
+    // CANCELAR EDICIÓN / LIMPIAR FORMULARIO
+   const limpiarFormulario = useCallback(() => {
 
-        setNombre("");
-        setEditandoId(null);
+    setNombre("");
+    setEditandoId(null);
 
-    };
+    requestAnimationFrame(() => {
+        inputRef.current?.focus();
+    });
+
+}, []);
 
 
     return (
 
-    <div className="page">
+        <div className="page">
 
-        <h1>Categorías</h1>
+            <h1>Categorías</h1>
 
 
-        <form
-            className="crud-form"
-            onSubmit={guardarCategoria}
-        >
+            <form
+                className="crud-form"
+                onSubmit={guardarCategoria}
+            >
 
-            <div className="form-field">
+                <div className="form-field">
 
-                <label htmlFor="categoria-nombre">
-                    Nombre
-                </label>
+                    <label htmlFor="categoria-nombre">
+                        Nombre
+                    </label>
 
-                <input
-                    id="categoria-nombre"
-                    type="text"
-                    placeholder="Nombre de la categoría"
-                    value={nombre}
-                    onChange={(e) =>
-                        setNombre(
-                            e.target.value
-                        )
+                    <input
+                        ref={inputRef}
+                        id="categoria-nombre"
+                        type="text"
+                        placeholder="Nombre de la categoría"
+                        value={nombre}
+                        onChange={(e) =>
+                            setNombre(e.target.value)
+                        }
+                    />
+
+                </div>
+
+
+                <FormActions
+                    editando={
+                        Boolean(editandoId)
+                    }
+                    onCancel={
+                        limpiarFormulario
                     }
                 />
 
-            </div>
+            </form>
 
 
-            <FormActions
-                editando={
-                    Boolean(editandoId)
+            <CrudTable
+                columns={
+                    columnasCategorias
                 }
-                onCancel={
-                    limpiarFormulario
+                items={categorias}
+                onEdit={
+                    editarCategoria
                 }
+                onDelete={
+                    eliminarCategoria
+                }
+                emptyMessage=
+                "No hay categorías cargadas."
             />
 
-        </form>
+        </div>
 
-
-        <CrudTable
-            columns={
-                columnasCategorias
-            }
-            items={categorias}
-            onEdit={
-                editarCategoria
-            }
-            onDelete={
-                eliminarCategoria
-            }
-            emptyMessage=
-                "No hay categorías cargadas."
-        />
-
-    </div>
-
-);
+    );
 }
 
 export default Categorias;

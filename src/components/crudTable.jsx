@@ -1,3 +1,5 @@
+import {memo} from "react";
+console.log("RENDER CrudTable");
 function CrudTable({
     columns,
     items,
@@ -149,4 +151,4 @@ function CrudTable({
     );
 }
 
-export default CrudTable;
+export default memo(CrudTable);

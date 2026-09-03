@@ -1,4 +1,6 @@
 .crud-form {
+    position: relative;
+
     display: grid;
 
     grid-template-columns:
@@ -9,11 +11,13 @@
 
     align-items: end;
 
+    width: 100%;
+
     margin-bottom: 24px;
 }
 
 
-/* Formulario con más de un campo */
+/* Formularios con varios campos */
 .crud-form--multiple {
     grid-template-columns:
         minmax(160px, 0.7fr)
@@ -22,48 +26,69 @@
 }
 
 
-/* Grupo label + input/select */
+/* Cada campo */
 .form-field {
+    position: relative;
+
     display: flex;
     flex-direction: column;
 
     gap: 6px;
 
+    width: 100%;
     min-width: 0;
 }
 
 
 .form-field label {
+    display: block;
+
     font-weight: 600;
 }
 
 
+/* INPUTS Y SELECTS */
 .form-field input,
 .form-field select {
-    width: 100%;
+    position: relative;
 
+    display: block;
+
+    width: 100%;
     min-width: 0;
 
     padding: 10px 12px;
 
     font: inherit;
 
-    border: 1px solid #bdbdbd;
-
-    border-radius: 6px;
+    color: #111;
 
     background: #fff;
+
+    border: 1px solid #bdbdbd;
+    border-radius: 6px;
+
+    pointer-events: auto;
+
+    -webkit-app-region: no-drag;
+}
+
+
+.form-field input {
+    user-select: text;
 }
 
 
 .form-field input:focus,
 .form-field select:focus {
-    outline: 2px solid currentColor;
+    outline: 2px solid #555;
     outline-offset: 1px;
+
+    border-color: #555;
 }
 
 
-/* Ventanas más angostas */
+/* Responsive */
 @media (max-width: 750px) {
 
     .crud-form,

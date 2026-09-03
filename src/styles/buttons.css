@@ -3,6 +3,10 @@ button {
 
     cursor: pointer;
 
+    pointer-events: auto;
+
+    -webkit-app-region: no-drag;
+
     border: 1px solid #aaa;
 
     border-radius: 6px;

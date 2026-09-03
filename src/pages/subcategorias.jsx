@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState
+} from "react";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
+
+const nombreInputRef = useRef(null);
+const categoriaSelectRef = useRef(null);
 
 const columnasSubcategorias = [
     {
@@ -113,13 +121,17 @@ function Subcategorias() {
 
 
     //LIMPIAR FORMULARIO
-    const limpiarFormulario = () => {
+    const limpiarFormulario = useCallback(() => {
 
-        setNombre("");
-        setCategoriaId("");
-        setEditandoId(null);
+    setNombre("");
+    setCategoriaId("");
+    setEditandoId(null);
 
-    };
+    requestAnimationFrame(() => {
+        categoriaSelectRef.current?.focus();
+    });
+
+}, []);
 
     // CREAR ACTUALIZAR
 
@@ -212,24 +224,42 @@ function Subcategorias() {
     // EDITAR
 
 
-    const editarSubcategoria = (subcategoria) => {
+    const editarSubcategoria = useCallback(
+    (subcategoria) => {
 
-        setEditandoId(subcategoria.id);
+        setEditandoId(
+            subcategoria.id
+        );
 
-        setNombre(subcategoria.nombre);
+        setNombre(
+            subcategoria.nombre
+        );
 
-        setCategoriaId(String(subcategoria.categoria_id));
+        setCategoriaId(
+            String(
+                subcategoria.categoria_id
+            )
+        );
 
-    };
+
+        requestAnimationFrame(() => {
+            nombreInputRef.current?.focus();
+        });
+
+    },
+    []
+);
 
 
     // ELIMINAR
 
-    const eliminarSubcategoria = async (id) => {
+    const eliminarSubcategoria = useCallback(
+    async (id) => {
 
-        const confirmar = window.confirm(
-            "¿Está seguro de eliminar esta subcategoría?"
-        );
+        const confirmar =
+            window.confirm(
+                "¿Está seguro de eliminar esta subcategoría?"
+            );
 
 
         if (!confirmar) {
@@ -253,17 +283,33 @@ function Subcategorias() {
 
 
             if (editandoId === id) {
-                limpiarFormulario();
+
+                setNombre("");
+                setCategoriaId("");
+                setEditandoId(null);
+
             }
+
+
+            requestAnimationFrame(() => {
+
+                categoriaSelectRef
+                    .current
+                    ?.focus();
+
+            });
+
+
         } catch (error) {
 
             console.error(error);
-
             alert(error.message);
 
         }
 
-    };
+    },
+    [editandoId]
+);
 
     return (
 
@@ -292,15 +338,13 @@ function Subcategorias() {
                 </label>
 
                 <select
-                    id=
-                        "subcategoria-categoria"
-                    value={categoriaId}
-                    onChange={(e) =>
-                        setCategoriaId(
-                            e.target.value
-                        )
-                    }
-                >
+    ref={categoriaSelectRef}
+    id="subcategoria-categoria"
+    value={categoriaId}
+    onChange={(e) =>
+        setCategoriaId(e.target.value)
+    }
+>
 
                     <option value="">
                         Seleccionar categoría
@@ -340,18 +384,15 @@ function Subcategorias() {
                 </label>
 
                 <input
-                    id=
-                        "subcategoria-nombre"
-                    type="text"
-                    placeholder=
-                        "Nombre de la subcategoría"
-                    value={nombre}
-                    onChange={(e) =>
-                        setNombre(
-                            e.target.value
-                        )
-                    }
-                />
+    ref={nombreInputRef}
+    id="subcategoria-nombre"
+    type="text"
+    placeholder="Nombre de la subcategoría"
+    value={nombre}
+    onChange={(e) =>
+        setNombre(e.target.value)
+    }
+/>
 
             </div>
 
@@ -385,7 +426,7 @@ function Subcategorias() {
 
     </div>
 
-);
+);  
 }
 
 export default Subcategorias;

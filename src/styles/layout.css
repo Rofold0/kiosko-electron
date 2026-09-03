@@ -11,9 +11,13 @@ body,
 
 body {
     margin: 0;
+
+    overflow-x: hidden;
 }
 
 .page {
+    position: relative;
+
     width: 100%;
     max-width: 1400px;
 
