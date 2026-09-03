@@ -267,131 +267,125 @@ function Subcategorias() {
 
     return (
 
-        <div style={{ padding: "30px" }}>
+    <div className="page">
 
-            <h1>Subcategorías</h1>
+        <h1>Subcategorías</h1>
 
 
-            {/* ======================== */}
-            {/* FORMULARIO */}
-            {/* ======================== */}
+        <form
+            className="
+                crud-form
+                crud-form--multiple
+            "
+            onSubmit={
+                guardarSubcategoria
+            }
+        >
 
-            <form
-                onSubmit={guardarSubcategoria}
-                style={{
-                    marginBottom: "30px"
-                }}
-            >
+            <div className="form-field">
 
-                {/* CATEGORÍA */}
+                <label
+                    htmlFor=
+                        "subcategoria-categoria"
+                >
+                    Categoría
+                </label>
 
-                <div
-                    style={{
-                        marginBottom: "10px"
-                    }}
+                <select
+                    id=
+                        "subcategoria-categoria"
+                    value={categoriaId}
+                    onChange={(e) =>
+                        setCategoriaId(
+                            e.target.value
+                        )
+                    }
                 >
 
-                    <label>
-                        Categoría:
-                    </label>
+                    <option value="">
+                        Seleccionar categoría
+                    </option>
 
-                    <br />
+                    {categorias.map(
+                        (categoria) => (
 
-                    <select
-                        value={categoriaId}
-                        onChange={(e) =>
-                            setCategoriaId(
-                                e.target.value
-                            )
-                        }
-                    >
+                            <option
+                                key={
+                                    categoria.id
+                                }
+                                value={
+                                    categoria.id
+                                }
+                            >
+                                {
+                                    categoria.nombre
+                                }
+                            </option>
 
-                        <option value="">
-                            Seleccionar categoría
-                        </option>
+                        )
+                    )}
 
+                </select>
 
-                        {categorias.map(
-                            (categoria) => (
-
-                                <option
-                                    key={
-                                        categoria.id
-                                    }
-                                    value={
-                                        categoria.id
-                                    }
-                                >
-
-                                    {
-                                        categoria.nombre
-                                    }
-
-                                </option>
-
-                            )
-                        )}
-
-                    </select>
-
-                </div>
+            </div>
 
 
-                {/* NOMBRE SUBCATEGORÍA */}
+            <div className="form-field">
 
-                <div
-                    style={{
-                        marginBottom: "10px"
-                    }}
+                <label
+                    htmlFor=
+                        "subcategoria-nombre"
                 >
+                    Subcategoría
+                </label>
 
-                    <label>
-                        Subcategoría:
-                    </label>
-
-                    <br />
-
-                    <input
-                        type="text"
-                        placeholder="Nombre de la subcategoría"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                </div>
-
-
-                {/* BOTONES */}
-
-                <FormActions
-                    editando={Boolean(editandoId)}
-                    onCancel={limpiarFormulario}
+                <input
+                    id=
+                        "subcategoria-nombre"
+                    type="text"
+                    placeholder=
+                        "Nombre de la subcategoría"
+                    value={nombre}
+                    onChange={(e) =>
+                        setNombre(
+                            e.target.value
+                        )
+                    }
                 />
 
+            </div>
 
 
-            </form>
-
-
-            {/* ======================== */}
-            {/* TABLA */}
-            {/* ======================== */}
-
-            <CrudTable
-                columns={columnasSubcategorias}
-                items={subcategorias}
-                onEdit={editarSubcategoria}
-                onDelete={eliminarSubcategoria}
-                emptyMessage="No hay subcategorías cargadas."
+            <FormActions
+                editando={
+                    Boolean(editandoId)
+                }
+                onCancel={
+                    limpiarFormulario
+                }
             />
 
-        </div>
+        </form>
 
-    );
+
+        <CrudTable
+            columns={
+                columnasSubcategorias
+            }
+            items={subcategorias}
+            onEdit={
+                editarSubcategoria
+            }
+            onDelete={
+                eliminarSubcategoria
+            }
+            emptyMessage=
+                "No hay subcategorías cargadas."
+        />
+
+    </div>
+
+);
 }
 
 export default Subcategorias;

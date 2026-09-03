@@ -211,51 +211,67 @@ function Categorias() {
 
     return (
 
-        <div style={{ padding: "30px" }}>
+    <div className="page">
 
-            <h1>Categorías</h1>
+        <h1>Categorías</h1>
 
 
-            {/* FORMULARIO */}
+        <form
+            className="crud-form"
+            onSubmit={guardarCategoria}
+        >
 
-            <form
-                onSubmit={guardarCategoria}
-                style={{
-                    marginBottom: "30px"
-                }}
-            >
+            <div className="form-field">
+
+                <label htmlFor="categoria-nombre">
+                    Nombre
+                </label>
 
                 <input
+                    id="categoria-nombre"
                     type="text"
                     placeholder="Nombre de la categoría"
                     value={nombre}
                     onChange={(e) =>
-                        setNombre(e.target.value)
+                        setNombre(
+                            e.target.value
+                        )
                     }
                 />
 
-
-                <FormActions
-                    editando={Boolean(editandoId)}
-                    onCancel={limpiarFormulario}
-                />
-
-            </form>
+            </div>
 
 
-            {/* TABLA */}
-
-            <CrudTable
-                columns={columnasCategorias}
-                items={categorias}
-                onEdit={editarCategoria}
-                onDelete={eliminarCategoria}
-                emptyMessage="No hay categorías cargadas."
+            <FormActions
+                editando={
+                    Boolean(editandoId)
+                }
+                onCancel={
+                    limpiarFormulario
+                }
             />
 
-        </div>
+        </form>
 
-    );
+
+        <CrudTable
+            columns={
+                columnasCategorias
+            }
+            items={categorias}
+            onEdit={
+                editarCategoria
+            }
+            onDelete={
+                eliminarCategoria
+            }
+            emptyMessage=
+                "No hay categorías cargadas."
+        />
+
+    </div>
+
+);
 }
 
 export default Categorias;

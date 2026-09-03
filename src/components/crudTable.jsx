@@ -11,121 +11,141 @@ function CrudTable({
 
 
     return (
-        <table
-            border="1"
-            cellPadding="10"
-            style={{
-                width: "100%",
-                borderCollapse: "collapse"
-            }}
-        >
 
-            <thead>
+        <div className="crud-table-wrapper">
 
-                <tr>
+            <table className="crud-table">
 
-                    {columns.map((column) => (
-
-                        <th key={column.key}>
-                            {column.label}
-                        </th>
-
-                    ))}
-
-
-                    {mostrarAcciones && (
-                        <th>Acciones</th>
-                    )}
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {items.length === 0 ? (
+                <thead>
 
                     <tr>
 
-                        <td
-                            colSpan={
-                                columns.length +
-                                (mostrarAcciones ? 1 : 0)
-                            }
-                            style={{
-                                textAlign: "center"
-                            }}
-                        >
-                            {emptyMessage}
-                        </td>
+                        {columns.map((column) => (
+
+                            <th key={column.key}>
+                                {column.label}
+                            </th>
+
+                        ))}
+
+
+                        {mostrarAcciones && (
+                            <th>Acciones</th>
+                        )}
 
                     </tr>
 
-                ) : (
-
-                    items.map((item) => (
-
-                        <tr key={item.id}>
-
-                            {columns.map((column) => (
-
-                                <td key={column.key}>
-
-                                    {column.render
-                                        ? column.render(item)
-                                        : item[column.key]
-                                    }
-
-                                </td>
-
-                            ))}
+                </thead>
 
 
-                            {mostrarAcciones && (
+                <tbody>
 
-                                <td>
+                    {items.length === 0 ? (
 
-                                    {onEdit && (
+                        <tr>
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                onEdit(item)
-                                            }
-                                        >
-                                            Editar
-                                        </button>
-
-                                    )}
-
-
-                                    {onDelete && (
-
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                onDelete(item.id)
-                                            }
-                                        >
-                                            Eliminar
-                                        </button>
-
-                                    )}
-
-                                </td>
-
-                            )}
+                            <td
+                                className="crud-table-empty"
+                                colSpan={
+                                    columns.length +
+                                    (
+                                        mostrarAcciones
+                                            ? 1
+                                            : 0
+                                    )
+                                }
+                            >
+                                {emptyMessage}
+                            </td>
 
                         </tr>
 
-                    ))
+                    ) : (
 
-                )}
+                        items.map((item) => (
 
-            </tbody>
+                            <tr key={item.id}>
 
-        </table>
+                                {columns.map(
+                                    (column) => (
+
+                                        <td
+                                            key={
+                                                column.key
+                                            }
+                                        >
+
+                                            {
+                                                column.render
+                                                    ? column.render(
+                                                        item
+                                                    )
+                                                    : item[
+                                                        column.key
+                                                    ]
+                                            }
+
+                                        </td>
+
+                                    )
+                                )}
+
+
+                                {mostrarAcciones && (
+
+                                    <td>
+
+                                        <div className="table-actions">
+
+                                            {onEdit && (
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        onEdit(
+                                                            item
+                                                        )
+                                                    }
+                                                >
+                                                    Editar
+                                                </button>
+
+                                            )}
+
+
+                                            {onDelete && (
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        onDelete(
+                                                            item.id
+                                                        )
+                                                    }
+                                                >
+                                                    Eliminar
+                                                </button>
+
+                                            )}
+
+                                        </div>
+
+                                    </td>
+
+                                )}
+
+                            </tr>
+
+                        ))
+
+                    )}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
     );
 }
 

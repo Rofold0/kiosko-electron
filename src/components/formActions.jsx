@@ -5,7 +5,7 @@ function FormActions({
 }) {
 
     return (
-        <div>
+       <div className="form-actions">
 
             <button
                 type="submit"
