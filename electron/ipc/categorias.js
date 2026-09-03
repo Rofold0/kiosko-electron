@@ -6,8 +6,8 @@ import {
     actualizarCategoria,
     eliminarCategoria
 } from "../database/repositories/categoriasRepository.js";
-import CrudTable from "../components/crudTable";
-import FormActions from "../components/formActions";
+import CrudTable from "../src/components/crudTable";
+import FormActions from "../src/components/formActions";
 
 const columnasCategorias = [
     {
