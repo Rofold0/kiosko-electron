@@ -1,4 +1,34 @@
 import { useEffect, useState } from "react";
+function ordenarSubcategorias(lista) {
+
+    return [...lista].sort((a, b) => {
+
+        const categoria =
+            a.categoria_nombre.localeCompare(
+                b.categoria_nombre,
+                "es",
+                {
+                    sensitivity: "base"
+                }
+            );
+
+
+        if (categoria !== 0) {
+            return categoria;
+        }
+
+
+        return a.nombre.localeCompare(
+            b.nombre,
+            "es",
+            {
+                sensitivity: "base"
+            }
+        );
+
+    });
+
+}
 
 function Subcategorias() {
 
@@ -108,21 +138,41 @@ function Subcategorias() {
 
             if (editandoId) {
 
-                await window.electronAPI
-                    .subcategorias
-                    .actualizar({
+                const actualizada =
+    await window.electronAPI
+        .subcategorias
+        .actualizar({
+            id: editandoId,
+            ...datos
+        });
 
-                        id: editandoId,
 
-                        ...datos
-
-                    });
+setSubcategorias((actuales) =>
+    ordenarSubcategorias(
+        actuales.map(
+            (subcategoria) =>
+                subcategoria.id ===
+                actualizada.id
+                    ? actualizada
+                    : subcategoria
+        )
+    )
+);
 
             } else {
 
-                await window.electronAPI
-                    .subcategorias
-                    .crear(datos);
+                const nueva =
+    await window.electronAPI
+        .subcategorias
+        .crear(datos);
+
+
+setSubcategorias((actuales) =>
+    ordenarSubcategorias([
+        ...actuales,
+        nueva
+    ])
+);
 
             }
 

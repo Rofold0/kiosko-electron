@@ -12,9 +12,10 @@ const dbPath = path.join(__dirname, "../../database/kiosko.db");
 
 const db = new Database(dbPath);
 
-// Activa las foreign keys de SQLite
+// Activa las foreign keys de SQLite y optimizacion
 db.pragma("foreign_keys = ON");
-
+db.pragma("journal_mode = WAL");
+db.pragma("synchronous = NORMAL");
 //creacion de basededatos
 createSchema(db);
 

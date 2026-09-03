@@ -1,5 +1,20 @@
 import { useEffect, useState } from "react";
 
+function ordenarCategorias(lista) {
+
+    return [...lista].sort(
+        (a, b) =>
+            a.nombre.localeCompare(
+                b.nombre,
+                "es",
+                {
+                    sensitivity: "base"
+                }
+            )
+    );
+
+}
+
 function Categorias() {
 
     const [categorias, setCategorias] = useState([]);
@@ -58,24 +73,49 @@ function Categorias() {
 
             if (editandoId) {
 
-                await window.electronAPI.categorias.actualizar({
-                    id: editandoId,
-                    nombre
-                });
+                const actualizada =
+                    await window.electronAPI
+                        .categorias
+                        .actualizar({
+                            id: editandoId,
+                            nombre: nombre.trim()
+                        });
+
 
             } else {
 
-                await window.electronAPI.categorias.crear({
-                    nombre
-                });
+                const nueva =
+                    await window.electronAPI
+                        .categorias
+                        .crear({
+                            nombre: nombre.trim()
+                        });
 
             }
 
 
             setNombre("");
             setEditandoId(null);
+            setCategorias((actuales) =>
+                ordenarCategorias([
+                    ...actuales,
+                    nueva
+                ])
+            );
+            setCategorias((actuales) =>
+                ordenarCategorias(
+                    actuales.map(
+                        (categoria) =>
+                            categoria.id ===
+                                actualizada.id
+                                ? actualizada
+                                : categoria
+                    )
+                )
+            );
 
-            await cargarCategorias();
+
+
 
 
         } catch (error) {
@@ -119,9 +159,12 @@ function Categorias() {
         try {
 
             await window.electronAPI.categorias.eliminar(id);
-
-            await cargarCategorias();
-
+            setCategorias((actuales) =>
+    actuales.filter(
+        (categoria) =>
+            categoria.id !== id
+    )
+);
 
         } catch (error) {
 
