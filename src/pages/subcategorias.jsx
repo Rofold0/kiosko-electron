@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import CrudTable from "../src/components/crudTable";
-import FormActions from "../src/components/formActions";
+import CrudTable from "../components/crudTable.jsx";
+import FormActions from "../components/formActions.jsx";
 
 const columnasSubcategorias = [
     {

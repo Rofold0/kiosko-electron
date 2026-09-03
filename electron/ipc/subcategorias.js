@@ -6,8 +6,7 @@ import {
     actualizarSubcategoria,
     eliminarSubcategoria
 } from "../database/repositories/subcategoriasRepository.js";
-import CrudTable from "../src/components/crudTable";
-import FormActions from "../src/components/formActions";
+
 
 function validarId(
     valor,
