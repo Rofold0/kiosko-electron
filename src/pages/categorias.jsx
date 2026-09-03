@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import CrudTable from "../src/components/crudTable.jsx";
-import FormActions from "../src/components/formActions.jsx";
+import CrudTable from "../components/crudTable.jsx";
+import FormActions from "../components/formActions.jsx";
 
 function ordenarCategorias(lista) {
 
