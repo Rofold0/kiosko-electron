@@ -22,7 +22,7 @@ export function registerCategoriasHandlers() {
   // CREAR
   ipcMain.handle("categorias:crear", (event, categoria) => {
 
-    const { nombre } = categoria?.nombre?.trim();
+    const  nombre  = categoria?.nombre?.trim();
 
     if (!nombre) {
       throw new Error(

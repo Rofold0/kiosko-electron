@@ -3,6 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { registerCategoriasHandlers } from './ipc/categorias.js'
 import { existsSync } from "node:fs";
+import { registerIpcHandlers } from "./ipc/index.js";
+import { createMenu } from "./menu/aplicationMenu.js";
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -19,7 +21,6 @@ function createWindow() {
     width: 1280,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
       preload:preloadPath,
       contextIsolation: true,
       nodeIntegration: false
@@ -47,48 +48,7 @@ mainWindow.webContents.openDevTools();
   createMenu();
 }
 
-//MENU
-function createMenu() {
 
-  const template = [
-
-    {
-      label: "Archivo",
-
-      submenu: [
-        {
-          label: "Salir",
-          role: "quit"
-        }
-      ]
-    },
-
-
-    {
-      label: "Gestión",
-
-      submenu: [
-        {
-          label: "Dashboard",
-
-          click() {
-            navigateTo("/");
-          }
-        },
-        {
-          label: "Categorías",
-
-          click() {
-            navigateTo("/categorias");
-          }
-        }
-      ]
-    }
-  ];
-  const menu = Menu.buildFromTemplate(template);
-
-  Menu.setApplicationMenu(menu);
-}
 
 //Navegacion
 function navigateTo(route) {
@@ -111,12 +71,7 @@ app.whenReady().then(() => {
     }
 
   });
-
-  app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
+  createMenu();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

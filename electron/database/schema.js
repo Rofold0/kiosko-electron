@@ -1,32 +1,36 @@
-function createSubcategoriasTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS subcategorias (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    activo INTEGER NOT NULL DEFAULT 1
-);`)
-}
-function createSubcategoriasIndex(db) {
-    db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS
-idx_subcategorias_nombre
-ON subcategorias(LOWER(nombre))
-WHERE activo = 1;`)
-}
-function createCategoriasTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS categorias (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    subcategoria foreign key REFERENCES subcategorias(id),
-    activo INTEGER NOT NULL DEFAULT 1
-);`)
-}
-function createCategoriasIndex(db) {
-    db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS
-idx_categorias_nombre_activo
-ON categorias(LOWER(nombre))
-WHERE activo = 1;`)
-}
-function createProductosTable(db) {
-    db.prepare(`CREATE TABLE  IF NOT EXISTS productos (
+export function createSchema(db) {
+
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS categorias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            activo INTEGER NOT NULL DEFAULT 1
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS
+        idx_categorias_nombre_activo
+        ON categorias(LOWER(nombre))
+        WHERE activo = 1;
+
+
+        CREATE TABLE IF NOT EXISTS subcategorias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria_id INTEGER NOT NULL,
+            nombre TEXT NOT NULL,
+            activo INTEGER NOT NULL DEFAULT 1,
+
+            FOREIGN KEY (categoria_id)
+                REFERENCES categorias(id)
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS
+        idx_subcategorias_categoria_nombre
+        ON subcategorias(
+            categoria_id,
+            LOWER(nombre)
+        )
+        WHERE activo = 1;
+        CREATE TABLE  IF NOT EXISTS productos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     descripcion TEXT,
@@ -39,21 +43,15 @@ function createProductosTable(db) {
 
     FOREIGN KEY (categoria_id)
         REFERENCES categorias(id)
-);`)
-}
-function createListaComprasTable(db) {
-    db.prepare(`
-    CREATE TABLE IF NOT EXISTS lista_compras (
+);
+        CREATE TABLE IF NOT EXISTS lista_compras (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     estado TEXT NOT NULL DEFAULT 'PENDIENTE',
     fecha_creacion TEXT NOT NULL,
     fecha_completada TEXT,
     notas TEXT
-);`)
-}
-function createItemsListaComprasTable(db) {
-    db.prepare(`
-    CREATE TABLE IF NOT EXISTS items_lista_compras (
+);
+        CREATE TABLE IF NOT EXISTS items_lista_compras (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lista_id INTEGER NOT NULL,
     producto_id INTEGER,
@@ -66,10 +64,8 @@ function createItemsListaComprasTable(db) {
 
     FOREIGN KEY (producto_id)
         REFERENCES productos(id)
-);`)
-}
-function createPreciosTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS precios (
+);
+        CREATE TABLE IF NOT EXISTS precios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     producto_id INTEGER NOT NULL,
     costo REAL NOT NULL DEFAULT 0,
@@ -79,10 +75,8 @@ function createPreciosTable(db) {
 
     FOREIGN KEY (producto_id)
         REFERENCES productos(id)
-);`)
-}
-function createMovimientosStockTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS movimientos_stock (
+);
+        CREATE TABLE IF NOT EXISTS movimientos_stock (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     producto_id INTEGER NOT NULL,
     tipo TEXT NOT NULL,
@@ -94,20 +88,16 @@ function createMovimientosStockTable(db) {
 
     FOREIGN KEY (producto_id)
         REFERENCES productos(id)
-);`)
-}
-function createProveedoresTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS proveedores (
+);
+        CREATE TABLE IF NOT EXISTS proveedores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     telefono TEXT,
     direccion TEXT,
     notas TEXT,
     activo INTEGER NOT NULL DEFAULT 1
-);`)
-}
-function createProductosProveedoresTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS productos_proveedores (
+);
+        CREATE TABLE IF NOT EXISTS productos_proveedores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     producto_id INTEGER NOT NULL,
     proveedor_id INTEGER NOT NULL,
@@ -120,10 +110,8 @@ function createProductosProveedoresTable(db) {
 
     FOREIGN KEY (proveedor_id)
         REFERENCES proveedores(id)
-);`)
-}
-function createComprasTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS compras (
+);
+        CREATE TABLE IF NOT EXISTS compras (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     proveedor_id INTEGER,
     fecha TEXT NOT NULL,
@@ -132,10 +120,8 @@ function createComprasTable(db) {
 
     FOREIGN KEY (proveedor_id)
         REFERENCES proveedores(id)
-`);
-}
-function createItemsCompraTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS items_compra (
+);
+        CREATE TABLE IF NOT EXISTS items_compra (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     compra_id INTEGER NOT NULL,
     producto_id INTEGER NOT NULL,
@@ -148,19 +134,15 @@ function createItemsCompraTable(db) {
 
     FOREIGN KEY (producto_id)
         REFERENCES productos(id)
-);`)
-}
-function createVentasTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS ventas (
+);
+        CREATE TABLE IF NOT EXISTS ventas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     fecha TEXT NOT NULL,
     total REAL NOT NULL DEFAULT 0,
     metodo_pago TEXT,
     notas TEXT
-);`)
-}
-function createItemsVentaTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS items_venta (
+);
+        CREATE TABLE IF NOT EXISTS items_venta (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     venta_id INTEGER NOT NULL,
     producto_id INTEGER NOT NULL,
@@ -173,20 +155,16 @@ function createItemsVentaTable(db) {
 
     FOREIGN KEY (producto_id)
         REFERENCES productos(id)
-);`)
-}
-function createGastosTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS gastos (
+);
+        CREATE TABLE IF NOT EXISTS gastos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     categoria TEXT NOT NULL,
     descripcion TEXT,
     monto REAL NOT NULL,
     fecha TEXT NOT NULL,
     notas TEXT
-);`)
-}
-function createMovimientosCajaTable(db) {
-    db.prepare(`CREATE TABLE IF NOT EXISTS movimientos_caja (
+);
+        CREATE TABLE IF NOT EXISTS movimientos_caja (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     tipo TEXT NOT NULL,
     concepto TEXT NOT NULL,
@@ -197,28 +175,7 @@ function createMovimientosCajaTable(db) {
     notas TEXT,
     FOREIGN KEY (venta_id) REFERENCES ventas(id),
     FOREIGN KEY (gasto_id) REFERENCES gastos(id)
-);`)
-}
-
-
-export function createSchema(db) {
-
-    createSubcategoriasTable(db);
-    createSubcategoriasIndex(db);
-    createCategoriasTable(db);
-    createCategoriasIndex(db);
-    createProductosTable(db);
-    createListaComprasTable(db);
-    createItemsListaComprasTable(db);
-    createPreciosTable(db);
-    createMovimientosStockTable(db);
-    createProveedoresTable(db);
-    createProductosProveedoresTable(db);
-    createComprasTable(db);
-    createItemsCompraTable(db);
-    createVentasTable(db);
-    createItemsVentaTable(db);
-    createGastosTable(db);
-    createMovimientosCajaTable(db);
+);
+    `);
 
 }
