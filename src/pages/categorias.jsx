@@ -1,7 +1,5 @@
 import {
-    useCallback,
     useEffect,
-    useRef,
     useState
 } from "react";
 import CrudTable from "../components/crudTable.jsx";
@@ -34,14 +32,12 @@ function ordenarCategorias(lista) {
 
 function Categorias() {
 
-    const inputRef = useRef(null);
-
     const [categorias, setCategorias] = useState([]);
 
     const [nombre, setNombre] = useState("");
 
     const [editandoId, setEditandoId] = useState(null);
-    
+
 
 
     // CARGAR CATEGORÍAS 
@@ -87,10 +83,14 @@ function Categorias() {
 
         if (!nombreLimpio) {
 
-            alert("Ingrese un nombre.");
+    await window.electronAPI
+        .dialogos
+        .error(
+            "Ingrese un nombre."
+        );
 
-            return;
-        }
+    return;
+}
 
 
         try {
@@ -142,11 +142,15 @@ function Categorias() {
 
         } catch (error) {
 
-            console.error(error);
+    console.error(error);
 
-            alert(error.message);
+    await window.electronAPI
+        .dialogos
+        .error(
+            error.message
+        );
 
-        }
+}
 
     };
 
@@ -155,34 +159,36 @@ function Categorias() {
     // EDITAR
 
 
-    const editarCategoria = useCallback(
-    (categoria) => {
+    const editarCategoria = (categoria) => {
 
-        setEditandoId(categoria.id);
-        setNombre(categoria.nombre);
+    setEditandoId(
+        categoria.id
+    );
 
-        requestAnimationFrame(() => {
-            inputRef.current?.focus();
-        });
+    setNombre(
+        categoria.nombre
+    );
 
-    },
-    []
-);
+};
 
 
     // ELIMINAR
 
-    const eliminarCategoria = useCallback(
+    cconst eliminarCategoria =
     async (id) => {
 
         const confirmar =
-            window.confirm(
-                "¿Está seguro de eliminar esta categoría?"
-            );
+            await window.electronAPI
+                .dialogos
+                .confirmar(
+                    "¿Está seguro de eliminar esta categoría?"
+                );
+
 
         if (!confirmar) {
             return;
         }
+
 
         try {
 
@@ -201,39 +207,33 @@ function Categorias() {
 
             if (editandoId === id) {
 
-                setNombre("");
-                setEditandoId(null);
+                limpiarFormulario();
 
             }
-
-
-            requestAnimationFrame(() => {
-                inputRef.current?.focus();
-            });
 
 
         } catch (error) {
 
             console.error(error);
-            alert(error.message);
+
+            await window.electronAPI
+                .dialogos
+                .error(
+                    error.message
+                );
 
         }
 
-    },
-    [editandoId]
-);
+    };
 
     // CANCELAR EDICIÓN / LIMPIAR FORMULARIO
-   const limpiarFormulario = useCallback(() => {
+   const limpiarFormulario = () => {
 
     setNombre("");
+
     setEditandoId(null);
 
-    requestAnimationFrame(() => {
-        inputRef.current?.focus();
-    });
-
-}, []);
+};
 
 
     return (
@@ -255,7 +255,6 @@ function Categorias() {
                     </label>
 
                     <input
-                        ref={inputRef}
                         id="categoria-nombre"
                         type="text"
                         placeholder="Nombre de la categoría"

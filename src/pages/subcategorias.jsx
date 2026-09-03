@@ -1,7 +1,5 @@
 import {
-    useCallback,
     useEffect,
-    useRef,
     useState
 } from "react";
 import CrudTable from "../components/crudTable.jsx";
@@ -66,9 +64,6 @@ function Subcategorias() {
 
     const [editandoId, setEditandoId] = useState(null);
 
-    const nombreInputRef = useRef(null);
-
-    const categoriaSelectRef = useRef(null);
 
     // CARGAR CATEGORÍAS
     const cargarCategorias = async () => {
@@ -124,17 +119,15 @@ function Subcategorias() {
 
 
     //LIMPIAR FORMULARIO
-    const limpiarFormulario = useCallback(() => {
+    const limpiarFormulario = () => {
 
     setNombre("");
+
     setCategoriaId("");
+
     setEditandoId(null);
 
-    requestAnimationFrame(() => {
-        categoriaSelectRef.current?.focus();
-    });
-
-}, []);
+};
 
     // CREAR ACTUALIZAR
 
@@ -144,14 +137,22 @@ function Subcategorias() {
 
         if (!categoriaId) {
 
-            alert("Seleccione una categoría.");
+            await window.electronAPI
+    .dialogos
+    .error(
+        "Seleccione una categoría."
+    );
 
             return;
         }
 
         if (!nombre.trim()) {
 
-            alert("Ingrese un nombre.");
+            await window.electronAPI
+    .dialogos
+    .error(
+        "Ingrese un nombre."
+    );
 
             return;
         }
@@ -227,7 +228,7 @@ function Subcategorias() {
     // EDITAR
 
 
-    const editarSubcategoria = useCallback(
+    const editarSubcategoria =
     (subcategoria) => {
 
         setEditandoId(
@@ -244,25 +245,20 @@ function Subcategorias() {
             )
         );
 
-
-        requestAnimationFrame(() => {
-            nombreInputRef.current?.focus();
-        });
-
-    },
-    []
-);
+    };
 
 
     // ELIMINAR
 
-    const eliminarSubcategoria = useCallback(
+    const eliminarSubcategoria =
     async (id) => {
 
         const confirmar =
-            window.confirm(
-                "¿Está seguro de eliminar esta subcategoría?"
-            );
+            await window.electronAPI
+                .dialogos
+                .confirmar(
+                    "¿Está seguro de eliminar esta subcategoría?"
+                );
 
 
         if (!confirmar) {
@@ -277,42 +273,35 @@ function Subcategorias() {
                 .eliminar(id);
 
 
-            setSubcategorias((actuales) =>
-                actuales.filter(
-                    (subcategoria) =>
-                        subcategoria.id !== id
-                )
+            setSubcategorias(
+                (actuales) =>
+                    actuales.filter(
+                        (subcategoria) =>
+                            subcategoria.id !== id
+                    )
             );
 
 
             if (editandoId === id) {
 
-                setNombre("");
-                setCategoriaId("");
-                setEditandoId(null);
+                limpiarFormulario();
 
             }
-
-
-            requestAnimationFrame(() => {
-
-                categoriaSelectRef
-                    .current
-                    ?.focus();
-
-            });
 
 
         } catch (error) {
 
             console.error(error);
-            alert(error.message);
+
+            await window.electronAPI
+                .dialogos
+                .error(
+                    error.message
+                );
 
         }
 
-    },
-    [editandoId]
-);
+    };
 
     return (
 
@@ -341,7 +330,7 @@ function Subcategorias() {
                 </label>
 
                 <select
-    ref={categoriaSelectRef}
+    
     id="subcategoria-categoria"
     value={categoriaId}
     onChange={(e) =>
@@ -387,7 +376,7 @@ function Subcategorias() {
                 </label>
 
                 <input
-    ref={nombreInputRef}
+    
     id="subcategoria-nombre"
     type="text"
     placeholder="Nombre de la subcategoría"
