@@ -4,25 +4,34 @@ function Subcategorias() {
 
     const [subcategorias, setSubcategorias] = useState([]);
 
-    const [nombre, setNombre] = useState("");
-
-    const [editandoId, setEditandoId] = useState(null);
-
     const [categorias, setCategorias] = useState([]);
 
+    const [nombre, setNombre] = useState("");
+
     const [categoriaId, setCategoriaId] = useState("");
+
+    const [editandoId, setEditandoId] = useState(null);
 
     // CARGAR CATEGORÍAS
     const cargarCategorias = async () => {
 
-        const data =
-            await window
-                .electronAPI
-                .categorias
-                .listar();
+        try {
 
-        setCategorias(data);
+            const data =
+                await window.electronAPI.categorias.listar();
+
+            setCategorias(data);
+
+        } catch (error) {
+
+            console.error(
+                "Error cargando categorías:",
+                error
+            );
+
+        }
     };
+
 
     // CARGAR SUBCATEGORÍAS
 
@@ -56,12 +65,27 @@ function Subcategorias() {
     }, []);
 
 
+    //LIMPIAR FORMULARIO
+     const limpiarFormulario = () => {
+
+        setNombre("");
+        setCategoriaId("");
+        setEditandoId(null);
+
+    };
+
     // CREAR ACTUALIZAR
 
     const guardarSubcategoria = async (e) => {
 
         e.preventDefault();
 
+        if (!categoriaId) {
+
+            alert("Seleccione una categoría.");
+
+            return;
+        }
 
         if (!nombre.trim()) {
 
@@ -70,29 +94,40 @@ function Subcategorias() {
             return;
         }
 
+         const datos = {
 
-        try {
+            categoria_id:
+                Number(categoriaId),
+
+            nombre:
+                nombre.trim()
+
+        };
+
+         try {
 
             if (editandoId) {
 
-                await window.electronAPI.subcategorias.actualizar({
-                    id: editandoId,
-                    nombre
-                });
+                await window.electronAPI
+                    .subcategorias
+                    .actualizar({
+
+                        id: editandoId,
+
+                        ...datos
+
+                    });
 
             } else {
 
-                await window.electronAPI.subcategorias.crear({
-                    categoria_id:
-                        Number(categoriaId),
+                await window.electronAPI
+                    .subcategorias
+                    .crear(datos);
 
-                    nombre
-                });
             }
 
 
-            setNombre("");
-            setEditandoId(null);
+            limpiarFormulario();
 
             await cargarSubcategorias();
 
@@ -118,6 +153,8 @@ function Subcategorias() {
 
         setNombre(subcategoria.nombre);
 
+        setCategoriaId(String(subcategoria.categoria_id));
+
     };
 
 
@@ -141,7 +178,11 @@ function Subcategorias() {
 
             await cargarSubcategorias();
 
+        if (editandoId === id) {
 
+                limpiarFormulario();
+
+            }
         } catch (error) {
 
             console.error(error);
@@ -152,16 +193,6 @@ function Subcategorias() {
 
     };
 
-    // CANCELAR EDICIÓN
-    const cancelarEdicion = () => {
-
-        setEditandoId(null);
-
-        setNombre("");
-
-    };
-
-
     return (
 
         <div style={{ padding: "30px" }}>
@@ -169,7 +200,9 @@ function Subcategorias() {
             <h1>Subcategorías</h1>
 
 
+            {/* ======================== */}
             {/* FORMULARIO */}
+            {/* ======================== */}
 
             <form
                 onSubmit={guardarSubcategoria}
@@ -178,15 +211,89 @@ function Subcategorias() {
                 }}
             >
 
-                <input
-                    type="text"
-                    placeholder="Nombre de la subcategoría"
-                    value={nombre}
-                    onChange={(e) =>
-                        setNombre(e.target.value)
-                    }
-                />
+                {/* CATEGORÍA */}
 
+                <div
+                    style={{
+                        marginBottom: "10px"
+                    }}
+                >
+
+                    <label>
+                        Categoría:
+                    </label>
+
+                    <br />
+
+                    <select
+                        value={categoriaId}
+                        onChange={(e) =>
+                            setCategoriaId(
+                                e.target.value
+                            )
+                        }
+                    >
+
+                        <option value="">
+                            Seleccionar categoría
+                        </option>
+
+
+                        {categorias.map(
+                            (categoria) => (
+
+                                <option
+                                    key={
+                                        categoria.id
+                                    }
+                                    value={
+                                        categoria.id
+                                    }
+                                >
+
+                                    {
+                                        categoria.nombre
+                                    }
+
+                                </option>
+
+                            )
+                        )}
+
+                    </select>
+
+                </div>
+
+
+                {/* NOMBRE SUBCATEGORÍA */}
+
+                <div
+                    style={{
+                        marginBottom: "10px"
+                    }}
+                >
+
+                    <label>
+                        Subcategoría:
+                    </label>
+
+                    <br />
+
+                    <input
+                        type="text"
+                        placeholder="Nombre de la subcategoría"
+                        value={nombre}
+                        onChange={(e) =>
+                            setNombre(
+                                e.target.value
+                            )
+                        }
+                    />
+
+                </div>
+
+
+                {/* BOTONES */}
 
                 <button type="submit">
 
@@ -201,7 +308,9 @@ function Subcategorias() {
 
                     <button
                         type="button"
-                        onClick={cancelarEdicion}
+                        onClick={
+                            limpiarFormulario
+                        }
                     >
                         Cancelar
                     </button>
@@ -211,14 +320,17 @@ function Subcategorias() {
             </form>
 
 
+            {/* ======================== */}
             {/* TABLA */}
+            {/* ======================== */}
 
             <table
                 border="1"
                 cellPadding="10"
                 style={{
                     width: "100%",
-                    borderCollapse: "collapse"
+                    borderCollapse:
+                        "collapse"
                 }}
             >
 
@@ -227,8 +339,18 @@ function Subcategorias() {
                     <tr>
 
                         <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Acciones</th>
+
+                        <th>
+                            Categoría
+                        </th>
+
+                        <th>
+                            Subcategoría
+                        </th>
+
+                        <th>
+                            Acciones
+                        </th>
 
                     </tr>
 
@@ -237,44 +359,67 @@ function Subcategorias() {
 
                 <tbody>
 
-                    {subcategorias.map((subcategoria) => (
+                    {subcategorias.map(
+                        (subcategoria) => (
 
-                        <tr key={subcategoria.id}>
+                            <tr
+                                key={
+                                    subcategoria.id
+                                }
+                            >
 
-                            <td>
-                                {subcategoria.id}
-                            </td>
-
-
-                            <td>
-                                {subcategoria.nombre}
-                            </td>
-
-
-                            <td>
-
-                                <button
-                                    onClick={() =>
-                                        editarSubcategoria(subcategoria)
+                                <td>
+                                    {
+                                        subcategoria.id
                                     }
-                                >
-                                    Editar
-                                </button>
+                                </td>
 
 
-                                <button
-                                    onClick={() =>
-                                        eliminarSubcategoria(subcategoria.id)
+                                <td>
+                                    {
+                                        subcategoria
+                                            .categoria_nombre
                                     }
-                                >
-                                    Eliminar
-                                </button>
+                                </td>
 
-                            </td>
 
-                        </tr>
+                                <td>
+                                    {
+                                        subcategoria
+                                            .nombre
+                                    }
+                                </td>
 
-                    ))}
+
+                                <td>
+
+                                    <button
+                                        onClick={() =>
+                                            editarSubcategoria(
+                                                subcategoria
+                                            )
+                                        }
+                                    >
+                                        Editar
+                                    </button>
+
+
+                                    <button
+                                        onClick={() =>
+                                            eliminarSubcategoria(
+                                                subcategoria.id
+                                            )
+                                        }
+                                    >
+                                        Eliminar
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        )
+                    )}
 
                 </tbody>
 
