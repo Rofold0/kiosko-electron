@@ -74,46 +74,48 @@ function Categorias() {
             if (editandoId) {
 
                 const actualizada =
-                    await window.electronAPI
-                        .categorias
-                        .actualizar({
-                            id: editandoId,
-                            nombre: nombre.trim()
-                        });
+    await window.electronAPI
+        .categorias
+        .actualizar({
+            id: editandoId,
+            nombre: nombre.trim()
+        });
+
+
+setCategorias((actuales) =>
+    ordenarCategorias(
+        actuales.map(
+            (categoria) =>
+                categoria.id ===
+                actualizada.id
+                    ? actualizada
+                    : categoria
+        )
+    )
+);
 
 
             } else {
 
                 const nueva =
-                    await window.electronAPI
-                        .categorias
-                        .crear({
-                            nombre: nombre.trim()
-                        });
+    await window.electronAPI
+        .categorias
+        .crear({
+            nombre: nombre.trim()
+        });
+
+
+setCategorias((actuales) =>
+    ordenarCategorias([
+        ...actuales,
+        nueva
+    ])
+);
 
             }
 
 
-            setNombre("");
-            setEditandoId(null);
-            setCategorias((actuales) =>
-                ordenarCategorias([
-                    ...actuales,
-                    nueva
-                ])
-            );
-            setCategorias((actuales) =>
-                ordenarCategorias(
-                    actuales.map(
-                        (categoria) =>
-                            categoria.id ===
-                                actualizada.id
-                                ? actualizada
-                                : categoria
-                    )
-                )
-            );
-
+            
 
 
 
