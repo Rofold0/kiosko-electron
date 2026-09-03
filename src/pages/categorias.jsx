@@ -60,8 +60,11 @@ function Categorias() {
 
         e.preventDefault();
 
+        const nombreLimpio =
+            nombre.trim();
 
-        if (!nombre.trim()) {
+
+        if (!nombreLimpio) {
 
             alert("Ingrese un nombre.");
 
@@ -74,50 +77,46 @@ function Categorias() {
             if (editandoId) {
 
                 const actualizada =
-    await window.electronAPI
-        .categorias
-        .actualizar({
-            id: editandoId,
-            nombre: nombre.trim()
-        });
+                    await window.electronAPI
+                        .categorias
+                        .actualizar({
+                            id: editandoId,
+                            nombre: nombreLimpio
+                        });
 
 
-setCategorias((actuales) =>
-    ordenarCategorias(
-        actuales.map(
-            (categoria) =>
-                categoria.id ===
-                actualizada.id
-                    ? actualizada
-                    : categoria
-        )
-    )
-);
-
+                setCategorias((actuales) =>
+                    ordenarCategorias(
+                        actuales.map(
+                            (categoria) =>
+                                categoria.id === actualizada.id
+                                    ? actualizada
+                                    : categoria
+                        )
+                    )
+                );
 
             } else {
 
                 const nueva =
-    await window.electronAPI
-        .categorias
-        .crear({
-            nombre: nombre.trim()
-        });
+                    await window.electronAPI
+                        .categorias
+                        .crear({
+                            nombre: nombreLimpio
+                        });
 
 
-setCategorias((actuales) =>
-    ordenarCategorias([
-        ...actuales,
-        nueva
-    ])
-);
+                setCategorias((actuales) =>
+                    ordenarCategorias([
+                        ...actuales,
+                        nueva
+                    ])
+                );
 
             }
 
 
-            
-
-
+            limpiarFormulario();
 
 
         } catch (error) {
@@ -148,9 +147,10 @@ setCategorias((actuales) =>
 
     const eliminarCategoria = async (id) => {
 
-        const confirmar = window.confirm(
-            "¿Está seguro de eliminar esta categoría?"
-        );
+        const confirmar =
+            window.confirm(
+                "¿Está seguro de eliminar esta categoría?"
+            );
 
 
         if (!confirmar) {
@@ -160,13 +160,23 @@ setCategorias((actuales) =>
 
         try {
 
-            await window.electronAPI.categorias.eliminar(id);
+            await window.electronAPI
+                .categorias
+                .eliminar(id);
+
+
             setCategorias((actuales) =>
-    actuales.filter(
-        (categoria) =>
-            categoria.id !== id
-    )
-);
+                actuales.filter(
+                    (categoria) =>
+                        categoria.id !== id
+                )
+            );
+
+
+            if (editandoId === id) {
+                limpiarFormulario();
+            }
+
 
         } catch (error) {
 
@@ -179,11 +189,10 @@ setCategorias((actuales) =>
     };
 
     // CANCELAR EDICIÓN
-    const cancelarEdicion = () => {
-
-        setEditandoId(null);
+    const limpiarFormulario = () => {
 
         setNombre("");
+        setEditandoId(null);
 
     };
 
@@ -214,97 +223,23 @@ setCategorias((actuales) =>
                 />
 
 
-                <button type="submit">
-
-                    {editandoId
-                        ? "Actualizar"
-                        : "Agregar"}
-
-                </button>
-
-
-                {editandoId && (
-
-                    <button
-                        type="button"
-                        onClick={cancelarEdicion}
-                    >
-                        Cancelar
-                    </button>
-
-                )}
+                <FormActions
+                    editando={Boolean(editandoId)}
+                    onCancel={limpiarFormulario}
+                />
 
             </form>
 
 
             {/* TABLA */}
 
-            <table
-                border="1"
-                cellPadding="10"
-                style={{
-                    width: "100%",
-                    borderCollapse: "collapse"
-                }}
-            >
-
-                <thead>
-
-                    <tr>
-
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Acciones</th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    {categorias.map((categoria) => (
-
-                        <tr key={categoria.id}>
-
-                            <td>
-                                {categoria.id}
-                            </td>
-
-
-                            <td>
-                                {categoria.nombre}
-                            </td>
-
-
-                            <td>
-
-                                <button
-                                    onClick={() =>
-                                        editarCategoria(categoria)
-                                    }
-                                >
-                                    Editar
-                                </button>
-
-
-                                <button
-                                    onClick={() =>
-                                        eliminarCategoria(categoria.id)
-                                    }
-                                >
-                                    Eliminar
-                                </button>
-
-                            </td>
-
-                        </tr>
-
-                    ))}
-
-                </tbody>
-
-            </table>
+            <CrudTable
+                columns={columnasCategorias}
+                items={categorias}
+                onEdit={editarCategoria}
+                onDelete={eliminarCategoria}
+                emptyMessage="No hay categorías cargadas."
+            />
 
         </div>
 

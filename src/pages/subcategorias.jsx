@@ -1,4 +1,18 @@
 import { useEffect, useState } from "react";
+const columnasSubcategorias = [
+    {
+        key: "id",
+        label: "ID"
+    },
+    {
+        key: "categoria_nombre",
+        label: "Categoría"
+    },
+    {
+        key: "nombre",
+        label: "Subcategoría"
+    }
+];
 function ordenarSubcategorias(lista) {
 
     return [...lista].sort((a, b) => {
@@ -96,7 +110,7 @@ function Subcategorias() {
 
 
     //LIMPIAR FORMULARIO
-     const limpiarFormulario = () => {
+    const limpiarFormulario = () => {
 
         setNombre("");
         setCategoriaId("");
@@ -124,7 +138,7 @@ function Subcategorias() {
             return;
         }
 
-         const datos = {
+        const datos = {
 
             categoria_id:
                 Number(categoriaId),
@@ -134,52 +148,50 @@ function Subcategorias() {
 
         };
 
-         try {
+        try {
 
             if (editandoId) {
 
                 const actualizada =
-    await window.electronAPI
-        .subcategorias
-        .actualizar({
-            id: editandoId,
-            ...datos
-        });
+                    await window.electronAPI
+                        .subcategorias
+                        .actualizar({
+                            id: editandoId,
+                            ...datos
+                        });
 
 
-setSubcategorias((actuales) =>
-    ordenarSubcategorias(
-        actuales.map(
-            (subcategoria) =>
-                subcategoria.id ===
-                actualizada.id
-                    ? actualizada
-                    : subcategoria
-        )
-    )
-);
+                setSubcategorias((actuales) =>
+                    ordenarSubcategorias(
+                        actuales.map(
+                            (subcategoria) =>
+                                subcategoria.id ===
+                                    actualizada.id
+                                    ? actualizada
+                                    : subcategoria
+                        )
+                    )
+                );
 
             } else {
 
                 const nueva =
-    await window.electronAPI
-        .subcategorias
-        .crear(datos);
+                    await window.electronAPI
+                        .subcategorias
+                        .crear(datos);
 
 
-setSubcategorias((actuales) =>
-    ordenarSubcategorias([
-        ...actuales,
-        nueva
-    ])
-);
+                setSubcategorias((actuales) =>
+                    ordenarSubcategorias([
+                        ...actuales,
+                        nueva
+                    ])
+                );
 
             }
 
 
             limpiarFormulario();
-
-            await cargarSubcategorias();
 
 
         } catch (error) {
@@ -224,14 +236,21 @@ setSubcategorias((actuales) =>
 
         try {
 
-            await window.electronAPI.subcategorias.eliminar(id);
+            await window.electronAPI
+                .subcategorias
+                .eliminar(id);
 
-            await cargarSubcategorias();
 
-        if (editandoId === id) {
+            setSubcategorias((actuales) =>
+                actuales.filter(
+                    (subcategoria) =>
+                        subcategoria.id !== id
+                )
+            );
 
+
+            if (editandoId === id) {
                 limpiarFormulario();
-
             }
         } catch (error) {
 
@@ -345,27 +364,12 @@ setSubcategorias((actuales) =>
 
                 {/* BOTONES */}
 
-                <button type="submit">
-
-                    {editandoId
-                        ? "Actualizar"
-                        : "Agregar"}
-
-                </button>
+                <FormActions
+                    editando={Boolean(editandoId)}
+                    onCancel={limpiarFormulario}
+                />
 
 
-                {editandoId && (
-
-                    <button
-                        type="button"
-                        onClick={
-                            limpiarFormulario
-                        }
-                    >
-                        Cancelar
-                    </button>
-
-                )}
 
             </form>
 
@@ -374,106 +378,13 @@ setSubcategorias((actuales) =>
             {/* TABLA */}
             {/* ======================== */}
 
-            <table
-                border="1"
-                cellPadding="10"
-                style={{
-                    width: "100%",
-                    borderCollapse:
-                        "collapse"
-                }}
-            >
-
-                <thead>
-
-                    <tr>
-
-                        <th>ID</th>
-
-                        <th>
-                            Categoría
-                        </th>
-
-                        <th>
-                            Subcategoría
-                        </th>
-
-                        <th>
-                            Acciones
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    {subcategorias.map(
-                        (subcategoria) => (
-
-                            <tr
-                                key={
-                                    subcategoria.id
-                                }
-                            >
-
-                                <td>
-                                    {
-                                        subcategoria.id
-                                    }
-                                </td>
-
-
-                                <td>
-                                    {
-                                        subcategoria
-                                            .categoria_nombre
-                                    }
-                                </td>
-
-
-                                <td>
-                                    {
-                                        subcategoria
-                                            .nombre
-                                    }
-                                </td>
-
-
-                                <td>
-
-                                    <button
-                                        onClick={() =>
-                                            editarSubcategoria(
-                                                subcategoria
-                                            )
-                                        }
-                                    >
-                                        Editar
-                                    </button>
-
-
-                                    <button
-                                        onClick={() =>
-                                            eliminarSubcategoria(
-                                                subcategoria.id
-                                            )
-                                        }
-                                    >
-                                        Eliminar
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-                        )
-                    )}
-
-                </tbody>
-
-            </table>
+            <CrudTable
+                columns={columnasSubcategorias}
+                items={subcategorias}
+                onEdit={editarSubcategoria}
+                onDelete={eliminarSubcategoria}
+                emptyMessage="No hay subcategorías cargadas."
+            />
 
         </div>
 

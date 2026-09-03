@@ -6,8 +6,25 @@ import {
     actualizarCategoria,
     eliminarCategoria
 } from "../database/repositories/categoriasRepository.js";
+import CrudTable from "../components/crudTable";
+import FormActions from "../components/formActions";
 
+const columnasCategorias = [
+    {
+        key: "id",
+        label: "ID"
+    },
+    {
+        key: "nombre",
+        label: "Nombre"
+    }
+];
+const limpiarFormulario = () => {
 
+    setNombre("");
+    setEditandoId(null);
+
+};
 
 function validarId(valor) {
 
