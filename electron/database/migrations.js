@@ -68,7 +68,62 @@ const migrations = [
             `);
 
         }
+    },
+    {
+    version: 2,
+
+    name: "historial-stock",
+
+    up(db) {
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_stock_producto_fecha
+            ON movimientos_stock(
+                producto_id,
+                fecha DESC
+            );
+        `);
+
+
+        db.exec(`
+            INSERT INTO movimientos_stock (
+                producto_id,
+                tipo,
+                cantidad,
+                stock_anterior,
+                stock_nuevo,
+                motivo,
+                fecha
+            )
+
+            SELECT
+                p.id,
+                'INICIAL',
+                p.stock_actual,
+                0,
+                p.stock_actual,
+                'Stock existente al iniciar historial',
+                strftime(
+                    '%Y-%m-%dT%H:%M:%fZ',
+                    'now'
+                )
+
+            FROM productos p
+
+            WHERE
+                p.activo = 1
+                AND p.stock_actual > 0
+
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM movimientos_stock m
+                    WHERE m.producto_id = p.id
+                );
+        `);
+
     }
+}
 
 ];
 

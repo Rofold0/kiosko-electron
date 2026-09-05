@@ -50,6 +50,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Stock"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.stock
+                        )
+                    }
+                />
 
             </div>
 

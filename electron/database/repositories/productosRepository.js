@@ -1,6 +1,7 @@
 import db
     from "../database.js";
 
+    
 
 const obtenerStmt =
     db.prepare(`
@@ -228,6 +229,79 @@ const eliminarStmt =
         RETURNING id
     `);
 
+    const registrarStockInicialStmt =
+    db.prepare(`
+        INSERT INTO movimientos_stock (
+
+            producto_id,
+            tipo,
+            cantidad,
+            stock_anterior,
+            stock_nuevo,
+            motivo,
+            fecha
+
+        )
+
+        VALUES (
+            ?,
+            'INICIAL',
+            ?,
+            0,
+            ?,
+            'Stock inicial del producto',
+            ?
+        )
+    `);
+    const crearProductoTransaction =
+    db.transaction(({
+        nombre,
+        descripcion,
+        codigo,
+        categoriaId,
+        subcategoriaId,
+        stockInicial,
+        stockMinimo,
+        unidad
+    }) => {
+
+        const resultado =
+            crearStmt.get(
+
+                nombre,
+                descripcion,
+                codigo,
+                categoriaId,
+                subcategoriaId,
+                stockInicial,
+                stockMinimo,
+                unidad
+
+            );
+
+
+        if (stockInicial > 0) {
+
+            registrarStockInicialStmt.run(
+
+                resultado.id,
+
+                stockInicial,
+
+                stockInicial,
+
+                new Date().toISOString()
+
+            );
+
+        }
+
+
+        return obtenerStmt.get(
+            resultado.id
+        );
+
+    });
 
 function validarRelaciones(
     categoriaId,
@@ -351,24 +425,18 @@ export function crearProducto({
 
     try {
 
-        const resultado =
-            crearStmt.get(
+        return crearProductoTransaction({
 
-                nombre,
-                descripcion,
-                codigo,
-                categoriaId,
-                subcategoriaId,
-                stockInicial,
-                stockMinimo,
-                unidad
+    nombre,
+    descripcion,
+    codigo,
+    categoriaId,
+    subcategoriaId,
+    stockInicial,
+    stockMinimo,
+    unidad
 
-            );
-
-
-        return obtenerStmt.get(
-            resultado.id
-        );
+});
 
 
     } catch (error) {

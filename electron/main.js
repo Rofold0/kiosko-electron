@@ -4,6 +4,7 @@ import {
 } from "electron";
 
 import path from "node:path";
+
 import { fileURLToPath } from "node:url";
 
 import {
@@ -13,6 +14,7 @@ import {
 import {
   createMenu
 } from "./menu/applicationMenu.js";
+
 
 const __filename =
   fileURLToPath(import.meta.url);

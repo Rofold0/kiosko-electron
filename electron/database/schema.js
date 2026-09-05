@@ -116,6 +116,12 @@ ON productos(
     FOREIGN KEY (producto_id)
         REFERENCES productos(id)
 );
+CREATE INDEX IF NOT EXISTS
+idx_movimientos_stock_producto_fecha
+ON movimientos_stock(
+    producto_id,
+    fecha DESC
+);
         CREATE TABLE IF NOT EXISTS proveedores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,

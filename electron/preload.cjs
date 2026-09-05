@@ -82,6 +82,37 @@ contextBridge.exposeInMainWorld("electronAPI", {
             id
         )
 
+},stock: {
+
+    entrada: (datos) =>
+        ipcRenderer.invoke(
+            "stock:entrada",
+            datos
+        ),
+
+    salida: (datos) =>
+        ipcRenderer.invoke(
+            "stock:salida",
+            datos
+        ),
+
+    ajustar: (datos) =>
+        ipcRenderer.invoke(
+            "stock:ajustar",
+            datos
+        ),
+
+    movimientos: (filtros) =>
+        ipcRenderer.invoke(
+            "stock:movimientos",
+            filtros
+        ),
+
+    bajoMinimo: () =>
+        ipcRenderer.invoke(
+            "stock:bajo-minimo"
+        )
+
 },
 
   // Navegación desde el menú de Electron hacia React

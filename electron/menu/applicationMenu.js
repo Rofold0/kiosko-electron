@@ -69,7 +69,18 @@ export function createMenu(mainWindow) {
                             ROUTES.productos
                         );
                     }
-                }
+                },
+                {
+                    label: "Stock",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.stock
+                        );
+
+                    }
+                },
             ]
         }
     ];

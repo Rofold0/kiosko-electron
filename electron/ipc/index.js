@@ -11,12 +11,15 @@ import {
 import {
     registerProductosHandlers
 } from "./productos.js";
-
+import {
+    registerStockHandlers
+} from "./stock.js";
 export function registerIpcHandlers() {
 
     registerCategoriasHandlers();
     registerSubcategoriasHandlers();
     registerProductosHandlers();
     registerDialogosHandlers();
+    registerStockHandlers();
 
 }
