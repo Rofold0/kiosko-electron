@@ -139,6 +139,12 @@ CREATE TABLE IF NOT EXISTS proveedores (
     notas     TEXT,
     activo    INTEGER NOT NULL DEFAULT 1
 );
+CREATE UNIQUE INDEX IF NOT EXISTS
+    idx_proveedores_nombre_activo
+    ON proveedores(
+    LOWER(nombre)
+    )
+    WHERE activo = 1;
 
 CREATE TABLE IF NOT EXISTS productos_proveedores (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -149,6 +155,20 @@ CREATE TABLE IF NOT EXISTS productos_proveedores (
     notas            TEXT,
     FOREIGN KEY (producto_id) REFERENCES productos (id),
     FOREIGN KEY (proveedor_id) REFERENCES proveedores (id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS
+    idx_productos_proveedores_unico
+    ON productos_proveedores(
+    producto_id,
+    proveedor_id
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_productos_proveedores_proveedor
+    ON productos_proveedores(
+    proveedor_id,
+    producto_id
 );
 
 CREATE TABLE IF NOT EXISTS compras (

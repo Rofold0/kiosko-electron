@@ -158,8 +158,43 @@ const migrations = [
             WHERE producto_id IS NOT NULL;
         `);
 
-        }
+        },
+        
+    },
+    {
+    version: 4,
+
+    name: "indices-proveedores",
+
+    up(db) {
+
+        db.exec(`
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_proveedores_nombre_activo
+            ON proveedores(
+                LOWER(nombre)
+            )
+            WHERE activo = 1;
+
+
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_productos_proveedores_unico
+            ON productos_proveedores(
+                producto_id,
+                proveedor_id
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_productos_proveedores_proveedor
+            ON productos_proveedores(
+                proveedor_id,
+                producto_id
+            );
+        `);
+
     }
+}
 
 ];
 
