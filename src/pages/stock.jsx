@@ -1,4 +1,5 @@
 import {
+    useEffect,
     useState
 } from "react";
 
@@ -63,6 +64,11 @@ const columnasMovimientos = [
 function Stock() {
 
     const [
+        alertas,
+        setAlertas
+    ] = useState([]);
+
+    const [
         busqueda,
         setBusqueda
     ] = useState("");
@@ -102,6 +108,33 @@ function Stock() {
         setMovimientos
     ] = useState([]);
 
+    const cargarAlertas =
+        async () => {
+
+            try {
+
+                const data =
+                    await window
+                        .electronAPI
+                        .stock
+                        .bajoMinimo();
+
+
+                setAlertas(
+                    data
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error cargando alertas:",
+                    error
+                );
+
+            }
+
+        };
 
     const mostrarError =
         async (error) => {
@@ -320,6 +353,8 @@ function Stock() {
                     producto.id
                 );
 
+                await cargarAlertas();
+
 
             } catch (error) {
 
@@ -331,6 +366,11 @@ function Stock() {
 
         };
 
+    useEffect(() => {
+
+        cargarAlertas();
+
+    }, []);
 
     return (
 
@@ -339,6 +379,89 @@ function Stock() {
             <PageHeader
                 title="Stock"
             />
+
+            {alertas.length > 0 && (
+
+                <section className="stock-alert-panel">
+
+                    <div className="stock-alert-header">
+
+                        <div>
+
+                            <h2>
+                                Reposición necesaria
+                            </h2>
+
+                            <p>
+                                {alertas.length} producto
+                                {alertas.length !== 1
+                                    ? "s"
+                                    : ""}
+                                {" con stock bajo."}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="stock-alert-list">
+
+                        {alertas.map(
+                            (item) => (
+
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    className={
+                                        item.stock_actual === 0
+                                            ? "stock-alert-item stock-alert-item--critical"
+                                            : "stock-alert-item"
+                                    }
+                                    onClick={() =>
+                                        seleccionarProducto(
+                                            item
+                                        )
+                                    }
+                                >
+
+                                    <span className="stock-alert-product">
+
+                                        {
+                                            item.nombre
+                                        }
+
+                                    </span>
+
+
+                                    <span>
+
+                                        Stock:{" "}
+
+                                        <strong>
+                                            {
+                                                item.stock_actual
+                                            }
+                                        </strong>
+
+                                        {" / mín. "}
+
+                                        {
+                                            item.stock_minimo
+                                        }
+
+                                    </span>
+
+                                </button>
+
+                            )
+                        )}
+
+                    </div>
+
+                </section>
+
+            )}
 
 
             <h2>
@@ -567,7 +690,7 @@ function Stock() {
                             movimientos
                         }
                         emptyMessage=
-                            "No hay movimientos."
+                        "No hay movimientos."
                     />
 
                 </>

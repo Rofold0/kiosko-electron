@@ -1,0 +1,183 @@
+.dashboard-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
+
+    gap: 16px;
+
+    margin-top: 24px;
+}
+
+
+.dashboard-card {
+    min-height: 90px;
+
+    font-size: 1rem;
+
+    font-weight: 600;
+}
+
+
+/* ALERTAS */
+
+.stock-alert-panel {
+    margin-bottom: 28px;
+
+    padding: 16px;
+
+    border: 1px solid #d4d4d4;
+
+    border-radius: 8px;
+}
+
+
+.stock-alert-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 16px;
+
+    margin-bottom: 16px;
+}
+
+
+.stock-alert-header h2 {
+    margin: 0 0 4px;
+}
+
+
+.stock-alert-header p {
+    margin: 0;
+
+    color: #666;
+}
+
+
+.stock-alert-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(120px, 1fr)
+        );
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+}
+
+
+.stock-alert-stat {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    padding: 12px;
+
+    border: 1px solid #e0c67a;
+
+    border-radius: 6px;
+
+    background: #fff9e8;
+}
+
+
+.stock-alert-stat--critical {
+    border-color: #d89a9a;
+
+    background: #fff0f0;
+}
+
+
+.stock-alert-stat strong {
+    font-size: 1.5rem;
+}
+
+
+.stock-alert-list {
+    display: grid;
+
+    gap: 8px;
+}
+
+
+.stock-alert-item {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 16px;
+
+    width: 100%;
+
+    text-align: left;
+
+    background: #fffaf0;
+}
+
+
+.stock-alert-item--critical {
+    background: #fff1f1;
+}
+
+
+.stock-alert-product {
+    font-weight: 600;
+}
+
+
+.stock-alert-ok {
+    margin: 0;
+
+    padding: 12px;
+
+    border-radius: 6px;
+
+    background: #f4f7f4;
+}
+
+
+.stock-alert-more {
+    margin:
+        12px 0 0;
+
+    color: #666;
+}
+
+
+@media (max-width: 650px) {
+
+    .stock-alert-header {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .stock-alert-summary {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+
+    .stock-alert-item {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 4px;
+    }
+
+}

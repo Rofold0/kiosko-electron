@@ -3,6 +3,7 @@
 @import "./styles/tables.css";
 @import "./styles/buttons.css";
 @import "./styles/productos.css";
+@import "./styles/dashboard.css";
 
 :root {
     font-family:
