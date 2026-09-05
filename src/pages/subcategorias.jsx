@@ -217,7 +217,7 @@ function Subcategorias() {
 
             console.error(error);
 
-            alert(error.message);
+            
 
         }
 
