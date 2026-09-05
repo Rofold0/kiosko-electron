@@ -56,6 +56,33 @@ contextBridge.exposeInMainWorld("electronAPI", {
     eliminar: (id) =>
       ipcRenderer.invoke("categorias:eliminar", id)
   },
+  productos: {
+
+    listar: (filtros) =>
+        ipcRenderer.invoke(
+            "productos:listar",
+            filtros
+        ),
+
+    crear: (producto) =>
+        ipcRenderer.invoke(
+            "productos:crear",
+            producto
+        ),
+
+    actualizar: (producto) =>
+        ipcRenderer.invoke(
+            "productos:actualizar",
+            producto
+        ),
+
+    eliminar: (id) =>
+        ipcRenderer.invoke(
+            "productos:eliminar",
+            id
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

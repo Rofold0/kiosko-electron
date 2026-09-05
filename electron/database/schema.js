@@ -36,13 +36,40 @@ export function createSchema(db) {
     descripcion TEXT,
     codigo TEXT,
     categoria_id INTEGER,
+    subcategoria_id INTEGER,
     stock_actual INTEGER NOT NULL DEFAULT 0,
     stock_minimo INTEGER NOT NULL DEFAULT 0,
     unidad TEXT NOT NULL DEFAULT 'unidad',
     activo INTEGER NOT NULL DEFAULT 1,
 
     FOREIGN KEY (categoria_id)
-        REFERENCES categorias(id)
+        REFERENCES categorias(id),
+    FOREIGN KEY (subcategoria_id)
+        REFERENCES subcategorias(id)
+);
+        CREATE UNIQUE INDEX IF NOT EXISTS
+    idx_productos_codigo_activo
+    ON productos(LOWER(codigo))
+    WHERE
+    activo = 1
+    AND codigo IS NOT NULL
+    AND TRIM(codigo) <> '';
+
+        CREATE INDEX IF NOT EXISTS
+    idx_productos_categoria_activo
+    ON productos(
+    categoria_id,
+    activo);
+        CREATE INDEX IF NOT EXISTS
+idx_productos_subcategoria_activo
+ON productos(
+    subcategoria_id,
+    activo
+);
+        CREATE INDEX IF NOT EXISTS
+idx_productos_nombre
+ON productos(
+    nombre COLLATE NOCASE
 );
         CREATE TABLE IF NOT EXISTS lista_compras (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

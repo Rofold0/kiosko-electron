@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createSchema } from "./schema.js";
-
+import { runMigrations } from "./migrations.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +16,8 @@ const db = new Database(dbPath);
 db.pragma("foreign_keys = ON");
 db.pragma("journal_mode = WAL");
 db.pragma("synchronous = NORMAL");
-//creacion de basededatos
+//creacion de basededatos y migraciones 
 createSchema(db);
+runMigrations(db);
 
 export default db;
