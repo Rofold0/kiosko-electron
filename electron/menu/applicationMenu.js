@@ -92,6 +92,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Proveedores",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.proveedores
+                        );
+
+                    }
+                },
             ]
         }
     ];

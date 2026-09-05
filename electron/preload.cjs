@@ -178,7 +178,62 @@ contextBridge.exposeInMainWorld("electronAPI", {
         "lista-compras:completar"
       )
 
-  },
+  },proveedores: {
+
+    listar: () =>
+        ipcRenderer.invoke(
+            "proveedores:listar"
+        ),
+
+    crear: (proveedor) =>
+        ipcRenderer.invoke(
+            "proveedores:crear",
+            proveedor
+        ),
+
+    actualizar: (proveedor) =>
+        ipcRenderer.invoke(
+            "proveedores:actualizar",
+            proveedor
+        ),
+
+    eliminar: (id) =>
+        ipcRenderer.invoke(
+            "proveedores:eliminar",
+            id
+        ),
+
+    productos: (proveedorId) =>
+        ipcRenderer.invoke(
+            "proveedores:productos",
+            proveedorId
+        ),
+
+    porProducto: (productoId) =>
+        ipcRenderer.invoke(
+            "proveedores:por-producto",
+            productoId
+        ),
+
+    vincularProducto: (datos) =>
+        ipcRenderer.invoke(
+            "proveedores:vincular-producto",
+            datos
+        ),
+
+    actualizarVinculo: (datos) =>
+        ipcRenderer.invoke(
+            "proveedores:actualizar-vinculo",
+            datos
+        ),
+
+    desvincularProducto: (id) =>
+        ipcRenderer.invoke(
+            "proveedores:desvincular-producto",
+            id
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

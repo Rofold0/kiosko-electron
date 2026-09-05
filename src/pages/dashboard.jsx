@@ -358,6 +358,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Proveedores"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.proveedores
+                        )
+                    }
+                />
 
             </div>
 

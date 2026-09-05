@@ -7,6 +7,7 @@ import { ROUTES } from "../shared/routes.js";
 import Productos from "./pages/productos";
 import Stock from "./pages/stock";
 import ListaCompras from "./pages/listaCompras";
+import Proveedores from "./pages/proveedores";
 
 function NavegacionElectron() {
 
@@ -78,6 +79,10 @@ function App() {
         <Route
           path="*"
           element={<Dashboard />}
+        />
+        <Route
+          path={ROUTES.proveedores}
+          element={<Proveedores />}
         />
       </Routes>
 
