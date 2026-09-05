@@ -4,6 +4,7 @@ import {
 } from "react";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
+import PageHeader from "../components/pageHeader.jsx";
 
 const columnasCategorias = [
     {
@@ -240,8 +241,7 @@ function Categorias() {
 
         <div className="page">
 
-            <h1>Categorías</h1>
-
+            <PageHeader title="Categorías" />
 
             <form
                 className="crud-form"

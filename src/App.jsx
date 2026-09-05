@@ -4,6 +4,7 @@ import Categorias from "./pages/categorias";
 import Subcategorias from "./pages/subcategorias";
 import { useEffect } from "react";
 import { ROUTES } from "../shared/routes.js";
+import Productos from "./pages/productos";
 
 function NavegacionElectron() {
 
@@ -58,6 +59,15 @@ function App() {
         <Route
           path={ROUTES.subcategorias}
           element={<Subcategorias />}
+        />
+
+        <Route
+          path={ROUTES.productos}
+          element={<Productos />}
+        />
+        <Route
+          path="*"
+          element={<Dashboard />}
         />
       </Routes>
 

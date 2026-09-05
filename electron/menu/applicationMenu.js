@@ -60,6 +60,15 @@ export function createMenu(mainWindow) {
                             ROUTES.subcategorias
                         );
                     }
+                },
+                {
+                    label: "Productos",
+
+                    click() {
+                        navigateTo(
+                            ROUTES.productos
+                        );
+                    }
                 }
             ]
         }

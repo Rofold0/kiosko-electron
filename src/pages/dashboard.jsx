@@ -1,40 +1,63 @@
 import { useNavigate }
     from "react-router-dom";
 
+import DashboardCard
+    from "../components/dashboardCard.jsx";
+
 import { ROUTES }
     from "../../shared/routes.js";
+
 
 function Dashboard() {
 
     const navigate = useNavigate();
 
+
     return (
-        <div>
+
+        <div className="page">
 
             <h1>Kiosko</h1>
 
-            <button
-                onClick={() =>
-                    navigate(
-                        ROUTES.categorias
-                    )
-                }
-            >
-                Categorías
-            </button>
 
-            <button
-                onClick={() =>
-                    navigate(
-                        ROUTES.subcategorias
-                    )
-                }
-            >
-                Subcategorías
-            </button>
+            <div className="dashboard-grid">
+
+                <DashboardCard
+                    title="Productos"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.productos
+                        )
+                    }
+                />
+
+
+                <DashboardCard
+                    title="Categorías"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.categorias
+                        )
+                    }
+                />
+
+
+                <DashboardCard
+                    title="Subcategorías"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.subcategorias
+                        )
+                    }
+                />
+
+            </div>
 
         </div>
+
     );
+
 }
+
 
 export default Dashboard;

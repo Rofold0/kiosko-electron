@@ -4,6 +4,7 @@ import {
 } from "react";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
+import PageHeader from "../components/pageHeader.jsx";
 
 
 
@@ -216,7 +217,11 @@ function Subcategorias() {
         } catch (error) {
 
             console.error(error);
-
+            await window.electronAPI
+        .dialogos
+        .error(
+            error.message
+        );
             
 
         }
@@ -307,8 +312,7 @@ function Subcategorias() {
 
     <div className="page">
 
-        <h1>Subcategorías</h1>
-
+        <PageHeader title="Subcategorías" />
 
         <form
             className="

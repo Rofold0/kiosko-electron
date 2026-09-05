@@ -7,14 +7,6 @@ import {
     eliminarCategoria
 } from "../database/repositories/categoriasRepository.js";
 
-
-const limpiarFormulario = () => {
-
-    setNombre("");
-    setEditandoId(null);
-
-};
-
 function validarId(valor) {
 
     const id = Number(valor);
