@@ -3,7 +3,9 @@ export const ROUTES = {
     categorias: "/categorias",
     subcategorias: "/subcategorias",
     productos: "/productos",
+    stock: "/stock",
+    listaCompras:
+    "/lista-compras",
     proveedores: "/proveedores",
     compras: "/compras",
-    stock: "/stock",
 };

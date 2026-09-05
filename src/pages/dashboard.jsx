@@ -93,6 +93,34 @@ function Dashboard() {
                 producto.stock_actual > 0
         );
 
+    const agregarFaltantes =
+        async () => {
+
+            try {
+
+                await window
+                    .electronAPI
+                    .listaCompras
+                    .agregarStockBajo();
+
+
+                navigate(
+                    ROUTES.listaCompras
+                );
+
+
+            } catch (error) {
+
+                await window
+                    .electronAPI
+                    .dialogos
+                    .error(
+                        error.message
+                    );
+
+            }
+
+        };
 
     return (
 
@@ -129,6 +157,14 @@ function Dashboard() {
                         }
                     >
                         Ir a Stock
+                    </button>
+                    <button
+                        type="button"
+                        onClick={
+                            agregarFaltantes
+                        }
+                    >
+                        Agregar faltantes a compras
                     </button>
 
                 </div>
@@ -311,6 +347,14 @@ function Dashboard() {
                     onClick={() =>
                         navigate(
                             ROUTES.subcategorias
+                        )
+                    }
+                />
+                <DashboardCard
+                    title="Lista de compras"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.listaCompras
                         )
                     }
                 />

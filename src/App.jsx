@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { ROUTES } from "../shared/routes.js";
 import Productos from "./pages/productos";
 import Stock from "./pages/stock";
+import ListaCompras from "./pages/listaCompras";
 
 function NavegacionElectron() {
 
@@ -69,6 +70,10 @@ function App() {
         <Route
           path={ROUTES.stock}
           element={<Stock />}
+        />
+        <Route
+          path={ROUTES.listaCompras}
+          element={<ListaCompras />}
         />
         <Route
           path="*"

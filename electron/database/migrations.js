@@ -70,13 +70,13 @@ const migrations = [
         }
     },
     {
-    version: 2,
+        version: 2,
 
-    name: "historial-stock",
+        name: "historial-stock",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_movimientos_stock_producto_fecha
             ON movimientos_stock(
@@ -86,7 +86,7 @@ const migrations = [
         `);
 
 
-        db.exec(`
+            db.exec(`
             INSERT INTO movimientos_stock (
                 producto_id,
                 tipo,
@@ -122,8 +122,44 @@ const migrations = [
                 );
         `);
 
+        }
+    },
+    {
+        version: 3,
+
+        name: "indices-lista-compras",
+
+        up(db) {
+
+            db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_lista_compras_estado_fecha
+            ON lista_compras(
+                estado,
+                fecha_creacion DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_lista_compras_lista
+            ON items_lista_compras(
+                lista_id,
+                comprado,
+                id
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_lista_compras_producto
+            ON items_lista_compras(
+                lista_id,
+                producto_id
+            )
+            WHERE producto_id IS NOT NULL;
+        `);
+
+        }
     }
-}
 
 ];
 
@@ -158,8 +194,7 @@ export function runMigrations(db) {
                 migration.up(db);
 
                 db.pragma(
-                    `user_version = ${
-                        migration.version
+                    `user_version = ${migration.version
                     }`
                 );
 

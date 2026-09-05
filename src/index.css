@@ -4,6 +4,7 @@
 @import "./styles/buttons.css";
 @import "./styles/productos.css";
 @import "./styles/dashboard.css";
+@import "./styles/listaCompras.css";
 
 :root {
     font-family:

@@ -14,12 +14,21 @@ import {
 import {
     registerStockHandlers
 } from "./stock.js";
+import {
+    registerListaComprasHandlers
+} from "./listaCompras.js";
 export function registerIpcHandlers() {
 
     registerCategoriasHandlers();
+
     registerSubcategoriasHandlers();
+
     registerProductosHandlers();
-    registerDialogosHandlers();
+
     registerStockHandlers();
+
+    registerListaComprasHandlers();
+
+    registerDialogosHandlers();
 
 }

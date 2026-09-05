@@ -81,6 +81,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Lista de compras",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.listaCompras
+                        );
+
+                    }
+                },
             ]
         }
     ];

@@ -59,61 +59,126 @@ contextBridge.exposeInMainWorld("electronAPI", {
   productos: {
 
     listar: (filtros) =>
-        ipcRenderer.invoke(
-            "productos:listar",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "productos:listar",
+        filtros
+      ),
 
     crear: (producto) =>
-        ipcRenderer.invoke(
-            "productos:crear",
-            producto
-        ),
+      ipcRenderer.invoke(
+        "productos:crear",
+        producto
+      ),
 
     actualizar: (producto) =>
-        ipcRenderer.invoke(
-            "productos:actualizar",
-            producto
-        ),
+      ipcRenderer.invoke(
+        "productos:actualizar",
+        producto
+      ),
 
     eliminar: (id) =>
-        ipcRenderer.invoke(
-            "productos:eliminar",
-            id
-        )
+      ipcRenderer.invoke(
+        "productos:eliminar",
+        id
+      )
 
-},stock: {
+  }, stock: {
 
     entrada: (datos) =>
-        ipcRenderer.invoke(
-            "stock:entrada",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "stock:entrada",
+        datos
+      ),
 
     salida: (datos) =>
-        ipcRenderer.invoke(
-            "stock:salida",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "stock:salida",
+        datos
+      ),
 
     ajustar: (datos) =>
-        ipcRenderer.invoke(
-            "stock:ajustar",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "stock:ajustar",
+        datos
+      ),
 
     movimientos: (filtros) =>
-        ipcRenderer.invoke(
-            "stock:movimientos",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "stock:movimientos",
+        filtros
+      ),
 
     bajoMinimo: () =>
-        ipcRenderer.invoke(
-            "stock:bajo-minimo"
-        )
+      ipcRenderer.invoke(
+        "stock:bajo-minimo"
+      )
 
-},
+  },
+  listaCompras: {
+
+    actual: () =>
+      ipcRenderer.invoke(
+        "lista-compras:actual"
+      ),
+
+    agregarProducto: (datos) =>
+      ipcRenderer.invoke(
+        "lista-compras:agregar-producto",
+        datos
+      ),
+
+    agregarLibre: (datos) =>
+      ipcRenderer.invoke(
+        "lista-compras:agregar-libre",
+        datos
+      ),
+
+    actualizarCantidad: (datos) =>
+      ipcRenderer.invoke(
+        "lista-compras:cantidad",
+        datos
+      ),
+
+    marcarComprado: (datos) =>
+      ipcRenderer.invoke(
+        "lista-compras:comprado",
+        datos
+      ),
+
+    eliminarItem: (id) =>
+      ipcRenderer.invoke(
+        "lista-compras:eliminar-item",
+        id
+      ),
+
+    actualizarNotas: (notas) =>
+      ipcRenderer.invoke(
+        "lista-compras:notas",
+        notas
+      ),
+
+    agregarStockBajo: () =>
+      ipcRenderer.invoke(
+        "lista-compras:agregar-stock-bajo"
+      ),
+
+    historial: () =>
+      ipcRenderer.invoke(
+        "lista-compras:historial"
+      ),
+
+    obtener: (id) =>
+      ipcRenderer.invoke(
+        "lista-compras:obtener",
+        id
+      ),
+
+    completar: () =>
+      ipcRenderer.invoke(
+        "lista-compras:completar"
+      )
+
+  },
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {
