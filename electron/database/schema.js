@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS items_compra (
         REFERENCES productos(id),
 
     FOREIGN KEY (lista_item_id)
-        REFERENCES items_lista_compras(id),
+        REFERENCES items_lista_compras(id)
         ON DELETE SET NULL,
 
     FOREIGN KEY (producto_proveedor_id)
@@ -384,10 +384,10 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
     FOREIGN KEY (gasto_id)
         REFERENCES gastos(id),
 
-    FOREIGN KEY (movimiento_origen_id),
-        REFERENCES movimientos_caja(id)
+    FOREIGN KEY (movimiento_origen_id)
+        REFERENCES movimientos_caja(id),
 
-    FOREIGN KEY (compra_id),
+    FOREIGN KEY (compra_id)
         REFERENCES compras(id)
 );
     `);
