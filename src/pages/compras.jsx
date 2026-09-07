@@ -552,81 +552,86 @@ function Compras() {
 
 
     const cargarDesdeLista =
-        () => {
+    () => {
 
-            for (
-                const item
-                of pendientes
-            ) {
+        setItems(
+            (actuales) => {
 
-                setItems(
-                    (actuales) => {
-
-                        const existente =
-                            actuales.find(
-                                (actual) =>
-                                    actual.producto_id ===
-                                    item.producto_id
-                            );
+                let nuevos = [
+                    ...actuales
+                ];
 
 
-                        if (existente) {
+                for (
+                    const pendiente
+                    of pendientes
+                ) {
 
-                            return actuales.map(
-                                (actual) =>
-                                    actual.producto_id ===
-                                        item.producto_id
-                                        ? {
-                                            ...actual,
-
-                                            cantidad:
-                                                Math.max(
-                                                    actual.cantidad,
-                                                    item.cantidad
-                                                ),
-
-                                            lista_item_id:
-                                                actual.lista_item_id ||
-                                                item.lista_item_id
-                                        }
-                                        : actual
-                            );
-
-                        }
+                    const indice =
+                        nuevos.findIndex(
+                            (item) =>
+                                item.producto_id ===
+                                pendiente.producto_id
+                        );
 
 
-                        return [
-                            ...actuales,
+                    if (indice >= 0) {
 
-                            {
-                                producto_id:
-                                    item.producto_id,
+                        nuevos[indice] = {
+                            ...nuevos[indice],
 
-                                producto_nombre:
-                                    item.nombre,
+                            cantidad:
+                                Math.max(
+                                    Number(
+                                        nuevos[indice]
+                                            .cantidad
+                                    ),
+                                    pendiente.cantidad
+                                ),
 
-                                producto_codigo:
-                                    item.codigo,
+                            lista_item_id:
+                                nuevos[indice]
+                                    .lista_item_id ||
+                                pendiente.lista_item_id
+                        };
 
-                                cantidad:
-                                    item.cantidad,
 
-                                costo_unitario:
-                                    item.ultimo_costo ??
-                                    0,
+                    } else {
 
-                                lista_item_id:
-                                    item.lista_item_id
-                            }
+                        nuevos.push({
 
-                        ];
+                            producto_id:
+                                pendiente.producto_id,
+
+                            producto_nombre:
+                                pendiente.nombre,
+
+                            producto_codigo:
+                                pendiente.codigo,
+
+                            cantidad:
+                                pendiente.cantidad,
+
+                            costo_unitario:
+                                pendiente.ultimo_costo ??
+                                0,
+
+                            lista_item_id:
+                                pendiente.lista_item_id
+
+                        });
 
                     }
-                );
+
+                }
+
+
+                return nuevos;
 
             }
+        );
 
-        };
+    };
 
 
     const cambiarItem =
@@ -840,6 +845,118 @@ function Compras() {
 
         };
 
+    const revertirCompraActual =
+        async () => {
+
+            if (
+                !compraDetalle ||
+                compraDetalle.estado !== "ACTIVA" ||
+                revirtiendo
+            ) {
+                return;
+            }
+
+
+            const motivo =
+                motivoReversion.trim();
+
+
+            if (motivo.length < 3) {
+
+                await window
+                    .electronAPI
+                    .dialogos
+                    .error(
+                        "Debe indicar el motivo de la reversión."
+                    );
+
+                return;
+            }
+
+
+            const confirmar =
+                await window
+                    .electronAPI
+                    .dialogos
+                    .confirmar(
+                        `¿Revertir la compra #${compraDetalle.id}? El stock agregado será retirado.`
+                    );
+
+
+            if (!confirmar) {
+                return;
+            }
+
+
+            setRevirtiendo(true);
+
+
+            try {
+
+                const resultado =
+                    await window
+                        .electronAPI
+                        .compras
+                        .revertir({
+
+                            id:
+                                compraDetalle.id,
+
+                            motivo
+
+                        });
+
+
+                setCompraDetalle(
+                    resultado.compra
+                );
+
+
+                setMotivoReversion("");
+
+
+                if (
+                    resultado
+                        .listas_no_restauradas > 0
+                ) {
+
+                    setAvisoReversion(
+                        `${resultado.listas_no_restauradas} ítem(s) de la lista de compras no pudieron restaurarse automáticamente.`
+                    );
+
+                } else {
+
+                    setAvisoReversion(
+                        "La compra fue revertida correctamente."
+                    );
+
+                }
+
+
+                await cargarHistorial(1);
+
+
+                if (proveedorId) {
+
+                    await cargarProveedor(
+                        Number(proveedorId)
+                    );
+
+                }
+
+
+            } catch (error) {
+
+                await mostrarError(error);
+
+
+            } finally {
+
+                setRevirtiendo(false);
+
+            }
+
+        };
 
     return (
 
@@ -1341,6 +1458,7 @@ function Compras() {
                             </span>
 
 
+
                             <strong>
                                 {
                                     moneda.format(
@@ -1349,7 +1467,19 @@ function Compras() {
                                 }
                             </strong>
 
+                            <span>
+                                #{compra.id}
+                                {" · "}
+                                {compra.proveedor_nombre || "Sin proveedor"}
+                                {" · "}
+                                {
+                                    compra.estado === "REVERTIDA"
+                                        ? "REVERTIDA"
+                                        : "ACTIVA"
+                                }
+                            </span>
                         </button>
+
 
                     )
                 )}
@@ -1397,17 +1527,7 @@ function Compras() {
 
                 </div>
 
-                <span>
-                    #{compra.id}
-                    {" · "}
-                    {compra.proveedor_nombre}
-                    {" · "}
-                    {
-                        compra.estado === "REVERTIDA"
-                            ? "REVERTIDA"
-                            : "ACTIVA"
-                    }
-                </span>
+
 
             </section>
 
@@ -1417,44 +1537,33 @@ function Compras() {
                 <section className="purchase-detail">
 
                     <h2>
-                        Compra #
-                        {
-                            compraDetalle.id
-                        }
+                        Compra #{compraDetalle.id}
                     </h2>
 
 
                     <p>
                         Proveedor:{" "}
-
                         <strong>
-                            {
-                                compraDetalle
-                                    .proveedor_nombre
-                            }
+                            {compraDetalle.proveedor_nombre || "Sin proveedor"}
                         </strong>
                     </p>
 
 
                     <p>
                         Total:{" "}
-
                         <strong>
-                            {
-                                moneda.format(
-                                    compraDetalle.total
-                                )
-                            }
+                            {moneda.format(
+                                compraDetalle.total
+                            )}
                         </strong>
                     </p>
 
+
                     <p>
                         Estado:{" "}
-
                         <strong>
                             {
-                                compraDetalle.estado ===
-                                    "REVERTIDA"
+                                compraDetalle.estado === "REVERTIDA"
                                     ? "Revertida"
                                     : "Activa"
                             }
@@ -1462,16 +1571,49 @@ function Compras() {
                     </p>
 
 
+                    {compraDetalle.estado === "REVERTIDA" && (
+
+                        <div className="purchase-reverted-info">
+
+                            <p>
+                                Revertida el{" "}
+
+                                <strong>
+                                    {
+                                        compraDetalle.fecha_reversion
+                                            ? new Date(
+                                                compraDetalle.fecha_reversion
+                                            )
+                                                .toLocaleString(
+                                                    "es-AR"
+                                                )
+                                            : "—"
+                                    }
+                                </strong>
+                            </p>
+
+
+                            <p>
+                                Motivo:{" "}
+                                {
+                                    compraDetalle.motivo_reversion ||
+                                    "—"
+                                }
+                            </p>
+
+                        </div>
+
+                    )}
+
+
                     <CrudTable
-                        columns={
-                            columnasDetalle
-                        }
+                        columns={columnasDetalle}
                         items={
-                            compraDetalle.items
+                            compraDetalle.items || []
                         }
-                        emptyMessage=
-                        "La compra no tiene productos."
+                        emptyMessage="La compra no tiene productos."
                     />
+
 
                     {compraDetalle.estado === "ACTIVA" && (
 
@@ -1482,13 +1624,6 @@ function Compras() {
                             </h3>
 
 
-                            <p>
-                                Utilizá esta opción únicamente
-                                para corregir una compra cargada
-                                por error.
-                            </p>
-
-
                             <div className="form-field">
 
                                 <label>
@@ -1497,16 +1632,13 @@ function Compras() {
 
                                 <textarea
                                     rows="3"
-                                    value={
-                                        motivoReversion
-                                    }
+                                    value={motivoReversion}
                                     onChange={(e) =>
                                         setMotivoReversion(
                                             e.target.value
                                         )
                                     }
-                                    placeholder=
-                                    "Ej: compra cargada dos veces"
+                                    placeholder="Ej: compra cargada dos veces"
                                 />
 
                             </div>
@@ -1514,9 +1646,7 @@ function Compras() {
 
                             <button
                                 type="button"
-                                disabled={
-                                    revirtiendo
-                                }
+                                disabled={revirtiendo}
                                 onClick={
                                     revertirCompraActual
                                 }
@@ -1532,47 +1662,16 @@ function Compras() {
 
                     )}
 
+
+                    {avisoReversion && (
+
+                        <p className="purchase-reversal-message">
+                            {avisoReversion}
+                        </p>
+
+                    )}
+
                 </section>
-
-            )}
-            {avisoReversion && (
-
-                <p className="purchase-reversal-message">
-                    {avisoReversion}
-                </p>
-
-            )}
-            {compraDetalle.estado === "REVERTIDA" && (
-
-                <div className="purchase-reverted-info">
-
-                    <p>
-                        Revertida el{" "}
-
-                        <strong>
-                            {
-                                new Date(
-                                    compraDetalle
-                                        .fecha_reversion
-                                )
-                                    .toLocaleString(
-                                        "es-AR"
-                                    )
-                            }
-                        </strong>
-                    </p>
-
-
-                    <p>
-                        Motivo:{" "}
-
-                        {
-                            compraDetalle
-                                .motivo_reversion
-                        }
-                    </p>
-
-                </div>
 
             )}
 
