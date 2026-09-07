@@ -182,8 +182,18 @@ CREATE TABLE IF NOT EXISTS compras (
     fecha_reversion  TEXT,
     motivo_reversion TEXT,
 
+    metodo_pago       TEXT,
+    caja_id           INTEGER,
+    caja_reversion_id INTEGER,
+
     FOREIGN KEY (proveedor_id)
         REFERENCES proveedores(id)
+
+    FOREIGN KEY (caja_id)
+        REFERENCES cajas(id),
+
+    FOREIGN KEY (caja_reversion_id)
+        REFERENCES cajas(id)
 );
 
 CREATE TABLE IF NOT EXISTS items_compra (
@@ -361,6 +371,9 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
 
     movimiento_origen_id INTEGER,
 
+    gasto_id INTEGER,
+    compra_id INTEGER,
+
     notas                TEXT,
 
     FOREIGN KEY (caja_id)
@@ -374,6 +387,9 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
 
     FOREIGN KEY (movimiento_origen_id)
         REFERENCES movimientos_caja(id)
+
+    FOREIGN KEY (compra_id)
+        REFERENCES compras(id)
 );
     `);
 

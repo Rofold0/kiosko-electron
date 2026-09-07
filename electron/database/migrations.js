@@ -1024,6 +1024,103 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 11,
+
+    name: "compras-integracion-caja",
+
+    up(db) {
+
+        const columnasCompras =
+            db.pragma(
+                "table_info(compras)"
+            );
+
+
+        const agregarCompra =
+            (nombre, sql) => {
+
+                const existe =
+                    columnasCompras.some(
+                        (columna) =>
+                            columna.name === nombre
+                    );
+
+
+                if (!existe) {
+                    db.exec(sql);
+                }
+
+            };
+
+
+        agregarCompra(
+            "metodo_pago",
+            `
+                ALTER TABLE compras
+                ADD COLUMN metodo_pago TEXT;
+            `
+        );
+
+
+        agregarCompra(
+            "caja_id",
+            `
+                ALTER TABLE compras
+                ADD COLUMN caja_id INTEGER
+                REFERENCES cajas(id);
+            `
+        );
+
+
+        agregarCompra(
+            "caja_reversion_id",
+            `
+                ALTER TABLE compras
+                ADD COLUMN caja_reversion_id INTEGER
+                REFERENCES cajas(id);
+            `
+        );
+
+
+        const columnasCaja =
+            db.pragma(
+                "table_info(movimientos_caja)"
+            );
+
+
+        const tieneCompraId =
+            columnasCaja.some(
+                (columna) =>
+                    columna.name ===
+                    "compra_id"
+            );
+
+
+        if (!tieneCompraId) {
+
+            db.exec(`
+                ALTER TABLE movimientos_caja
+                ADD COLUMN compra_id INTEGER
+                REFERENCES compras(id);
+            `);
+
+        }
+
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_compras_caja
+            ON compras(caja_id);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_compra
+            ON movimientos_caja(compra_id);
+        `);
+
+    }
 }
 ];
 

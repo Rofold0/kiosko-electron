@@ -10,6 +10,44 @@ import {
     revertirCompra
 } from "../database/repositories/comprasRepository.js";
 
+const METODOS_PAGO =
+    new Set([
+        "EFECTIVO",
+        "TRANSFERENCIA",
+        "DEBITO",
+        "CREDITO",
+        "QR",
+        "OTRO"
+    ]);
+
+function validarMetodoPago(
+    valor
+) {
+
+    const metodo =
+        String(
+            valor || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    if (
+        !METODOS_PAGO.has(
+            metodo
+        )
+    ) {
+
+        throw new Error(
+            "Método de pago inválido."
+        );
+
+    }
+
+
+    return metodo;
+
+}
 
 function validarId(
     valor,
@@ -209,6 +247,9 @@ export function registerComprasHandlers() {
     ipcMain.handle(
         "compras:crear",
         (_event, datos) => {
+            const registrarEnCaja =
+                datos?.registrar_en_caja ===
+                true;
 
             return registrarCompra({
 
@@ -227,6 +268,15 @@ export function registerComprasHandlers() {
                     textoOpcional(
                         datos?.notas
                     ),
+
+                registrarEnCaja,
+
+                metodoPago:
+                    registrarEnCaja
+                        ? validarMetodoPago(
+                            datos?.metodo_pago
+                        )
+                        : null,
 
                 items:
                     validarItems(

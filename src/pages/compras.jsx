@@ -77,7 +77,27 @@ const columnasDetalle = [
 ];
 
 
+
 function Compras() {
+
+    const [
+        cajaActual,
+        setCajaActual
+    ] = useState(null);
+
+
+    const [
+        registrarEnCaja,
+        setRegistrarEnCaja
+    ] = useState(false);
+
+
+    const [
+        metodoPago,
+        setMetodoPago
+    ] = useState(
+        "EFECTIVO"
+    );
 
     const [
         proveedores,
@@ -251,7 +271,8 @@ function Compras() {
 
                     const [
                         proveedoresData,
-                        historialData
+                        historialData,
+                        cajaData
                     ] =
                         await Promise.all([
 
@@ -267,7 +288,11 @@ function Compras() {
                                     pagina: 1,
                                     limite:
                                         LIMITE_HISTORIAL
-                                })
+                                }),
+                            window
+                                .electronAPI
+                                .caja
+                                .actual()
 
                         ]);
 
@@ -289,6 +314,16 @@ function Compras() {
                         historialData.totalPaginas
                     );
 
+                    setCajaActual(
+                        cajaData
+                    );
+
+                    setRegistrarEnCaja(
+                        Boolean(
+                            cajaData
+                        )
+                    );
+
 
                 } catch (error) {
 
@@ -304,6 +339,7 @@ function Compras() {
         iniciar();
 
     }, []);
+
 
 
     const cargarProveedor =
@@ -552,86 +588,88 @@ function Compras() {
 
 
     const cargarDesdeLista =
-    () => {
+        () => {
 
-        setItems(
-            (actuales) => {
+            setItems(
+                (actuales) => {
 
-                let nuevos = [
-                    ...actuales
-                ];
-
-
-                for (
-                    const pendiente
-                    of pendientes
-                ) {
-
-                    const indice =
-                        nuevos.findIndex(
-                            (item) =>
-                                item.producto_id ===
-                                pendiente.producto_id
-                        );
+                    let nuevos = [
+                        ...actuales
+                    ];
 
 
-                    if (indice >= 0) {
+                    for (
+                        const pendiente
+                        of pendientes
+                    ) {
 
-                        nuevos[indice] = {
-                            ...nuevos[indice],
+                        const indice =
+                            nuevos.findIndex(
+                                (item) =>
+                                    item.producto_id ===
+                                    pendiente.producto_id
+                            );
 
-                            cantidad:
-                                Math.max(
-                                    Number(
-                                        nuevos[indice]
-                                            .cantidad
+
+                        if (indice >= 0) {
+
+                            nuevos[indice] = {
+                                ...nuevos[indice],
+
+                                cantidad:
+                                    Math.max(
+                                        Number(
+                                            nuevos[indice]
+                                                .cantidad
+                                        ),
+                                        pendiente.cantidad
                                     ),
-                                    pendiente.cantidad
-                                ),
 
-                            lista_item_id:
-                                nuevos[indice]
-                                    .lista_item_id ||
-                                pendiente.lista_item_id
-                        };
+                                lista_item_id:
+                                    nuevos[indice]
+                                        .lista_item_id ||
+                                    pendiente.lista_item_id
+                            };
 
 
-                    } else {
+                        } else {
 
-                        nuevos.push({
+                            nuevos.push({
 
-                            producto_id:
-                                pendiente.producto_id,
+                                producto_id:
+                                    pendiente.producto_id,
 
-                            producto_nombre:
-                                pendiente.nombre,
+                                producto_nombre:
+                                    pendiente.nombre,
 
-                            producto_codigo:
-                                pendiente.codigo,
+                                producto_codigo:
+                                    pendiente.codigo,
 
-                            cantidad:
-                                pendiente.cantidad,
+                                cantidad:
+                                    pendiente.cantidad,
 
-                            costo_unitario:
-                                pendiente.ultimo_costo ??
-                                0,
+                                costo_unitario:
+                                    pendiente.ultimo_costo ??
+                                    0,
 
-                            lista_item_id:
-                                pendiente.lista_item_id
+                                lista_item_id:
+                                    pendiente.lista_item_id
 
-                        });
+                            });
+
+                        }
 
                     }
 
+
+                    return nuevos;
+
                 }
+            );
+
+        };
 
 
-                return nuevos;
-
-            }
-        );
-
-    };
 
 
     const cambiarItem =
@@ -743,6 +781,14 @@ function Compras() {
                             fecha,
 
                             notas,
+
+                            registrar_en_caja:
+                                registrarEnCaja,
+
+                            metodo_pago:
+                                registrarEnCaja
+                                    ? metodoPago
+                                    : null,
 
                             items:
                                 items.map(
@@ -874,12 +920,18 @@ function Compras() {
             }
 
 
+            const mensajeCaja =
+                compraDetalle.caja_id
+                    ? " También se generará el movimiento inverso en la caja actualmente abierta."
+                    : "";
+
+
             const confirmar =
                 await window
                     .electronAPI
                     .dialogos
                     .confirmar(
-                        `¿Revertir la compra #${compraDetalle.id}? El stock agregado será retirado.`
+                        `¿Revertir la compra #${compraDetalle.id}? El stock agregado será retirado.${mensajeCaja}`
                     );
 
 
@@ -979,6 +1031,36 @@ function Compras() {
                     <div className="form-field">
 
                         <label>
+                            Pago
+                        </label>
+
+                        <label>
+
+                            <input
+                                type="checkbox"
+                                checked={
+                                    registrarEnCaja
+                                }
+                                disabled={
+                                    !cajaActual
+                                }
+                                onChange={(event) =>
+                                    setRegistrarEnCaja(
+                                        event.target.checked
+                                    )
+                                }
+                            />
+
+                            {" "}
+                            Registrar pago en caja
+
+                        </label>
+
+                    </div>
+
+                    <div className="form-field">
+
+                        <label>
                             Proveedor
                         </label>
 
@@ -1022,6 +1104,65 @@ function Compras() {
                         </select>
 
                     </div>
+
+                    {registrarEnCaja && (
+
+                        <div className="form-field">
+
+                            <label>
+                                Método de pago
+                            </label>
+
+                            <select
+                                value={
+                                    metodoPago
+                                }
+                                onChange={(event) =>
+                                    setMetodoPago(
+                                        event.target.value
+                                    )
+                                }
+                            >
+
+                                <option value="EFECTIVO">
+                                    Efectivo
+                                </option>
+
+                                <option value="TRANSFERENCIA">
+                                    Transferencia
+                                </option>
+
+                                <option value="DEBITO">
+                                    Débito
+                                </option>
+
+                                <option value="CREDITO">
+                                    Crédito
+                                </option>
+
+                                <option value="QR">
+                                    QR
+                                </option>
+
+                                <option value="OTRO">
+                                    Otro
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    )}
+
+                    {!cajaActual && (
+
+                        <small>
+                            No hay una caja abierta.
+                            La compra puede registrarse,
+                            pero no afectará caja.
+                        </small>
+
+                    )}
 
 
                     <div className="form-field">
@@ -1409,6 +1550,33 @@ function Compras() {
                             : "Registrar compra"
                     }
                 </button>
+
+                <p>
+                    Pago en caja:{" "}
+
+                    <strong>
+                        {
+                            compraDetalle.caja_id
+                                ? `Caja #${compraDetalle.caja_id}`
+                                : "No registrado"
+                        }
+                    </strong>
+                </p>
+
+
+                {compraDetalle.metodo_pago && (
+
+                    <p>
+                        Método:{" "}
+
+                        <strong>
+                            {
+                                compraDetalle.metodo_pago
+                            }
+                        </strong>
+                    </p>
+
+                )}
 
             </section>
 

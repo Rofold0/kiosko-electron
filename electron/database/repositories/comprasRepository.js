@@ -15,6 +15,68 @@ const proveedorStmt =
             AND activo = 1
     `);
 
+const cajaAbiertaStmt =
+    db.prepare(`
+        SELECT
+            id,
+            fecha_apertura
+
+        FROM cajas
+
+        WHERE estado = 'ABIERTA'
+
+        LIMIT 1
+    `);
+
+const movimientoCajaCompraStmt =
+    db.prepare(`
+        INSERT INTO movimientos_caja (
+            tipo,
+            concepto,
+            monto,
+            fecha,
+
+            caja_id,
+            metodo_pago,
+
+            venta_id,
+            gasto_id,
+            compra_id,
+
+            movimiento_origen_id,
+
+            notas
+        )
+
+        VALUES (
+            ?, ?, ?, ?,
+            ?, ?,
+            NULL, NULL, ?,
+            ?,
+            ?
+        )
+
+        RETURNING id
+    `);
+
+const movimientoCompraOriginalStmt =
+    db.prepare(`
+        SELECT
+            id,
+            caja_id,
+            monto,
+            metodo_pago
+
+        FROM movimientos_caja
+
+        WHERE
+            compra_id = ?
+            AND tipo = 'COMPRA'
+
+        ORDER BY id ASC
+
+        LIMIT 1
+    `);
 
 const productoProveedorStmt =
     db.prepare(`
@@ -46,11 +108,15 @@ const crearCompraStmt =
             proveedor_id,
             fecha,
             total,
-            notas
+            notas,
+
+            metodo_pago,
+            caja_id
         )
 
         VALUES (
-            ?, ?, ?, ?
+            ?, ?, ?, ?,
+            ?, ?
         )
 
         RETURNING id
@@ -218,6 +284,10 @@ const listarComprasStmt =
             c.total,
             c.notas,
 
+            c.metodo_pago,
+            c.caja_id,
+            c.caja_reversion_id,
+
             p.nombre
                 AS proveedor_nombre,
 
@@ -286,6 +356,10 @@ const compraStmt =
             c.total,
             c.notas,
 
+            c.metodo_pago,
+            c.caja_id,
+            c.caja_reversion_id,
+
             p.nombre
                 AS proveedor_nombre,
 
@@ -345,6 +419,10 @@ const compraReversionStmt =
             c.total,
             c.estado,
 
+            c.metodo_pago,
+            c.caja_id,
+            c.caja_reversion_id,
+
             p.nombre
                 AS proveedor_nombre
 
@@ -391,7 +469,8 @@ const marcarCompraRevertidaStmt =
         SET
             estado = 'REVERTIDA',
             fecha_reversion = ?,
-            motivo_reversion = ?
+            motivo_reversion = ?,
+            caja_reversion_id = ?
 
         WHERE
             id = ?
@@ -476,6 +555,47 @@ const revertirCompraTransaction =
             compraReversionStmt.get(
                 compraId
             );
+
+        let cajaReversion =
+            null;
+
+        let movimientoCajaOriginal =
+            null;
+
+
+        if (
+            compra.caja_id !== null &&
+            compra.caja_id !== undefined
+        ) {
+
+            cajaReversion =
+                cajaAbiertaStmt.get();
+
+
+            if (!cajaReversion) {
+
+                throw new Error(
+                    "Debe abrir una caja para revertir una compra que afectó caja."
+                );
+
+            }
+
+
+            movimientoCajaOriginal =
+                movimientoCompraOriginalStmt.get(
+                    compra.id
+                );
+
+
+            if (!movimientoCajaOriginal) {
+
+                throw new Error(
+                    "No se encontró el movimiento de caja original de la compra."
+                );
+
+            }
+
+        }
 
 
         if (!compra) {
@@ -630,9 +750,9 @@ const revertirCompraTransaction =
             if (
                 item.lista_item_id !== null &&
                 item.lista_cantidad_anterior
-                    !== null &&
+                !== null &&
                 item.lista_comprado_anterior
-                    !== null
+                !== null
             ) {
 
                 const listaActual =
@@ -644,7 +764,7 @@ const revertirCompraTransaction =
                 if (
                     listaActual &&
                     listaActual.estado ===
-                        "PENDIENTE"
+                    "PENDIENTE"
                 ) {
 
                     /*
@@ -662,7 +782,7 @@ const revertirCompraTransaction =
                         compraCompleta
                             ? item.lista_cantidad_anterior
                             : item.lista_cantidad_anterior -
-                                item.cantidad;
+                            item.cantidad;
 
 
                     const compradoEsperado =
@@ -679,9 +799,9 @@ const revertirCompraTransaction =
 
                     if (
                         listaActual.cantidad ===
-                            cantidadEsperada &&
+                        cantidadEsperada &&
                         listaActual.comprado ===
-                            compradoEsperado
+                        compradoEsperado
                     ) {
 
                         restaurarListaItemStmt.run(
@@ -711,6 +831,35 @@ const revertirCompraTransaction =
             }
 
         }
+        if (
+            cajaReversion &&
+            movimientoCajaOriginal
+        ) {
+
+            movimientoCajaCompraStmt.run(
+
+                "REVERSA_COMPRA",
+
+                `Reversión compra #${compra.id} · ${compra.proveedor_nombre}`,
+
+                compra.total,
+
+                fechaReversion,
+
+                cajaReversion.id,
+
+                compra.metodo_pago,
+
+                compra.id,
+
+                movimientoCajaOriginal.id,
+
+                motivo
+
+            );
+
+        }
+
 
 
         const resultado =
@@ -719,6 +868,10 @@ const revertirCompraTransaction =
                 fechaReversion,
 
                 motivo,
+
+                cajaReversion
+                    ? cajaReversion.id
+                    : null,
 
                 compra.id
 
@@ -792,8 +945,78 @@ const registrarCompraTransaction =
         proveedorId,
         fecha,
         notas,
+        registrarEnCaja,
+        metodoPago,
         items
     }) => {
+
+        let caja =
+            null;
+
+
+        if (registrarEnCaja) {
+
+            caja =
+                cajaAbiertaStmt.get();
+
+
+            if (!caja) {
+
+                throw new Error(
+                    "Debe abrir una caja para registrar el pago de la compra."
+                );
+
+            }
+
+
+            if (!metodoPago) {
+
+                throw new Error(
+                    "Debe indicar el método de pago."
+                );
+
+            }
+
+
+            if (
+                new Date(fecha) <
+                new Date(
+                    caja.fecha_apertura
+                )
+            ) {
+
+                throw new Error(
+                    "La fecha de compra no puede ser anterior a la apertura de caja."
+                );
+
+            }
+
+        }
+        if (registrarEnCaja) {
+
+            movimientoCajaCompraStmt.run(
+
+                "COMPRA",
+
+                `Compra #${compra.id} · ${proveedor.nombre}`,
+
+                -total,
+
+                fecha,
+
+                caja.id,
+
+                metodoPago,
+
+                compra.id,
+
+                null,
+
+                notas
+
+            );
+
+        }
 
         const proveedor =
             proveedorStmt.get(
@@ -926,10 +1149,23 @@ const registrarCompraTransaction =
 
         const compra =
             crearCompraStmt.get(
+
                 proveedorId,
+
                 fecha,
+
                 total,
-                notas
+
+                notas,
+
+                registrarEnCaja
+                    ? metodoPago
+                    : null,
+
+                registrarEnCaja
+                    ? caja.id
+                    : null
+
             );
 
 
@@ -1047,6 +1283,7 @@ const registrarCompraTransaction =
             }
 
         }
+
 
 
         return obtenerCompraCompleta(
