@@ -419,14 +419,29 @@ function Precios() {
                             item.producto_id
                         );
 
-                setProveedoresProducto(
+
+                // PRODUCTO
+
+                setProducto(
+                    detalle.producto
+                );
+
+
+                // PROVEEDORES
+
+                const proveedores =
                     detalle.proveedores ||
-                    []
+                    [];
+
+
+                setProveedoresProducto(
+                    proveedores
                 );
 
 
                 const proveedorReferencia =
-                    detalle.proveedor_referencia;
+                    detalle.proveedor_referencia ||
+                    null;
 
 
                 setProveedorId(
@@ -438,59 +453,93 @@ function Precios() {
                         : ""
                 );
 
-                setProducto(
-                    detalle.producto
-                );
+
+                // REFERENCIAS
 
                 setCostoReferencia(
                     detalle.costo_referencia
                 );
 
+
                 setHistorial(
-                    detalle.historial
+                    detalle.historial ||
+                    []
                 );
 
 
-                if (detalle.vigente) {
+                /*
+                 * COSTO A PRECARGAR
+                 *
+                 * Prioridad:
+                 *
+                 * 1. ultimo_costo del proveedor
+                 * 2. costo de última compra
+                 * 3. costo del precio vigente
+                 * 4. cero
+                 */
 
-                    aplicarValores(
+                let costoInicial =
+                    0;
 
-                        detalle
-                            .vigente
-                            .costo,
 
-                        detalle
-                            .vigente
-                            .precio_venta
+                if (
+                    proveedorReferencia &&
+                    proveedorReferencia
+                        .ultimo_costo !== null &&
+                    proveedorReferencia
+                        .ultimo_costo !== undefined
+                ) {
 
-                    );
+                    costoInicial =
+                        proveedorReferencia
+                            .ultimo_costo;
 
 
                 } else if (
                     detalle
                         .costo_referencia
+                        ?.costo_unitario !==
+                    undefined
                 ) {
 
-                    const costoInicial =
+                    costoInicial =
                         detalle
                             .costo_referencia
                             .costo_unitario;
 
 
-                    aplicarValores(
-                        costoInicial,
-                        costoInicial
-                    );
+                } else if (
+                    detalle.vigente
+                ) {
 
-
-                } else {
-
-                    aplicarValores(
-                        0,
-                        0
-                    );
+                    costoInicial =
+                        detalle
+                            .vigente
+                            .costo;
 
                 }
+
+
+                /*
+                 * Si ya existe precio de venta,
+                 * lo conservamos.
+                 *
+                 * Si todavía no existe,
+                 * comenzamos venta = costo.
+                 */
+
+                const precioInicial =
+                    detalle.vigente
+                        ? detalle
+                            .vigente
+                            .precio_venta
+                        : costoInicial;
+
+
+                aplicarValores(
+                    costoInicial,
+                    precioInicial
+                );
 
 
                 setModoMargen(
@@ -517,71 +566,6 @@ function Precios() {
      * usando.
      */
 
-    let costoInicial =
-        0;
-
-
-    /*
-     * 1° costo guardado para el proveedor
-     * elegido.
-     */
-
-    if (
-        proveedorReferencia
-            ?.ultimo_costo !== null &&
-        proveedorReferencia
-            ?.ultimo_costo !== undefined
-    ) {
-
-        costoInicial =
-            proveedorReferencia
-                .ultimo_costo;
-
-
-        /*
-         * 2° costo de la última compra.
-         */
-
-    } else if (
-        detalle
-            .costo_referencia
-            ?.costo_unitario !==
-        undefined
-    ) {
-
-        costoInicial =
-            detalle
-                .costo_referencia
-                .costo_unitario;
-
-
-        /*
-         * 3° costo del precio vigente.
-         */
-
-    } else if (
-        detalle.vigente
-    ) {
-
-        costoInicial =
-            detalle
-                .vigente
-                .costo;
-
-    }
-
-    const precioInicial =
-        detalle.vigente
-            ? detalle
-                .vigente
-                .precio_venta
-            : costoInicial;
-
-
-    aplicarValores(
-        costoInicial,
-        precioInicial
-    );
 
     const cambiarCosto =
         (valor) => {
@@ -1285,62 +1269,67 @@ function Precios() {
 
                             <div className="price-grid">
 
+                                {proveedoresProducto.length > 0 && (
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Proveedor de referencia
+                                        </label>
+
+                                        <select
+                                            value={proveedorId}
+                                            onChange={(event) =>
+                                                cambiarProveedor(
+                                                    event.target.value
+                                                )
+                                            }
+                                        >
+
+                                            <option value="">
+                                                Sin proveedor
+                                            </option>
+
+
+                                            {proveedoresProducto.map(
+                                                (proveedor) => (
+
+                                                    <option
+                                                        key={
+                                                            proveedor.vinculo_id
+                                                        }
+                                                        value={
+                                                            proveedor.proveedor_id
+                                                        }
+                                                    >
+
+                                                        {
+                                                            proveedor.proveedor_nombre
+                                                        }
+
+                                                        {
+                                                            proveedor.ultimo_costo !==
+                                                                null
+                                                                ? ` · ${moneda.format(
+                                                                    proveedor.ultimo_costo
+                                                                )}`
+                                                                : " · sin costo"
+                                                        }
+
+                                                    </option>
+
+                                                )
+                                            )}
+
+                                        </select>
+
+                                    </div>
+
+                                )}
+
+
                                 <div className="form-field">
-                                    {proveedoresProducto.length > 0 && (
 
-                                        <div className="form-field">
-
-                                            <label>
-                                                Proveedor de referencia
-                                            </label>
-
-                                            <select
-                                                value={proveedorId}
-                                                onChange={(event) =>
-                                                    cambiarProveedor(
-                                                        event.target.value
-                                                    )
-                                                }
-                                            >
-
-                                                <option value="">
-                                                    Sin proveedor
-                                                </option>
-
-
-                                                {proveedoresProducto.map(
-                                                    (proveedor) => (
-
-                                                        <option
-                                                            key={
-                                                                proveedor.vinculo_id
-                                                            }
-                                                            value={
-                                                                proveedor.proveedor_id
-                                                            }
-                                                        >
-                                                            {
-                                                                proveedor.proveedor_nombre
-                                                            }
-
-                                                            {
-                                                                proveedor.ultimo_costo !==
-                                                                    null
-                                                                    ? ` · ${moneda.format(
-                                                                        proveedor.ultimo_costo
-                                                                    )}`
-                                                                    : " · sin costo"
-                                                            }
-                                                        </option>
-
-                                                    )
-                                                )}
-
-                                            </select>
-
-                                        </div>
-
-                                    )}
                                     <label>
                                         Costo $
                                     </label>
@@ -1352,77 +1341,6 @@ function Precios() {
                                         value={costo}
                                         onChange={(event) =>
                                             cambiarCosto(
-                                                event.target.value
-                                            )
-                                        }
-                                    />
-
-                                </div>
-
-
-                                <div className="form-field">
-
-                                    <label>
-                                        Ganancia %
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={
-                                            gananciaPorcentaje
-                                        }
-                                        onChange={(event) =>
-                                            cambiarPorcentaje(
-                                                event.target.value
-                                            )
-                                        }
-                                        disabled={
-                                            numero(costo) ===
-                                            0
-                                        }
-                                    />
-
-                                </div>
-
-
-                                <div className="form-field">
-
-                                    <label>
-                                        Ganancia $
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={
-                                            gananciaValor
-                                        }
-                                        onChange={(event) =>
-                                            cambiarGananciaValor(
-                                                event.target.value
-                                            )
-                                        }
-                                    />
-
-                                </div>
-
-
-                                <div className="form-field price-sale-field">
-
-                                    <label>
-                                        Precio de venta $
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={
-                                            precioVenta
-                                        }
-                                        onChange={(event) =>
-                                            cambiarPrecioVenta(
                                                 event.target.value
                                             )
                                         }
