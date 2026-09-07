@@ -235,6 +235,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
 },
 compras: {
+    revertir: (datos) =>
+    ipcRenderer.invoke(
+        "compras:revertir",
+        datos
+    ),
 
     crear: (datos) =>
         ipcRenderer.invoke(

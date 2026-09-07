@@ -269,6 +269,147 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 6,
+
+    name: "reversion-compras",
+
+    up(db) {
+
+        const columnasCompras =
+            db.pragma(
+                "table_info(compras)"
+            );
+
+
+        const tieneEstado =
+            columnasCompras.some(
+                (columna) =>
+                    columna.name === "estado"
+            );
+
+        const tieneFechaReversion =
+            columnasCompras.some(
+                (columna) =>
+                    columna.name ===
+                    "fecha_reversion"
+            );
+
+        const tieneMotivoReversion =
+            columnasCompras.some(
+                (columna) =>
+                    columna.name ===
+                    "motivo_reversion"
+            );
+
+
+        if (!tieneEstado) {
+
+            db.exec(`
+                ALTER TABLE compras
+                ADD COLUMN estado TEXT
+                NOT NULL
+                DEFAULT 'ACTIVA';
+            `);
+
+        }
+
+
+        if (!tieneFechaReversion) {
+
+            db.exec(`
+                ALTER TABLE compras
+                ADD COLUMN fecha_reversion TEXT;
+            `);
+
+        }
+
+
+        if (!tieneMotivoReversion) {
+
+            db.exec(`
+                ALTER TABLE compras
+                ADD COLUMN motivo_reversion TEXT;
+            `);
+
+        }
+
+
+        const columnasItems =
+            db.pragma(
+                "table_info(items_compra)"
+            );
+
+
+        const agregarColumna =
+            (
+                nombre,
+                sql
+            ) => {
+
+                const existe =
+                    columnasItems.some(
+                        (columna) =>
+                            columna.name === nombre
+                    );
+
+
+                if (!existe) {
+                    db.exec(sql);
+                }
+
+            };
+
+
+        agregarColumna(
+            "producto_proveedor_id",
+            `
+                ALTER TABLE items_compra
+                ADD COLUMN producto_proveedor_id
+                INTEGER
+                REFERENCES productos_proveedores(id);
+            `
+        );
+
+
+        agregarColumna(
+            "costo_anterior_proveedor",
+            `
+                ALTER TABLE items_compra
+                ADD COLUMN costo_anterior_proveedor REAL;
+            `
+        );
+
+
+        agregarColumna(
+            "lista_cantidad_anterior",
+            `
+                ALTER TABLE items_compra
+                ADD COLUMN lista_cantidad_anterior INTEGER;
+            `
+        );
+
+
+        agregarColumna(
+            "lista_comprado_anterior",
+            `
+                ALTER TABLE items_compra
+                ADD COLUMN lista_comprado_anterior INTEGER;
+            `
+        );
+
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_compras_estado_fecha
+            ON compras(
+                estado,
+                fecha DESC
+            );
+        `);
+
+    }
 }
 
 ];

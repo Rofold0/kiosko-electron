@@ -6,7 +6,8 @@ import {
     registrarCompra,
     listarPendientesProveedor,
     listarCompras,
-    obtenerCompra
+    obtenerCompra,
+    revertirCompra
 } from "../database/repositories/comprasRepository.js";
 
 
@@ -125,6 +126,29 @@ function validarFecha(valor) {
 
 }
 
+function validarMotivoReversion(
+    valor
+) {
+
+    const motivo =
+        valor?.trim();
+
+
+    if (
+        !motivo ||
+        motivo.length < 3
+    ) {
+
+        throw new Error(
+            "Debe indicar el motivo de la reversión."
+        );
+
+    }
+
+
+    return motivo;
+
+}
 
 function textoOpcional(valor) {
 
@@ -309,6 +333,28 @@ export function registerComprasHandlers() {
                     "ID de compra inválido."
                 )
             );
+
+        }
+    );
+
+    ipcMain.handle(
+        "compras:revertir",
+        (_event, datos) => {
+
+            return revertirCompra({
+
+                compraId:
+                    validarId(
+                        datos?.id,
+                        "ID de compra inválido."
+                    ),
+
+                motivo:
+                    validarMotivoReversion(
+                        datos?.motivo
+                    )
+
+            });
 
         }
     );

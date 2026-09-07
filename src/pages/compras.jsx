@@ -170,6 +170,22 @@ function Compras() {
         setGuardando
     ] = useState(false);
 
+    const [
+        motivoReversion,
+        setMotivoReversion
+    ] = useState("");
+
+
+    const [
+        revirtiendo,
+        setRevirtiendo
+    ] = useState(false);
+
+
+    const [
+        avisoReversion,
+        setAvisoReversion
+    ] = useState("");
 
     const mostrarError =
         async (error) => {
@@ -222,6 +238,8 @@ function Compras() {
             );
 
         };
+
+
 
 
     useEffect(() => {
@@ -807,6 +825,11 @@ function Compras() {
                 );
 
 
+                setMotivoReversion("");
+
+                setAvisoReversion("");
+
+
             } catch (error) {
 
                 await mostrarError(
@@ -1374,6 +1397,18 @@ function Compras() {
 
                 </div>
 
+                <span>
+                    #{compra.id}
+                    {" · "}
+                    {compra.proveedor_nombre}
+                    {" · "}
+                    {
+                        compra.estado === "REVERTIDA"
+                            ? "REVERTIDA"
+                            : "ACTIVA"
+                    }
+                </span>
+
             </section>
 
 
@@ -1413,6 +1448,19 @@ function Compras() {
                         </strong>
                     </p>
 
+                    <p>
+                        Estado:{" "}
+
+                        <strong>
+                            {
+                                compraDetalle.estado ===
+                                    "REVERTIDA"
+                                    ? "Revertida"
+                                    : "Activa"
+                            }
+                        </strong>
+                    </p>
+
 
                     <CrudTable
                         columns={
@@ -1422,14 +1470,114 @@ function Compras() {
                             compraDetalle.items
                         }
                         emptyMessage=
-                            "La compra no tiene productos."
+                        "La compra no tiene productos."
                     />
+
+                    {compraDetalle.estado === "ACTIVA" && (
+
+                        <div className="purchase-reversal">
+
+                            <h3>
+                                Revertir compra
+                            </h3>
+
+
+                            <p>
+                                Utilizá esta opción únicamente
+                                para corregir una compra cargada
+                                por error.
+                            </p>
+
+
+                            <div className="form-field">
+
+                                <label>
+                                    Motivo
+                                </label>
+
+                                <textarea
+                                    rows="3"
+                                    value={
+                                        motivoReversion
+                                    }
+                                    onChange={(e) =>
+                                        setMotivoReversion(
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder=
+                                    "Ej: compra cargada dos veces"
+                                />
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                disabled={
+                                    revirtiendo
+                                }
+                                onClick={
+                                    revertirCompraActual
+                                }
+                            >
+                                {
+                                    revirtiendo
+                                        ? "Revirtiendo..."
+                                        : "Revertir compra"
+                                }
+                            </button>
+
+                        </div>
+
+                    )}
 
                 </section>
 
             )}
+            {avisoReversion && (
+
+                <p className="purchase-reversal-message">
+                    {avisoReversion}
+                </p>
+
+            )}
+            {compraDetalle.estado === "REVERTIDA" && (
+
+                <div className="purchase-reverted-info">
+
+                    <p>
+                        Revertida el{" "}
+
+                        <strong>
+                            {
+                                new Date(
+                                    compraDetalle
+                                        .fecha_reversion
+                                )
+                                    .toLocaleString(
+                                        "es-AR"
+                                    )
+                            }
+                        </strong>
+                    </p>
+
+
+                    <p>
+                        Motivo:{" "}
+
+                        {
+                            compraDetalle
+                                .motivo_reversion
+                        }
+                    </p>
+
+                </div>
+
+            )}
 
         </div>
+
 
     );
 

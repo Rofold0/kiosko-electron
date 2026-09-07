@@ -63,13 +63,21 @@ const crearItemStmt =
             compra_id,
             producto_id,
             lista_item_id,
+            producto_proveedor_id,
+
             cantidad,
             costo_unitario,
-            subtotal
+            subtotal,
+
+            costo_anterior_proveedor,
+            lista_cantidad_anterior,
+            lista_comprado_anterior
         )
 
         VALUES (
-            ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?
         )
     `);
 
@@ -219,7 +227,11 @@ const listarComprasStmt =
             COALESCE(
                 SUM(ic.cantidad),
                 0
-            ) AS total_unidades
+            ) AS total_unidades,
+
+            c.estado,
+            c.fecha_reversion,
+            c.motivo_reversion,
 
         FROM compras c
 
@@ -275,7 +287,11 @@ const compraStmt =
             c.notas,
 
             p.nombre
-                AS proveedor_nombre
+                AS proveedor_nombre,
+
+            c.estado,
+            c.fecha_reversion,
+            c.motivo_reversion,
 
         FROM compras c
 
@@ -295,6 +311,10 @@ const itemsCompraStmt =
             ic.cantidad,
             ic.costo_unitario,
             ic.subtotal,
+            ic.producto_proveedor_id,
+            ic.costo_anterior_proveedor,
+            ic.lista_cantidad_anterior,
+            ic.lista_comprado_anterior,
 
             p.nombre
                 AS producto_nombre,
@@ -316,6 +336,419 @@ const itemsCompraStmt =
             p.nombre COLLATE NOCASE ASC
     `);
 
+const compraReversionStmt =
+    db.prepare(`
+        SELECT
+            c.id,
+            c.proveedor_id,
+            c.fecha,
+            c.total,
+            c.estado,
+
+            p.nombre
+                AS proveedor_nombre
+
+        FROM compras c
+
+        LEFT JOIN proveedores p
+            ON p.id = c.proveedor_id
+
+        WHERE c.id = ?
+    `);
+
+
+const itemsReversionStmt =
+    db.prepare(`
+        SELECT
+            ic.id,
+            ic.producto_id,
+            ic.lista_item_id,
+            ic.producto_proveedor_id,
+
+            ic.cantidad,
+            ic.costo_anterior_proveedor,
+            ic.lista_cantidad_anterior,
+            ic.lista_comprado_anterior,
+
+            p.nombre
+                AS producto_nombre,
+
+            p.stock_actual
+
+        FROM items_compra ic
+
+        INNER JOIN productos p
+            ON p.id = ic.producto_id
+
+        WHERE ic.compra_id = ?
+    `);
+
+
+const marcarCompraRevertidaStmt =
+    db.prepare(`
+        UPDATE compras
+
+        SET
+            estado = 'REVERTIDA',
+            fecha_reversion = ?,
+            motivo_reversion = ?
+
+        WHERE
+            id = ?
+            AND estado = 'ACTIVA'
+    `);
+
+
+const actualizarStockReversionStmt =
+    db.prepare(`
+        UPDATE productos
+
+        SET stock_actual = ?
+
+        WHERE id = ?
+    `);
+
+
+const compraPosteriorActivaStmt =
+    db.prepare(`
+        SELECT 1
+
+        FROM items_compra ic
+
+        INNER JOIN compras c
+            ON c.id = ic.compra_id
+
+        WHERE
+            c.proveedor_id = ?
+            AND ic.producto_id = ?
+            AND c.id > ?
+            AND c.estado = 'ACTIVA'
+
+        LIMIT 1
+    `);
+
+
+const restaurarCostoStmt =
+    db.prepare(`
+        UPDATE productos_proveedores
+
+        SET ultimo_costo = ?
+
+        WHERE id = ?
+    `);
+
+
+const listaItemActualStmt =
+    db.prepare(`
+        SELECT
+            i.id,
+            i.cantidad,
+            i.comprado,
+            l.estado
+
+        FROM items_lista_compras i
+
+        INNER JOIN lista_compras l
+            ON l.id = i.lista_id
+
+        WHERE i.id = ?
+    `);
+
+
+const restaurarListaItemStmt =
+    db.prepare(`
+        UPDATE items_lista_compras
+
+        SET
+            cantidad = ?,
+            comprado = ?
+
+        WHERE id = ?
+    `);
+
+const revertirCompraTransaction =
+    db.transaction(({
+        compraId,
+        motivo
+    }) => {
+
+        const compra =
+            compraReversionStmt.get(
+                compraId
+            );
+
+
+        if (!compra) {
+
+            throw new Error(
+                "La compra no existe."
+            );
+
+        }
+
+
+        if (
+            compra.estado ===
+            "REVERTIDA"
+        ) {
+
+            throw new Error(
+                "La compra ya fue revertida."
+            );
+
+        }
+
+
+        const items =
+            itemsReversionStmt.all(
+                compraId
+            );
+
+
+        if (items.length === 0) {
+
+            throw new Error(
+                "La compra no tiene productos."
+            );
+
+        }
+
+
+        // Primero validamos TODO.
+        // Todavía no modificamos nada.
+
+        for (const item of items) {
+
+            if (
+                item.stock_actual <
+                item.cantidad
+            ) {
+
+                throw new Error(
+                    `No se puede revertir la compra. ` +
+                    `${item.producto_nombre} tiene stock ${item.stock_actual} ` +
+                    `y sería necesario retirar ${item.cantidad}.`
+                );
+
+            }
+
+        }
+
+
+        const fechaReversion =
+            new Date()
+                .toISOString();
+
+
+        let listasNoRestauradas =
+            0;
+
+
+        for (const item of items) {
+
+            // STOCK
+
+            const stockAnterior =
+                item.stock_actual;
+
+
+            const stockNuevo =
+                stockAnterior -
+                item.cantidad;
+
+
+            actualizarStockReversionStmt.run(
+
+                stockNuevo,
+
+                item.producto_id
+
+            );
+
+
+            movimientoStockStmt.run(
+
+                item.producto_id,
+
+                "REVERSA_COMPRA",
+
+                -item.cantidad,
+
+                stockAnterior,
+
+                stockNuevo,
+
+                `Reversión compra #${compra.id}: ${motivo}`,
+
+                fechaReversion
+
+            );
+
+
+            // ULTIMO COSTO DEL PROVEEDOR
+
+            if (
+                item.producto_proveedor_id
+                !== null
+            ) {
+
+                const hayCompraPosterior =
+                    compraPosteriorActivaStmt.get(
+
+                        compra.proveedor_id,
+
+                        item.producto_id,
+
+                        compra.id
+
+                    );
+
+
+                /*
+                 * Sólo restauramos costo si
+                 * ninguna compra posterior
+                 * activa lo volvió a cambiar.
+                 */
+
+                if (!hayCompraPosterior) {
+
+                    restaurarCostoStmt.run(
+
+                        item.costo_anterior_proveedor,
+
+                        item.producto_proveedor_id
+
+                    );
+
+                }
+
+            }
+
+
+            // LISTA DE COMPRAS
+
+            if (
+                item.lista_item_id !== null &&
+                item.lista_cantidad_anterior
+                    !== null &&
+                item.lista_comprado_anterior
+                    !== null
+            ) {
+
+                const listaActual =
+                    listaItemActualStmt.get(
+                        item.lista_item_id
+                    );
+
+
+                if (
+                    listaActual &&
+                    listaActual.estado ===
+                        "PENDIENTE"
+                ) {
+
+                    /*
+                     * Calculamos cómo debería
+                     * haber quedado después
+                     * de la compra.
+                     */
+
+                    const compraCompleta =
+                        item.cantidad >=
+                        item.lista_cantidad_anterior;
+
+
+                    const cantidadEsperada =
+                        compraCompleta
+                            ? item.lista_cantidad_anterior
+                            : item.lista_cantidad_anterior -
+                                item.cantidad;
+
+
+                    const compradoEsperado =
+                        compraCompleta
+                            ? 1
+                            : 0;
+
+
+                    /*
+                     * Sólo restauramos si
+                     * nadie volvió a modificar
+                     * el ítem después.
+                     */
+
+                    if (
+                        listaActual.cantidad ===
+                            cantidadEsperada &&
+                        listaActual.comprado ===
+                            compradoEsperado
+                    ) {
+
+                        restaurarListaItemStmt.run(
+
+                            item.lista_cantidad_anterior,
+
+                            item.lista_comprado_anterior,
+
+                            item.lista_item_id
+
+                        );
+
+
+                    } else {
+
+                        listasNoRestauradas++;
+
+                    }
+
+
+                } else {
+
+                    listasNoRestauradas++;
+
+                }
+
+            }
+
+        }
+
+
+        const resultado =
+            marcarCompraRevertidaStmt.run(
+
+                fechaReversion,
+
+                motivo,
+
+                compra.id
+
+            );
+
+
+        if (
+            resultado.changes !== 1
+        ) {
+
+            throw new Error(
+                "No se pudo revertir la compra."
+            );
+
+        }
+
+
+        return {
+
+            compra:
+                obtenerCompraCompleta(
+                    compra.id
+                ),
+
+            listas_no_restauradas:
+                listasNoRestauradas
+
+        };
+
+    });
 
 function redondearMoneda(valor) {
 
@@ -436,11 +869,40 @@ const registrarCompraTransaction =
                         item.costoUnitario
                     );
 
+                let listaItem =
+                    null;
 
+
+                if (item.listaItemId !== null) {
+
+                    listaItem =
+                        listaItemStmt.get(
+                            item.listaItemId
+                        );
+
+
+                    if (
+                        !listaItem ||
+                        listaItem.estado !==
+                        "PENDIENTE" ||
+                        listaItem.comprado === 1 ||
+                        listaItem.producto_id !==
+                        item.productoId
+                    ) {
+
+                        throw new Error(
+                            "Un ítem de la lista de compras cambió antes de registrar la compra."
+                        );
+
+                    }
+
+                }
                 return {
                     ...item,
 
                     producto,
+
+                    listaItem,
 
                     subtotal
                 };
@@ -477,12 +939,29 @@ const registrarCompraTransaction =
         ) {
 
             crearItemStmt.run(
+
                 compra.id,
+
                 item.productoId,
+
                 item.listaItemId,
+
+                item.producto.vinculo_id,
+
                 item.cantidad,
+
                 item.costoUnitario,
-                item.subtotal
+
+                item.subtotal,
+
+                item.producto.ultimo_costo,
+
+                item.listaItem
+                    ?.cantidad ?? null,
+
+                item.listaItem
+                    ?.comprado ?? null
+
             );
 
 
@@ -533,10 +1012,10 @@ const registrarCompraTransaction =
                 if (
                     !listaItem ||
                     listaItem.estado !==
-                        "PENDIENTE" ||
+                    "PENDIENTE" ||
                     listaItem.comprado === 1 ||
                     listaItem.producto_id !==
-                        item.productoId
+                    item.productoId
                 ) {
 
                     throw new Error(
@@ -656,5 +1135,18 @@ export function obtenerCompra(id) {
     return obtenerCompraCompleta(
         id
     );
+
+}
+export function revertirCompra({
+    compraId,
+    motivo
+}) {
+
+    return revertirCompraTransaction({
+
+        compraId,
+        motivo
+
+    });
 
 }

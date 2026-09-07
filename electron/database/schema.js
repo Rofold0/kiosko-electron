@@ -172,22 +172,34 @@ CREATE INDEX IF NOT EXISTS
 );
 
 CREATE TABLE IF NOT EXISTS compras (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    proveedor_id INTEGER,
-    fecha        TEXT NOT NULL,
-    total        REAL NOT NULL DEFAULT 0,
-    notas        TEXT,
-    FOREIGN KEY (proveedor_id) REFERENCES proveedores (id)
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    proveedor_id     INTEGER,
+    fecha            TEXT NOT NULL,
+    total            REAL NOT NULL DEFAULT 0,
+    notas            TEXT,
+
+    estado           TEXT NOT NULL DEFAULT 'ACTIVA',
+    fecha_reversion  TEXT,
+    motivo_reversion TEXT,
+
+    FOREIGN KEY (proveedor_id)
+        REFERENCES proveedores(id)
 );
 
 CREATE TABLE IF NOT EXISTS items_compra (
-    id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    compra_id      INTEGER NOT NULL,
-    producto_id    INTEGER NOT NULL,
-    lista_item_id  INTEGER,
-    cantidad       INTEGER NOT NULL,
-    costo_unitario REAL NOT NULL,
-    subtotal       REAL NOT NULL,
+    id                       INTEGER PRIMARY KEY AUTOINCREMENT,
+    compra_id                INTEGER NOT NULL,
+    producto_id              INTEGER NOT NULL,
+    lista_item_id            INTEGER,
+    producto_proveedor_id    INTEGER,
+
+    cantidad                 INTEGER NOT NULL,
+    costo_unitario           REAL NOT NULL,
+    subtotal                 REAL NOT NULL,
+
+    costo_anterior_proveedor REAL,
+    lista_cantidad_anterior  INTEGER,
+    lista_comprado_anterior  INTEGER,
 
     FOREIGN KEY (compra_id)
         REFERENCES compras(id),
@@ -197,7 +209,10 @@ CREATE TABLE IF NOT EXISTS items_compra (
 
     FOREIGN KEY (lista_item_id)
         REFERENCES items_lista_compras(id)
-        ON DELETE SET NULL
+        ON DELETE SET NULL,
+
+    FOREIGN KEY (producto_proveedor_id)
+        REFERENCES productos_proveedores(id)
 );
 CREATE INDEX IF NOT EXISTS
 idx_compras_fecha
@@ -210,6 +225,13 @@ CREATE INDEX IF NOT EXISTS
 idx_compras_proveedor_fecha
 ON compras(
     proveedor_id,
+    fecha DESC
+);
+
+CREATE INDEX IF NOT EXISTS
+idx_compras_estado_fecha
+ON compras(
+    estado,
     fecha DESC
 );
 
