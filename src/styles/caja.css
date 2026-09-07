@@ -127,3 +127,41 @@
     }
 
 }
+.cash-reversal {
+    margin-top: 16px;
+
+    padding: 16px;
+
+    border:
+        1px solid #ccc;
+
+    border-radius: 8px;
+}
+
+
+.cash-reversal h3 {
+    margin-top: 0;
+}
+
+
+.cash-reversal textarea {
+    width: 100%;
+}
+
+
+.cash-reversal-actions {
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 12px;
+}
+
+
+@media (max-width: 600px) {
+
+    .cash-reversal-actions {
+        flex-direction: column;
+    }
+
+}

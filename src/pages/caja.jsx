@@ -71,6 +71,22 @@ function Caja() {
         setNotasMovimiento
     ] = useState("");
 
+    const [
+        movimientoReversion,
+        setMovimientoReversion
+    ] = useState(null);
+
+
+    const [
+        motivoReversionManual,
+        setMotivoReversionManual
+    ] = useState("");
+
+
+    const [
+        revirtiendoManual,
+        setRevirtiendoManual
+    ] = useState(false);
 
     const [
         efectivoReal,
@@ -288,21 +304,94 @@ function Caja() {
         };
 
 
-    const revertirManual =
-        async (movimiento) => {
+    const iniciarReversionManual =
+        (movimiento) => {
+
+            setMovimientoReversion(
+                movimiento
+            );
+
+            setMotivoReversionManual(
+                ""
+            );
+
+        };
+
+
+    const cancelarReversionManual =
+        () => {
+
+            if (revirtiendoManual) {
+                return;
+            }
+
+
+            setMovimientoReversion(
+                null
+            );
+
+            setMotivoReversionManual(
+                ""
+            );
+
+        };
+
+
+    const confirmarReversionManual =
+        async () => {
+
+            if (
+                !movimientoReversion ||
+                revirtiendoManual
+            ) {
+
+                return;
+
+            }
+
 
             const motivo =
-                window.prompt(
-                    "Motivo de la reversión"
-                );
+                motivoReversionManual
+                    .trim();
 
 
             if (
-                !motivo ||
-                motivo.trim().length < 3
+                motivo.length < 3
             ) {
+
+                await window
+                    .electronAPI
+                    .dialogos
+                    .error(
+                        "Debe indicar el motivo de la reversión."
+                    );
+
+                return;
+
+            }
+
+
+            const confirmar =
+                await window
+                    .electronAPI
+                    .dialogos
+                    .confirmar(
+                        `¿Revertir el movimiento #${movimientoReversion.id} por ${moneda.format(
+                            Math.abs(
+                                movimientoReversion.monto
+                            )
+                        )}?`
+                    );
+
+
+            if (!confirmar) {
                 return;
             }
+
+
+            setRevirtiendoManual(
+                true
+            );
 
 
             try {
@@ -313,12 +402,20 @@ function Caja() {
                     .revertirManual({
 
                         id:
-                            movimiento.id,
+                            movimientoReversion.id,
 
-                        motivo:
-                            motivo.trim()
+                        motivo
 
                     });
+
+
+                setMovimientoReversion(
+                    null
+                );
+
+                setMotivoReversionManual(
+                    ""
+                );
 
 
                 await cargarCaja();
@@ -328,6 +425,13 @@ function Caja() {
 
                 await mostrarError(
                     error
+                );
+
+
+            } finally {
+
+                setRevirtiendoManual(
+                    false
                 );
 
             }
@@ -398,7 +502,7 @@ function Caja() {
 
     const diferenciaActual =
         caja &&
-        efectivoReal !== ""
+            efectivoReal !== ""
             ? Number(
                 efectivoReal
             ) -
@@ -825,16 +929,16 @@ function Caja() {
                                                     {
                                                         (
                                                             item.tipo ===
-                                                                "INGRESO_MANUAL" ||
+                                                            "INGRESO_MANUAL" ||
                                                             item.tipo ===
-                                                                "EGRESO_MANUAL"
+                                                            "EGRESO_MANUAL"
                                                         ) &&
                                                         !item.revertido && (
 
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    revertirManual(
+                                                                    iniciarReversionManual(
                                                                         item
                                                                     )
                                                                 }
@@ -857,6 +961,105 @@ function Caja() {
                             </table>
 
                         </div>
+
+                        {movimientoReversion && (
+
+                            <div className="cash-reversal">
+
+                                <h3>
+                                    Revertir movimiento manual
+                                </h3>
+
+
+                                <p>
+                                    Movimiento:{" "}
+
+                                    <strong>
+                                        #{movimientoReversion.id}
+                                    </strong>
+                                </p>
+
+
+                                <p>
+                                    {
+                                        movimientoReversion
+                                            .concepto
+                                    }
+
+                                    {" · "}
+
+                                    <strong>
+                                        {
+                                            moneda.format(
+                                                movimientoReversion
+                                                    .monto
+                                            )
+                                        }
+                                    </strong>
+                                </p>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Motivo de la reversión
+                                    </label>
+
+                                    <textarea
+                                        rows="3"
+                                        value={
+                                            motivoReversionManual
+                                        }
+                                        onChange={(event) =>
+                                            setMotivoReversionManual(
+                                                event.target.value
+                                            )
+                                        }
+                                        placeholder="Ej: movimiento cargado por error"
+                                        disabled={
+                                            revirtiendoManual
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <div className="cash-reversal-actions">
+
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            revirtiendoManual
+                                        }
+                                        onClick={
+                                            confirmarReversionManual
+                                        }
+                                    >
+                                        {
+                                            revirtiendoManual
+                                                ? "Revirtiendo..."
+                                                : "Confirmar reversión"
+                                        }
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            revirtiendoManual
+                                        }
+                                        onClick={
+                                            cancelarReversionManual
+                                        }
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        )}
 
                     </section>
 
@@ -908,19 +1111,19 @@ function Caja() {
                         {diferenciaActual !==
                             null && (
 
-                            <p>
-                                Diferencia:{" "}
+                                <p>
+                                    Diferencia:{" "}
 
-                                <strong>
-                                    {
-                                        moneda.format(
-                                            diferenciaActual
-                                        )
-                                    }
-                                </strong>
-                            </p>
+                                    <strong>
+                                        {
+                                            moneda.format(
+                                                diferenciaActual
+                                            )
+                                        }
+                                    </strong>
+                                </p>
 
-                        )}
+                            )}
 
 
                         <button
@@ -977,16 +1180,16 @@ function Caja() {
                             {item.estado ===
                                 "CERRADA" && (
 
-                                <span>
-                                    Diferencia:{" "}
-                                    {
-                                        moneda.format(
-                                            item.diferencia
-                                        )
-                                    }
-                                </span>
+                                    <span>
+                                        Diferencia:{" "}
+                                        {
+                                            moneda.format(
+                                                item.diferencia
+                                            )
+                                        }
+                                    </span>
 
-                            )}
+                                )}
 
                         </div>
 

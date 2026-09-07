@@ -224,29 +224,40 @@ export function registerCajaHandlers() {
 
 
     ipcMain.handle(
-        "caja:revertir-manual",
-        (_event, datos) => {
+    "caja:revertir-manual",
+    (_event, datos) => {
 
-            const motivo =
-                texto(
-                    datos?.motivo,
-                    true
-                );
+        const motivo =
+            datos
+                ?.motivo
+                ?.trim();
 
 
-            return revertirMovimientoManual({
+        if (
+            !motivo ||
+            motivo.length < 3
+        ) {
 
-                movimientoId:
-                    validarId(
-                        datos?.id
-                    ),
-
-                motivo
-
-            });
+            throw new Error(
+                "Debe indicar el motivo de la reversión."
+            );
 
         }
-    );
+
+
+        return revertirMovimientoManual({
+
+            movimientoId:
+                validarId(
+                    datos?.id
+                ),
+
+            motivo
+
+        });
+
+    }
+);
 
 
     ipcMain.handle(
