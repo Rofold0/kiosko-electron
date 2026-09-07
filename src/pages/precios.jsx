@@ -1268,7 +1268,6 @@ function Precios() {
 
 
                             <div className="price-grid">
-
                                 {proveedoresProducto.length > 0 && (
 
                                     <div className="form-field">
@@ -1302,7 +1301,6 @@ function Precios() {
                                                             proveedor.proveedor_id
                                                         }
                                                     >
-
                                                         {
                                                             proveedor.proveedor_nombre
                                                         }
@@ -1315,7 +1313,6 @@ function Precios() {
                                                                 )}`
                                                                 : " · sin costo"
                                                         }
-
                                                     </option>
 
                                                 )
@@ -1326,21 +1323,91 @@ function Precios() {
                                     </div>
 
                                 )}
+                                <div className="form-field">
+                                    <label>
+                                    Costo $
+                                </label>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={costo}
+                                    onChange={(event) =>
+                                        cambiarCosto(
+                                            event.target.value
+                                        )
+                                    }
+                                />
+                                    </div>
+
+                                
+
 
 
                                 <div className="form-field">
 
                                     <label>
-                                        Costo $
+                                        Ganancia %
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={
+                                            gananciaPorcentaje
+                                        }
+                                        onChange={(event) =>
+                                            cambiarPorcentaje(
+                                                event.target.value
+                                            )
+                                        }
+                                        disabled={
+                                            numero(costo) ===
+                                            0
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Ganancia $
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={
+                                            gananciaValor
+                                        }
+                                        onChange={(event) =>
+                                            cambiarGananciaValor(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <div className="form-field price-sale-field">
+
+                                    <label>
+                                        Precio de venta $
                                     </label>
 
                                     <input
                                         type="number"
                                         min="0"
                                         step="0.01"
-                                        value={costo}
+                                        value={
+                                            precioVenta
+                                        }
                                         onChange={(event) =>
-                                            cambiarCosto(
+                                            cambiarPrecioVenta(
                                                 event.target.value
                                             )
                                         }
@@ -1441,143 +1508,145 @@ function Precios() {
 
             {/* HISTORIAL */}
 
-            {producto && (
+            {
+                producto && (
 
-                <section className="price-history">
+                    <section className="price-history">
 
-                    <h2>
-                        Historial de precios
-                    </h2>
-
-
-                    <div className="price-history-wrapper">
-
-                        <table className="price-history-table">
-
-                            <thead>
-
-                                <tr>
-                                    <th>Desde</th>
-                                    <th>Hasta</th>
-                                    <th>Costo</th>
-                                    <th>Ganancia $</th>
-                                    <th>Ganancia %</th>
-                                    <th>Venta</th>
-                                </tr>
-
-                            </thead>
+                        <h2>
+                            Historial de precios
+                        </h2>
 
 
-                            <tbody>
+                        <div className="price-history-wrapper">
 
-                                {
-                                    historial.length ===
-                                        0 ? (
+                            <table className="price-history-table">
 
-                                        <tr>
+                                <thead>
 
-                                            <td
-                                                colSpan="6"
-                                            >
-                                                Sin historial.
-                                            </td>
+                                    <tr>
+                                        <th>Desde</th>
+                                        <th>Hasta</th>
+                                        <th>Costo</th>
+                                        <th>Ganancia $</th>
+                                        <th>Ganancia %</th>
+                                        <th>Venta</th>
+                                    </tr>
 
-                                        </tr>
+                                </thead>
 
-                                    ) : (
 
-                                        historial.map(
-                                            (item) => (
+                                <tbody>
 
-                                                <tr
-                                                    key={
-                                                        item.id
-                                                    }
+                                    {
+                                        historial.length ===
+                                            0 ? (
+
+                                            <tr>
+
+                                                <td
+                                                    colSpan="6"
                                                 >
+                                                    Sin historial.
+                                                </td>
 
-                                                    <td>
-                                                        {
-                                                            new Date(
-                                                                item.fecha_desde
-                                                            )
-                                                                .toLocaleString(
-                                                                    "es-AR"
-                                                                )
+                                            </tr>
+
+                                        ) : (
+
+                                            historial.map(
+                                                (item) => (
+
+                                                    <tr
+                                                        key={
+                                                            item.id
                                                         }
-                                                    </td>
+                                                    >
 
-
-                                                    <td>
-                                                        {
-                                                            item.fecha_hasta
-                                                                ? new Date(
-                                                                    item.fecha_hasta
+                                                        <td>
+                                                            {
+                                                                new Date(
+                                                                    item.fecha_desde
                                                                 )
                                                                     .toLocaleString(
                                                                         "es-AR"
                                                                     )
-                                                                : "Vigente"
-                                                        }
-                                                    </td>
+                                                            }
+                                                        </td>
 
 
-                                                    <td>
-                                                        {
-                                                            moneda.format(
-                                                                item.costo
-                                                            )
-                                                        }
-                                                    </td>
+                                                        <td>
+                                                            {
+                                                                item.fecha_hasta
+                                                                    ? new Date(
+                                                                        item.fecha_hasta
+                                                                    )
+                                                                        .toLocaleString(
+                                                                            "es-AR"
+                                                                        )
+                                                                    : "Vigente"
+                                                            }
+                                                        </td>
 
 
-                                                    <td>
-                                                        {
-                                                            moneda.format(
-                                                                item.ganancia_valor
-                                                            )
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            item.ganancia_porcentaje ===
-                                                                null
-                                                                ? "—"
-                                                                : `${item.ganancia_porcentaje}%`
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        <strong>
+                                                        <td>
                                                             {
                                                                 moneda.format(
-                                                                    item.precio_venta
+                                                                    item.costo
                                                                 )
                                                             }
-                                                        </strong>
-                                                    </td>
+                                                        </td>
 
-                                                </tr>
 
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.ganancia_valor
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                item.ganancia_porcentaje ===
+                                                                    null
+                                                                    ? "—"
+                                                                    : `${item.ganancia_porcentaje}%`
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            <strong>
+                                                                {
+                                                                    moneda.format(
+                                                                        item.precio_venta
+                                                                    )
+                                                                }
+                                                            </strong>
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
                                             )
+
                                         )
+                                    }
 
-                                    )
-                                }
+                                </tbody>
 
-                            </tbody>
+                            </table>
 
-                        </table>
+                        </div>
 
-                    </div>
+                    </section>
 
-                </section>
+                )
+            }
 
-            )}
-
-        </div>
+        </div >
 
     );
 
