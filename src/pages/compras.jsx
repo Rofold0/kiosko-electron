@@ -1551,32 +1551,7 @@ function Compras() {
                     }
                 </button>
 
-                <p>
-                    Pago en caja:{" "}
-
-                    <strong>
-                        {
-                            compraDetalle.caja_id
-                                ? `Caja #${compraDetalle.caja_id}`
-                                : "No registrado"
-                        }
-                    </strong>
-                </p>
-
-
-                {compraDetalle.metodo_pago && (
-
-                    <p>
-                        Método:{" "}
-
-                        <strong>
-                            {
-                                compraDetalle.metodo_pago
-                            }
-                        </strong>
-                    </p>
-
-                )}
+                
 
             </section>
 
@@ -1725,8 +1700,33 @@ function Compras() {
                             )}
                         </strong>
                     </p>
+                    <p>
+                    Pago en caja:{" "}
+
+                    <strong>
+                        {
+                            compraDetalle.caja_id
+                                ? `Caja #${compraDetalle.caja_id}`
+                                : "No registrado"
+                        }
+                    </strong>
+                </p>
 
 
+                {compraDetalle.metodo_pago && (
+
+                    <p>
+                        Método:{" "}
+
+                        <strong>
+                            {
+                                compraDetalle.metodo_pago
+                            }
+                        </strong>
+                    </p>
+
+                )}
+                
                     <p>
                         Estado:{" "}
                         <strong>
