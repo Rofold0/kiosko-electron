@@ -1121,6 +1121,31 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 12,
+
+    name: "reportes-indices",
+
+    up(db) {
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_compras_estado_fecha
+            ON compras(
+                estado,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_fecha
+            ON movimientos_caja(
+                fecha DESC
+            );
+        `);
+
+    }
 }
 ];
 
@@ -1169,5 +1194,6 @@ export function runMigrations(db) {
         );
 
     }
+    
 
 }

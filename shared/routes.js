@@ -11,5 +11,6 @@ export const ROUTES = {
     precios: "/precios",
     ventas: "/ventas",
     caja: "/caja",
-    gastos: "/gastos"
+    gastos: "/gastos",
+    reportes: "/reportes"
 };

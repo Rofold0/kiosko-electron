@@ -13,6 +13,7 @@ import Precios from "./pages/precios";
 import Ventas from "./pages/ventas";
 import Caja from "./pages/caja";
 import Gastos from "./pages/gastos";
+import Reportes from "./pages/reportes";
 
 function NavegacionElectron() {
 
@@ -104,6 +105,10 @@ function App() {
         <Route
           path={ROUTES.gastos}
           element={<Gastos />}
+        />
+        <Route
+          path={ROUTES.reportes}
+          element={<Reportes />}
         />
         <Route
           path="*"

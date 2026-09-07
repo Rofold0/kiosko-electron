@@ -406,6 +406,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Reportes"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.reportes
+                        )
+                    }
+                />
 
             </div>
 

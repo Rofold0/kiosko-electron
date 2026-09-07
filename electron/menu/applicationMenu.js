@@ -28,20 +28,19 @@ export function createMenu(mainWindow) {
                 }
             ]
         },
-
         {
-            label: "Gestión",
+            label: "Dashboard",
+
+            click() {
+                navigateTo(
+                    ROUTES.dashboard
+                );
+            }
+
+        },
+        {
+            label: "Administración",
             submenu: [
-                {
-                    label: "Dashboard",
-
-                    click() {
-                        navigateTo(
-                            ROUTES.dashboard
-                        );
-                    }
-                },
-
                 {
                     label: "Categorías",
 
@@ -50,9 +49,7 @@ export function createMenu(mainWindow) {
                             ROUTES.categorias
                         );
                     }
-                },
-
-                {
+                }, {
                     label: "Subcategorías",
 
                     click() {
@@ -92,6 +89,14 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+            ]
+        },
+        {
+            label: "Gestión",
+            submenu: [
+
+
+
                 {
                     label: "Proveedores",
 
@@ -158,6 +163,23 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+            ]
+        },
+        {
+            label: "Reportes",
+            submenu: [
+                {
+                    label: "Reportes",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.reportes
+                        );
+
+                    }
+                },
+
             ]
         }
     ];

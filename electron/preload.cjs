@@ -429,6 +429,15 @@ gastos: {
         )
 
 },
+reportes: {
+
+    dashboard: (filtros) =>
+        ipcRenderer.invoke(
+            "reportes:dashboard",
+            filtros
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

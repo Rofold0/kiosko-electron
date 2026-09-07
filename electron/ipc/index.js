@@ -35,6 +35,9 @@ import {
 import {
     registerGastosHandlers
 } from "./gastos.js";
+import {
+    registerReportesHandlers
+} from "./reportes.js";
 export function registerIpcHandlers() {
 
     registerCategoriasHandlers();
@@ -58,6 +61,8 @@ export function registerIpcHandlers() {
     registerCajaHandlers();
 
     registerGastosHandlers();
+
+    registerReportesHandlers();
 
     registerDialogosHandlers();
 
