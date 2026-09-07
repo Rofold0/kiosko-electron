@@ -228,12 +228,6 @@ ON compras(
     fecha DESC
 );
 
-CREATE INDEX IF NOT EXISTS
-idx_compras_estado_fecha
-ON compras(
-    estado,
-    fecha DESC
-);
 
 
 CREATE INDEX IF NOT EXISTS
