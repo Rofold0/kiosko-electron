@@ -20,6 +20,9 @@ import {
 import {
     registerProveedoresHandlers
 } from "./proveedores.js";
+import {
+    registerComprasHandlers
+} from "./compras.js";
 export function registerIpcHandlers() {
 
     registerCategoriasHandlers();
@@ -33,6 +36,8 @@ export function registerIpcHandlers() {
     registerListaComprasHandlers();
     
     registerProveedoresHandlers();
+
+    registerComprasHandlers();
 
     registerDialogosHandlers();
 

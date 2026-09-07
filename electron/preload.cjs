@@ -234,6 +234,33 @@ contextBridge.exposeInMainWorld("electronAPI", {
         )
 
 },
+compras: {
+
+    crear: (datos) =>
+        ipcRenderer.invoke(
+            "compras:crear",
+            datos
+        ),
+
+    pendientesProveedor: (proveedorId) =>
+        ipcRenderer.invoke(
+            "compras:pendientes-proveedor",
+            proveedorId
+        ),
+
+    listar: (filtros) =>
+        ipcRenderer.invoke(
+            "compras:listar",
+            filtros
+        ),
+
+    obtener: (id) =>
+        ipcRenderer.invoke(
+            "compras:obtener",
+            id
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

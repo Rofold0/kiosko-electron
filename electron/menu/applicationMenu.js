@@ -103,6 +103,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Compras",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.compras
+                        );
+
+                    }
+                },
             ]
         }
     ];

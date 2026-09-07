@@ -194,6 +194,81 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 5,
+
+    name: "compras-integracion-lista-indices",
+
+    up(db) {
+
+        const columnas =
+            db.pragma(
+                "table_info(items_compra)"
+            );
+
+
+        const tieneListaItem =
+            columnas.some(
+                (columna) =>
+                    columna.name ===
+                    "lista_item_id"
+            );
+
+
+        if (!tieneListaItem) {
+
+            db.exec(`
+                ALTER TABLE items_compra
+
+                ADD COLUMN lista_item_id
+                    INTEGER
+                    REFERENCES items_lista_compras(id)
+                    ON DELETE SET NULL;
+            `);
+
+        }
+
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_compras_fecha
+            ON compras(
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_compras_proveedor_fecha
+            ON compras(
+                proveedor_id,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_compra_compra
+            ON items_compra(
+                compra_id
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_compra_producto
+            ON items_compra(
+                producto_id
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_compra_lista_item
+            ON items_compra(
+                lista_item_id
+            )
+            WHERE lista_item_id IS NOT NULL;
+        `);
+
+    }
 }
 
 ];

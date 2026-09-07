@@ -184,12 +184,56 @@ CREATE TABLE IF NOT EXISTS items_compra (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     compra_id      INTEGER NOT NULL,
     producto_id    INTEGER NOT NULL,
+    lista_item_id  INTEGER,
     cantidad       INTEGER NOT NULL,
     costo_unitario REAL NOT NULL,
     subtotal       REAL NOT NULL,
-    FOREIGN KEY (compra_id) REFERENCES compras (id),
-    FOREIGN KEY (producto_id) REFERENCES productos (id)
+
+    FOREIGN KEY (compra_id)
+        REFERENCES compras(id),
+
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id),
+
+    FOREIGN KEY (lista_item_id)
+        REFERENCES items_lista_compras(id)
+        ON DELETE SET NULL
 );
+CREATE INDEX IF NOT EXISTS
+idx_compras_fecha
+ON compras(
+    fecha DESC
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_compras_proveedor_fecha
+ON compras(
+    proveedor_id,
+    fecha DESC
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_items_compra_compra
+ON items_compra(
+    compra_id
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_items_compra_producto
+ON items_compra(
+    producto_id
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_items_compra_lista_item
+ON items_compra(
+    lista_item_id
+)
+WHERE lista_item_id IS NOT NULL;
 
 
 -- ============================================================================
