@@ -291,7 +291,7 @@ const compraStmt =
 
             c.estado,
             c.fecha_reversion,
-            c.motivo_reversion,
+            c.motivo_reversion
 
         FROM compras c
 
