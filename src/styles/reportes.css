@@ -203,3 +203,45 @@
     }
 
 }
+.report-compare-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(160px, 1fr)
+        );
+
+    gap: 10px;
+}
+
+
+.report-compare-card {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    padding: 14px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 8px;
+}
+
+
+.report-compare-card strong {
+    font-size: 1.15rem;
+}
+
+
+.report-compare-card small {
+    opacity: 0.75;
+}
+
+
+.report-compare-card b {
+    margin-top: 4px;
+}

@@ -130,7 +130,56 @@ function mesTexto(valor) {
         .format(fecha);
 
 }
+const DIAS =
+    [
+        "Domingo",
+        "Lunes",
+        "Martes",
+        "Miércoles",
+        "Jueves",
+        "Viernes",
+        "Sábado"
+    ];
 
+
+function diaTexto(
+    numeroDia
+) {
+
+    return (
+        DIAS[
+        Number(numeroDia)
+        ] ||
+        "—"
+    );
+
+}
+
+
+function porcentajeTexto(
+    valor
+) {
+
+    if (
+        valor === null ||
+        valor === undefined
+    ) {
+
+        return "Nuevo";
+
+    }
+
+
+    const numero =
+        Number(valor);
+
+
+    return `${numero > 0
+        ? "+"
+        : ""
+        }${numero.toFixed(1)}%`;
+
+}
 
 function Reportes() {
 
@@ -488,6 +537,108 @@ function Reportes() {
                             </strong>
 
                         </article>
+                        <article className="report-stat">
+
+                            <span>
+                                Margen bruto
+                            </span>
+
+                            <strong>
+                                {
+                                    Number(
+                                        resumen
+                                            .margen_porcentaje
+                                    )
+                                        .toFixed(1)
+                                }%
+                            </strong>
+
+                            <small>
+                                {
+                                    moneda.format(
+                                        resumen
+                                            .margen_bruto
+                                    )
+                                }
+                            </small>
+
+                        </article>
+
+
+                        <article className="report-stat">
+
+                            <span>
+                                Día más fuerte
+                            </span>
+
+                            <strong>
+                                {
+                                    diaTexto(
+                                        resumen
+                                            .dia_fuerte
+                                            ?.dia
+                                    )
+                                }
+                            </strong>
+
+                            <small>
+                                {
+                                    resumen
+                                        .dia_fuerte
+                                        ?.unidades ||
+                                    0
+                                } unidades
+                            </small>
+
+                        </article>
+
+
+                        <article className="report-stat">
+
+                            <span>
+                                Categoría líder
+                            </span>
+
+                            <strong>
+                                {
+                                    resumen
+                                        .categoria_lider
+                                        ?.categoria ||
+                                    "—"
+                                }
+                            </strong>
+
+                            <small>
+                                {
+                                    resumen
+                                        .categoria_lider
+                                        ?.unidades ||
+                                    0
+                                } unidades
+                            </small>
+
+                        </article>
+
+                        <article className="report-stat">
+
+                            <span>
+                                Vs. período anterior
+                            </span>
+
+                            <strong>
+                                {
+                                    porcentajeTexto(
+                                        resumen
+                                            .variacion_facturacion
+                                    )
+                                }
+                            </strong>
+
+                            <small>
+                                facturación
+                            </small>
+
+                        </article>
 
                     </div>
 
@@ -609,6 +760,559 @@ function Reportes() {
 
                     </section>
 
+                    <section className="report-panel">
+
+                        <h2>
+                            Comparativa con período anterior
+                        </h2>
+
+                        <p>
+                            Compara el rango seleccionado con los mismos días inmediatamente anteriores.
+                        </p>
+
+
+                        <div className="report-compare-grid">
+
+                            {[
+                                {
+                                    nombre:
+                                        "Facturación",
+
+                                    campo:
+                                        "facturacion",
+
+                                    formato:
+                                        moneda.format
+                                            .bind(moneda)
+                                },
+
+                                {
+                                    nombre:
+                                        "Ventas",
+
+                                    campo:
+                                        "ventas",
+
+                                    formato:
+                                        numero.format
+                                            .bind(numero)
+                                },
+
+                                {
+                                    nombre:
+                                        "Unidades",
+
+                                    campo:
+                                        "unidades",
+
+                                    formato:
+                                        numero.format
+                                            .bind(numero)
+                                },
+
+                                {
+                                    nombre:
+                                        "Margen",
+
+                                    campo:
+                                        "margen_bruto",
+
+                                    formato:
+                                        moneda.format
+                                            .bind(moneda)
+                                },
+
+                                {
+                                    nombre:
+                                        "Gastos",
+
+                                    campo:
+                                        "gastos",
+
+                                    formato:
+                                        moneda.format
+                                            .bind(moneda)
+                                },
+
+                                {
+                                    nombre:
+                                        "Resultado",
+
+                                    campo:
+                                        "resultado",
+
+                                    formato:
+                                        moneda.format
+                                            .bind(moneda)
+                                }
+
+                            ].map(
+                                (metrica) => (
+
+                                    <article
+                                        key={
+                                            metrica.campo
+                                        }
+                                        className="report-compare-card"
+                                    >
+
+                                        <span>
+                                            {
+                                                metrica.nombre
+                                            }
+                                        </span>
+
+
+                                        <strong>
+                                            {
+                                                metrica.formato(
+                                                    datos
+                                                        .comparativa
+                                                        .actual[
+                                                    metrica.campo
+                                                    ] ||
+                                                    0
+                                                )
+                                            }
+                                        </strong>
+
+
+                                        <small>
+                                            Anterior:{" "}
+
+                                            {
+                                                metrica.formato(
+                                                    datos
+                                                        .comparativa
+                                                        .anterior[
+                                                    metrica.campo
+                                                    ] ||
+                                                    0
+                                                )
+                                            }
+                                        </small>
+
+
+                                        <b>
+                                            {
+                                                porcentajeTexto(
+                                                    datos
+                                                        .comparativa
+                                                        .variacion[
+                                                    metrica.campo
+                                                    ]
+                                                )
+                                            }
+                                        </b>
+
+                                    </article>
+
+                                )
+                            )}
+
+                        </div>
+
+                    </section>
+
+                    <section className="report-panel">
+
+                        <h2>
+                            Ventas por día de semana
+                        </h2>
+
+
+                        <div className="report-table-wrapper">
+
+                            <table className="report-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Día</th>
+                                        <th>Ventas</th>
+                                        <th>Unidades</th>
+                                        <th>Facturación</th>
+                                        <th>Ticket promedio</th>
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {
+                                        datos
+                                            .ventas_por_dia
+                                            .map(
+                                                (item) => (
+
+                                                    <tr
+                                                        key={
+                                                            item.dia
+                                                        }
+                                                    >
+
+                                                        <td>
+                                                            <strong>
+                                                                {
+                                                                    diaTexto(
+                                                                        item.dia
+                                                                    )
+                                                                }
+                                                            </strong>
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                item.tickets
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                numero.format(
+                                                                    item.unidades
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.facturacion
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.ticket_promedio
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </section>
+
+                    <section className="report-panel">
+
+                        <h2>
+                            Categorías más vendidas
+                        </h2>
+
+
+                        <div className="report-table-wrapper">
+
+                            <table className="report-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Unidades</th>
+                                        <th>Facturación</th>
+                                        <th>Margen</th>
+                                        <th>Margen %</th>
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {
+                                        datos
+                                            .categorias_top
+                                            .map(
+                                                (item) => (
+
+                                                    <tr
+                                                        key={
+                                                            item.categoria_id
+                                                        }
+                                                    >
+
+                                                        <td>
+                                                            {
+                                                                item.categoria
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                numero.format(
+                                                                    item.unidades
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.facturacion
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.margen_bruto
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                Number(
+                                                                    item.margen_porcentaje
+                                                                )
+                                                                    .toFixed(1)
+                                                            }%
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </section>
+
+                    <section className="report-panel">
+
+                        <h2>
+                            Productos que más margen generan
+                        </h2>
+
+
+                        <div className="report-table-wrapper">
+
+                            <table className="report-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Unidades</th>
+                                        <th>Facturación</th>
+                                        <th>Costo</th>
+                                        <th>Margen</th>
+                                        <th>Margen %</th>
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {
+                                        datos
+                                            .margen_productos
+                                            .map(
+                                                (item) => (
+
+                                                    <tr
+                                                        key={
+                                                            item.producto_id
+                                                        }
+                                                    >
+
+                                                        <td>
+                                                            {
+                                                                item.nombre
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                numero.format(
+                                                                    item.unidades
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.facturacion
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.costo
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            <strong>
+                                                                {
+                                                                    moneda.format(
+                                                                        item.margen_bruto
+                                                                    )
+                                                                }
+                                                            </strong>
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                Number(
+                                                                    item.margen_porcentaje
+                                                                )
+                                                                    .toFixed(1)
+                                                            }%
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </section>
+
+                    <section className="report-panel">
+
+                        <h2>
+                            Rentabilidad en baja
+                        </h2>
+
+                        <p>
+                            Productos cuyo margen porcentual bajó respecto del período anterior.
+                        </p>
+
+
+                        {
+                            datos
+                                .rentabilidad_cayendo
+                                .length === 0
+                                ? (
+
+                                    <p>
+                                        No se detectaron caídas significativas.
+                                    </p>
+
+                                )
+                                : (
+
+                                    <div className="report-table-wrapper">
+
+                                        <table className="report-table">
+
+                                            <thead>
+
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Margen anterior</th>
+                                                    <th>Margen actual</th>
+                                                    <th>Caída</th>
+                                                    <th>Unidades actuales</th>
+                                                </tr>
+
+                                            </thead>
+
+
+                                            <tbody>
+
+                                                {
+                                                    datos
+                                                        .rentabilidad_cayendo
+                                                        .map(
+                                                            (item) => (
+
+                                                                <tr
+                                                                    key={
+                                                                        item.producto_id
+                                                                    }
+                                                                >
+
+                                                                    <td>
+                                                                        {
+                                                                            item.nombre
+                                                                        }
+                                                                    </td>
+
+                                                                    <td>
+                                                                        {
+                                                                            Number(
+                                                                                item.margen_pct_anterior
+                                                                            )
+                                                                                .toFixed(1)
+                                                                        }%
+                                                                    </td>
+
+                                                                    <td>
+                                                                        {
+                                                                            Number(
+                                                                                item.margen_pct_actual
+                                                                            )
+                                                                                .toFixed(1)
+                                                                        }%
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <strong>
+                                                                            {
+                                                                                Number(
+                                                                                    item.variacion_puntos
+                                                                                )
+                                                                                    .toFixed(1)
+                                                                            } pp
+                                                                        </strong>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        {
+                                                                            numero.format(
+                                                                                item.unidades_actual
+                                                                            )
+                                                                        }
+                                                                    </td>
+
+                                                                </tr>
+
+                                                            )
+                                                        )
+                                                }
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                )
+                        }
+
+                    </section>
 
                     {/* HORARIOS */}
 

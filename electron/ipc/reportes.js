@@ -121,6 +121,36 @@ function prepararRango({
     const finExclusivo =
         new Date(fin);
 
+    const diasPeriodo =
+        Math.round(
+            (
+                Date.UTC(
+                    finExclusivo.getFullYear(),
+                    finExclusivo.getMonth(),
+                    finExclusivo.getDate()
+                ) -
+                Date.UTC(
+                    inicio.getFullYear(),
+                    inicio.getMonth(),
+                    inicio.getDate()
+                )
+            ) /
+            86400000
+        );
+
+
+    const anteriorHasta =
+        new Date(inicio);
+
+
+    const anteriorDesde =
+        new Date(inicio);
+
+
+    anteriorDesde.setDate(
+        anteriorDesde.getDate() -
+        diasPeriodo
+    );
 
     finExclusivo.setDate(
         finExclusivo.getDate() +
@@ -153,6 +183,14 @@ function prepararRango({
 
         hasta:
             finExclusivo
+                .toISOString(),
+
+        anteriorDesde:
+            anteriorDesde
+                .toISOString(),
+
+        anteriorHasta:
+            anteriorHasta
                 .toISOString(),
 
         balanceDesde:
