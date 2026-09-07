@@ -325,6 +325,56 @@ ventas: {
         )
 
 },
+caja: {
+
+    actual: () =>
+        ipcRenderer.invoke(
+            "caja:actual"
+        ),
+
+    abrir: (datos) =>
+        ipcRenderer.invoke(
+            "caja:abrir",
+            datos
+        ),
+
+    cerrar: (datos) =>
+        ipcRenderer.invoke(
+            "caja:cerrar",
+            datos
+        ),
+
+    movimientoManual: (datos) =>
+        ipcRenderer.invoke(
+            "caja:movimiento-manual",
+            datos
+        ),
+
+    revertirManual: (datos) =>
+        ipcRenderer.invoke(
+            "caja:revertir-manual",
+            datos
+        ),
+
+    movimientos: (filtros) =>
+        ipcRenderer.invoke(
+            "caja:movimientos",
+            filtros
+        ),
+
+    historial: (filtros) =>
+        ipcRenderer.invoke(
+            "caja:historial",
+            filtros
+        ),
+
+    obtener: (id) =>
+        ipcRenderer.invoke(
+            "caja:obtener",
+            id
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

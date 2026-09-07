@@ -612,8 +612,158 @@ const migrations = [
         `);
 
     }
-}
+},
+{
+    version: 9,
 
+    name: "sesiones-caja-metodos-movimientos",
+
+    up(db) {
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS cajas (
+                id                INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                fecha_apertura    TEXT NOT NULL,
+                saldo_inicial     REAL NOT NULL DEFAULT 0,
+
+                fecha_cierre      TEXT,
+
+                efectivo_esperado REAL,
+                efectivo_real     REAL,
+                diferencia        REAL,
+
+                notas_apertura    TEXT,
+                notas_cierre      TEXT,
+
+                estado            TEXT NOT NULL DEFAULT 'ABIERTA'
+            );
+        `);
+
+
+        const columnas =
+            db.pragma(
+                "table_info(movimientos_caja)"
+            );
+
+
+        const agregarColumna =
+            (
+                nombre,
+                sql
+            ) => {
+
+                const existe =
+                    columnas.some(
+                        (columna) =>
+                            columna.name ===
+                            nombre
+                    );
+
+
+                if (!existe) {
+                    db.exec(sql);
+                }
+
+            };
+
+
+        agregarColumna(
+            "caja_id",
+            `
+                ALTER TABLE movimientos_caja
+                ADD COLUMN caja_id INTEGER
+                REFERENCES cajas(id);
+            `
+        );
+
+
+        agregarColumna(
+            "metodo_pago",
+            `
+                ALTER TABLE movimientos_caja
+                ADD COLUMN metodo_pago TEXT;
+            `
+        );
+
+
+        agregarColumna(
+            "movimiento_origen_id",
+            `
+                ALTER TABLE movimientos_caja
+                ADD COLUMN movimiento_origen_id INTEGER
+                REFERENCES movimientos_caja(id);
+            `
+        );
+
+
+        /*
+         * Recuperamos el método de pago
+         * de las ventas anteriores.
+         *
+         * Dejamos caja_id NULL porque
+         * no inventamos sesiones históricas.
+         */
+
+        db.exec(`
+            UPDATE movimientos_caja
+
+            SET metodo_pago = (
+                SELECT
+                    v.metodo_pago
+
+                FROM ventas v
+
+                WHERE
+                    v.id =
+                    movimientos_caja.venta_id
+            )
+
+            WHERE
+                metodo_pago IS NULL
+                AND venta_id IS NOT NULL;
+        `);
+
+
+        db.exec(`
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_cajas_unica_abierta
+            ON cajas(estado)
+            WHERE estado = 'ABIERTA';
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_cajas_apertura
+            ON cajas(fecha_apertura DESC);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_caja_fecha
+            ON movimientos_caja(
+                caja_id,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_metodo
+            ON movimientos_caja(
+                caja_id,
+                metodo_pago
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_origen
+            ON movimientos_caja(
+                movimiento_origen_id
+            )
+            WHERE movimiento_origen_id
+                IS NOT NULL;
+        `);
+
+    }
+}
 ];
 
 

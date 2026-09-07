@@ -9,5 +9,6 @@ export const ROUTES = {
     proveedores: "/proveedores",
     compras: "/compras",
     precios: "/precios",
-    ventas: "/ventas"
+    ventas: "/ventas",
+    caja: "/caja"
 };

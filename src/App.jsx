@@ -11,6 +11,7 @@ import Proveedores from "./pages/proveedores";
 import Compras from "./pages/compras";
 import Precios from "./pages/precios";
 import Ventas from "./pages/ventas";
+import Caja from "./pages/caja";
 
 function NavegacionElectron() {
 
@@ -94,6 +95,10 @@ function App() {
         <Route
           path={ROUTES.ventas}
           element={<Ventas />}
+        />
+        <Route
+          path={ROUTES.caja}
+          element={<Caja />}
         />
         <Route
           path="*"

@@ -9,6 +9,7 @@
 @import "./styles/compras.css";
 @import "./styles/precios.css";
 @import "./styles/ventas.css";
+@import "./styles/caja.css";
 
 :root {
     font-family:

@@ -298,17 +298,53 @@ CREATE TABLE IF NOT EXISTS gastos (
     notas       TEXT
 );
 
+CREATE TABLE IF NOT EXISTS cajas (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    fecha_apertura    TEXT NOT NULL,
+    saldo_inicial     REAL NOT NULL DEFAULT 0,
+
+    fecha_cierre      TEXT,
+
+    efectivo_esperado REAL,
+    efectivo_real     REAL,
+    diferencia        REAL,
+
+    notas_apertura    TEXT,
+    notas_cierre      TEXT,
+
+    estado            TEXT NOT NULL DEFAULT 'ABIERTA'
+);
+
 CREATE TABLE IF NOT EXISTS movimientos_caja (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    tipo        TEXT NOT NULL,
-    concepto    TEXT NOT NULL,
-    monto       REAL NOT NULL,
-    fecha       TEXT NOT NULL,
-    venta_id    INTEGER,
-    gasto_id    INTEGER,
-    notas       TEXT,
-    FOREIGN KEY (venta_id) REFERENCES ventas (id),
-    FOREIGN KEY (gasto_id) REFERENCES gastos (id)
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    tipo                 TEXT NOT NULL,
+    concepto             TEXT NOT NULL,
+    monto                REAL NOT NULL,
+    fecha                TEXT NOT NULL,
+
+    caja_id              INTEGER,
+    metodo_pago          TEXT,
+
+    venta_id             INTEGER,
+    gasto_id             INTEGER,
+
+    movimiento_origen_id INTEGER,
+
+    notas                TEXT,
+
+    FOREIGN KEY (caja_id)
+        REFERENCES cajas(id),
+
+    FOREIGN KEY (venta_id)
+        REFERENCES ventas(id),
+
+    FOREIGN KEY (gasto_id)
+        REFERENCES gastos(id),
+
+    FOREIGN KEY (movimiento_origen_id)
+        REFERENCES movimientos_caja(id)
 );
     `);
 

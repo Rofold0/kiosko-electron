@@ -390,6 +390,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Caja"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.caja
+                        )
+                    }
+                />
 
             </div>
 

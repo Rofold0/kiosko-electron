@@ -136,6 +136,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Caja",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.caja
+                        );
+
+                    }
+                },
             ]
         }
     ];

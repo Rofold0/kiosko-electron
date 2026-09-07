@@ -1,6 +1,18 @@
 import db
     from "../database.js";
 
+const cajaAbiertaStmt =
+    db.prepare(`
+        SELECT
+            id,
+            fecha_apertura
+
+        FROM cajas
+
+        WHERE estado = 'ABIERTA'
+
+        LIMIT 1
+    `);
 
 const buscarProductosStmt =
     db.prepare(`
@@ -170,13 +182,24 @@ const movimientoCajaStmt =
             concepto,
             monto,
             fecha,
+
+            caja_id,
+            metodo_pago,
+
             venta_id,
             gasto_id,
+
+            movimiento_origen_id,
+
             notas
         )
 
         VALUES (
-            ?, ?, ?, ?, ?, NULL, ?
+            ?, ?, ?, ?,
+            ?, ?,
+            ?, NULL,
+            NULL,
+            ?
         )
     `);
 
@@ -456,6 +479,32 @@ const registrarVentaTransaction =
         items
     }) => {
 
+        const caja =
+            cajaAbiertaStmt.get();
+
+
+        if (!caja) {
+
+            throw new Error(
+                "Debe abrir la caja antes de registrar una venta."
+            );
+
+        }
+
+
+        if (
+            new Date(fecha) <
+            new Date(
+                caja.fecha_apertura
+            )
+        ) {
+
+            throw new Error(
+                "La fecha de venta no puede ser anterior a la apertura de caja."
+            );
+
+        }
+
         if (
             !Array.isArray(items) ||
             items.length === 0
@@ -629,21 +678,23 @@ const registrarVentaTransaction =
             );
 
 
-            movimientoStockStmt.run(
-
-                producto.id,
+            movimientoCajaStmt.run(
 
                 "VENTA",
 
-                -item.cantidad,
+                `Venta #${venta.id} · ${metodoPago}`,
 
-                stockAnterior,
+                total,
 
-                stockNuevo,
+                fecha,
 
-                `Venta #${venta.id}`,
+                caja.id,
 
-                fecha
+                metodoPago,
+
+                venta.id,
+
+                notas
 
             );
 
@@ -736,6 +787,17 @@ const revertirVentaTransaction =
         ventaId,
         motivo
     }) => {
+        const caja =
+            cajaAbiertaStmt.get();
+
+
+        if (!caja) {
+
+            throw new Error(
+                "Debe haber una caja abierta para revertir la venta."
+            );
+
+        }
 
         const venta =
             ventaStmt.get(
@@ -809,21 +871,23 @@ const revertirVentaTransaction =
             );
 
 
-            movimientoStockStmt.run(
-
-                item.producto_id,
+            movimientoCajaStmt.run(
 
                 "REVERSA_VENTA",
 
-                item.cantidad,
+                `Reversión venta #${venta.id}`,
 
-                stockAnterior,
+                -venta.total,
 
-                stockNuevo,
+                fecha,
 
-                `Reversión venta #${venta.id}: ${motivo}`,
+                caja.id,
 
-                fecha
+                venta.metodo_pago,
+
+                venta.id,
+
+                motivo
 
             );
 
