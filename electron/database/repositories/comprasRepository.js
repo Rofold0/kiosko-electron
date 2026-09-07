@@ -444,6 +444,7 @@ const itemsReversionStmt =
             ic.producto_proveedor_id,
 
             ic.cantidad,
+            ic.costo_unitario,
             ic.costo_anterior_proveedor,
             ic.lista_cantidad_anterior,
             ic.lista_comprado_anterior,
@@ -516,6 +517,16 @@ const restaurarCostoStmt =
         WHERE id = ?
     `);
 
+const costoActualProveedorStmt =
+    db.prepare(`
+        SELECT
+            ultimo_costo
+
+        FROM productos_proveedores
+
+        WHERE id = ?
+    `);
+
 
 const listaItemActualStmt =
     db.prepare(`
@@ -556,8 +567,31 @@ const revertirCompraTransaction =
                 compraId
             );
 
+
+        if (!compra) {
+
+            throw new Error(
+                "La compra no existe."
+            );
+
+        }
+
+
+        if (
+            compra.estado ===
+            "REVERTIDA"
+        ) {
+
+            throw new Error(
+                "La compra ya fue revertida."
+            );
+
+        }
+
+
         let cajaReversion =
             null;
+
 
         let movimientoCajaOriginal =
             null;
@@ -594,27 +628,6 @@ const revertirCompraTransaction =
                 );
 
             }
-
-        }
-
-
-        if (!compra) {
-
-            throw new Error(
-                "La compra no existe."
-            );
-
-        }
-
-
-        if (
-            compra.estado ===
-            "REVERTIDA"
-        ) {
-
-            throw new Error(
-                "La compra ya fue revertida."
-            );
 
         }
 
@@ -732,13 +745,46 @@ const revertirCompraTransaction =
 
                 if (!hayCompraPosterior) {
 
-                    restaurarCostoStmt.run(
+                    const vinculoActual =
+                        costoActualProveedorStmt.get(
+                            item.producto_proveedor_id
+                        );
 
-                        item.costo_anterior_proveedor,
 
-                        item.producto_proveedor_id
+                    const costoActual =
+                        vinculoActual
+                            ?.ultimo_costo;
 
-                    );
+
+                    const costoDeLaCompra =
+                        item.costo_unitario;
+
+
+                    /*
+                     * Sólo restauramos si el costo
+                     * actual todavía es exactamente
+                     * el que dejó esta compra.
+                     *
+                     * Si Precios u otra operación lo
+                     * modificó después, no lo tocamos.
+                     */
+
+                    if (
+                        costoActual !== null &&
+                        costoActual !== undefined &&
+                        Number(costoActual) ===
+                        Number(costoDeLaCompra)
+                    ) {
+
+                        restaurarCostoStmt.run(
+
+                            item.costo_anterior_proveedor,
+
+                            item.producto_proveedor_id
+
+                        );
+
+                    }
 
                 }
 
@@ -950,6 +996,31 @@ const registrarCompraTransaction =
         items
     }) => {
 
+        const proveedor =
+            proveedorStmt.get(
+                proveedorId
+            );
+
+
+        if (!proveedor) {
+
+            throw new Error(
+                "El proveedor no existe."
+            );
+
+        }
+
+
+        if (
+            !Array.isArray(items) ||
+            items.length === 0
+        ) {
+
+            throw new Error(
+                "La compra no tiene productos."
+            );
+
+        }
         let caja =
             null;
 
@@ -992,58 +1063,6 @@ const registrarCompraTransaction =
             }
 
         }
-        if (registrarEnCaja) {
-
-            movimientoCajaCompraStmt.run(
-
-                "COMPRA",
-
-                `Compra #${compra.id} · ${proveedor.nombre}`,
-
-                -total,
-
-                fecha,
-
-                caja.id,
-
-                metodoPago,
-
-                compra.id,
-
-                null,
-
-                notas
-
-            );
-
-        }
-
-        const proveedor =
-            proveedorStmt.get(
-                proveedorId
-            );
-
-
-        if (!proveedor) {
-
-            throw new Error(
-                "El proveedor no existe."
-            );
-
-        }
-
-
-        if (
-            !Array.isArray(items) ||
-            items.length === 0
-        ) {
-
-            throw new Error(
-                "La compra no tiene productos."
-            );
-
-        }
-
 
         const productosUsados =
             new Set();
@@ -1284,6 +1303,36 @@ const registrarCompraTransaction =
 
         }
 
+        /*
+ * Un único movimiento financiero
+ * por compra.
+ */
+
+        if (registrarEnCaja) {
+
+            movimientoCajaCompraStmt.run(
+
+                "COMPRA",
+
+                `Compra #${compra.id} · ${proveedor.nombre}`,
+
+                -total,
+
+                fecha,
+
+                caja.id,
+
+                metodoPago,
+
+                compra.id,
+
+                null,
+
+                notas
+
+            );
+
+        }
 
 
         return obtenerCompraCompleta(
