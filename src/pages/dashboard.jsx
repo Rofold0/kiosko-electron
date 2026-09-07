@@ -382,6 +382,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Ventas"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.ventas
+                        )
+                    }
+                />
 
             </div>
 

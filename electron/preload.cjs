@@ -292,6 +292,39 @@ contextBridge.exposeInMainWorld("electronAPI", {
         )
 
 },
+ventas: {
+
+    productos: (filtros) =>
+        ipcRenderer.invoke(
+            "ventas:productos",
+            filtros
+        ),
+
+    crear: (datos) =>
+        ipcRenderer.invoke(
+            "ventas:crear",
+            datos
+        ),
+
+    listar: (filtros) =>
+        ipcRenderer.invoke(
+            "ventas:listar",
+            filtros
+        ),
+
+    obtener: (id) =>
+        ipcRenderer.invoke(
+            "ventas:obtener",
+            id
+        ),
+
+    revertir: (datos) =>
+        ipcRenderer.invoke(
+            "ventas:revertir",
+            datos
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

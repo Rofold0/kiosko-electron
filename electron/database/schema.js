@@ -257,22 +257,36 @@ WHERE lista_item_id IS NOT NULL;
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS ventas (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    fecha       TEXT NOT NULL,
-    total       REAL NOT NULL DEFAULT 0,
-    metodo_pago TEXT,
-    notas       TEXT
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha            TEXT NOT NULL,
+    total            REAL NOT NULL DEFAULT 0,
+    metodo_pago      TEXT,
+    notas            TEXT,
+
+    estado           TEXT NOT NULL DEFAULT 'ACTIVA',
+    fecha_reversion  TEXT,
+    motivo_reversion TEXT
 );
 
 CREATE TABLE IF NOT EXISTS items_venta (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     venta_id        INTEGER NOT NULL,
     producto_id     INTEGER NOT NULL,
+    precio_id       INTEGER,
+
     cantidad        INTEGER NOT NULL,
+    costo_unitario  REAL NOT NULL DEFAULT 0,
     precio_unitario REAL NOT NULL,
     subtotal        REAL NOT NULL,
-    FOREIGN KEY (venta_id) REFERENCES ventas (id),
-    FOREIGN KEY (producto_id) REFERENCES productos (id)
+
+    FOREIGN KEY (venta_id)
+        REFERENCES ventas(id),
+
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id),
+
+    FOREIGN KEY (precio_id)
+        REFERENCES precios(id)
 );
 
 CREATE TABLE IF NOT EXISTS gastos (

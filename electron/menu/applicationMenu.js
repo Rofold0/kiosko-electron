@@ -125,6 +125,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Ventas",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.ventas
+                        );
+
+                    }
+                },
             ]
         }
     ];

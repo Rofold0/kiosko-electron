@@ -8,6 +8,7 @@
 @import "./styles/proveedores.css";
 @import "./styles/compras.css";
 @import "./styles/precios.css";
+@import "./styles/ventas.css";
 
 :root {
     font-family:

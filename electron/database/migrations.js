@@ -470,6 +470,148 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 8,
+
+    name: "ventas-reversion-costos-indices",
+
+    up(db) {
+
+        const columnasVentas =
+            db.pragma(
+                "table_info(ventas)"
+            );
+
+
+        const agregarVenta =
+            (nombre, sql) => {
+
+                const existe =
+                    columnasVentas.some(
+                        (columna) =>
+                            columna.name === nombre
+                    );
+
+
+                if (!existe) {
+                    db.exec(sql);
+                }
+
+            };
+
+
+        agregarVenta(
+            "estado",
+            `
+                ALTER TABLE ventas
+                ADD COLUMN estado TEXT
+                NOT NULL
+                DEFAULT 'ACTIVA';
+            `
+        );
+
+
+        agregarVenta(
+            "fecha_reversion",
+            `
+                ALTER TABLE ventas
+                ADD COLUMN fecha_reversion TEXT;
+            `
+        );
+
+
+        agregarVenta(
+            "motivo_reversion",
+            `
+                ALTER TABLE ventas
+                ADD COLUMN motivo_reversion TEXT;
+            `
+        );
+
+
+        const columnasItems =
+            db.pragma(
+                "table_info(items_venta)"
+            );
+
+
+        const agregarItem =
+            (nombre, sql) => {
+
+                const existe =
+                    columnasItems.some(
+                        (columna) =>
+                            columna.name === nombre
+                    );
+
+
+                if (!existe) {
+                    db.exec(sql);
+                }
+
+            };
+
+
+        agregarItem(
+            "precio_id",
+            `
+                ALTER TABLE items_venta
+                ADD COLUMN precio_id INTEGER
+                REFERENCES precios(id);
+            `
+        );
+
+
+        agregarItem(
+            "costo_unitario",
+            `
+                ALTER TABLE items_venta
+                ADD COLUMN costo_unitario REAL
+                NOT NULL
+                DEFAULT 0;
+            `
+        );
+
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_ventas_fecha
+            ON ventas(fecha DESC);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_ventas_estado_fecha
+            ON ventas(
+                estado,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_ventas_metodo_fecha
+            ON ventas(
+                metodo_pago,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_venta_venta
+            ON items_venta(venta_id);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_items_venta_producto
+            ON items_venta(producto_id);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_venta
+            ON movimientos_caja(venta_id);
+        `);
+
+    }
 }
 
 ];

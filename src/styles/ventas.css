@@ -1,0 +1,142 @@
+.sales-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(280px, 0.8fr)
+        minmax(440px, 1.2fr);
+    gap: 24px;
+}
+
+
+.sales-search {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+
+.sales-products {
+    display: grid;
+    gap: 6px;
+}
+
+
+.sales-products > button {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        auto;
+    gap: 14px;
+    align-items: center;
+    text-align: left;
+}
+
+
+.sales-cart-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+
+.sales-cart {
+    width: 100%;
+    min-width: 620px;
+    border-collapse: collapse;
+}
+
+
+.sales-cart th,
+.sales-cart td {
+    padding: 10px;
+    border-bottom:
+        1px solid #ddd;
+    text-align: left;
+}
+
+
+.sales-cart input {
+    width: 70px;
+}
+
+
+.sales-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+
+.sales-summary span {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    border:
+        1px solid #ddd;
+    border-radius: 8px;
+}
+
+
+.sales-summary strong {
+    font-size: 1.2rem;
+}
+
+
+.sales-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+
+.sales-history,
+.sale-detail {
+    margin-top: 32px;
+}
+
+
+.sales-history > button {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+        1fr auto auto;
+    gap: 16px;
+    margin-bottom: 6px;
+    text-align: left;
+}
+
+
+.sale-reversal,
+.sale-reverted {
+    margin-top: 20px;
+    padding: 14px;
+    border:
+        1px solid #ccc;
+    border-radius: 8px;
+}
+
+
+.sale-reversal textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+@media (max-width: 850px) {
+
+    .sales-layout {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .sales-fields,
+    .sales-summary {
+        grid-template-columns: 1fr;
+    }
+
+}
