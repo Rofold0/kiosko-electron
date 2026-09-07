@@ -23,6 +23,9 @@ import {
 import {
     registerComprasHandlers
 } from "./compras.js";
+import {
+    registerPreciosHandlers
+} from "./precios.js";
 export function registerIpcHandlers() {
 
     registerCategoriasHandlers();
@@ -38,6 +41,8 @@ export function registerIpcHandlers() {
     registerProveedoresHandlers();
 
     registerComprasHandlers();
+
+    registerPreciosHandlers();
 
     registerDialogosHandlers();
 

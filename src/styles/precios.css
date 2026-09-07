@@ -1,0 +1,229 @@
+.prices-search {
+    display: grid;
+
+    grid-template-columns:
+        minmax(220px, 1fr)
+        auto;
+
+    align-items: end;
+
+    gap: 12px;
+
+    margin-bottom: 24px;
+}
+
+
+.prices-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(260px, 0.8fr)
+        minmax(360px, 1.2fr);
+
+    gap: 24px;
+}
+
+
+.prices-products,
+.price-editor {
+    min-width: 0;
+}
+
+
+.prices-product-list {
+    display: grid;
+
+    gap: 6px;
+}
+
+
+.price-product {
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    gap: 16px;
+
+    width: 100%;
+
+    text-align: left;
+}
+
+
+.price-product--selected {
+    font-weight: 600;
+}
+
+
+.price-reference {
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    gap: 16px;
+
+    padding: 12px;
+
+    margin-bottom: 18px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 8px;
+}
+
+
+.price-reference div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.price-reference small {
+    color: #666;
+}
+
+
+.price-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(160px, 1fr)
+        );
+
+    gap: 14px;
+}
+
+
+.price-sale-field {
+    font-weight: 600;
+}
+
+
+.price-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(100px, 1fr)
+        );
+
+    gap: 10px;
+
+    margin:
+        20px 0;
+
+    padding: 14px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 8px;
+}
+
+
+.price-summary span {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+
+.price-summary strong {
+    font-size: 1.1rem;
+}
+
+
+.price-summary--loss {
+    border-color: #c88;
+}
+
+
+.price-history {
+    margin-top: 36px;
+}
+
+
+.price-history-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.price-history-table {
+    width: 100%;
+
+    min-width: 760px;
+
+    border-collapse: collapse;
+}
+
+
+.price-history-table th,
+.price-history-table td {
+    padding: 10px 12px;
+
+    text-align: left;
+
+    border-bottom:
+        1px solid #ddd;
+}
+
+
+@media (max-width: 850px) {
+
+    .prices-layout {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .price-summary {
+        grid-template-columns:
+            repeat(
+                2,
+                1fr
+            );
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .prices-search,
+    .price-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .price-reference {
+        align-items: stretch;
+
+        flex-direction:
+            column;
+    }
+
+
+    .price-summary {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+}

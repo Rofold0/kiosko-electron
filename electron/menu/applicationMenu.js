@@ -114,6 +114,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Precios",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.precios
+                        );
+
+                    }
+                },
             ]
         }
     ];

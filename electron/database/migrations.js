@@ -410,6 +410,66 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 7,
+
+    name: "precios-vigentes-indices",
+
+    up(db) {
+
+        /*
+         * Por seguridad, si hubiese más de
+         * un precio vigente viejo para un
+         * producto, dejamos sólo el último.
+         */
+
+        db.exec(`
+            UPDATE precios
+
+            SET fecha_hasta =
+                strftime(
+                    '%Y-%m-%dT%H:%M:%fZ',
+                    'now'
+                )
+
+            WHERE
+                fecha_hasta IS NULL
+
+                AND id NOT IN (
+                    SELECT
+                        MAX(id)
+
+                    FROM precios
+
+                    WHERE
+                        fecha_hasta IS NULL
+
+                    GROUP BY
+                        producto_id
+                );
+        `);
+
+
+        db.exec(`
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_precios_producto_vigente
+            ON precios(
+                producto_id
+            )
+            WHERE
+                fecha_hasta IS NULL;
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_precios_producto_fecha
+            ON precios(
+                producto_id,
+                fecha_desde DESC
+            );
+        `);
+
+    }
 }
 
 ];

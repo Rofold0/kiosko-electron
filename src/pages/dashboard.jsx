@@ -374,6 +374,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Precios"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.precios
+                        )
+                    }
+                />
 
             </div>
 

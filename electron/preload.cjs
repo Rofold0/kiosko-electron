@@ -178,91 +178,117 @@ contextBridge.exposeInMainWorld("electronAPI", {
         "lista-compras:completar"
       )
 
-  },proveedores: {
+  }, proveedores: {
 
     listar: () =>
-        ipcRenderer.invoke(
-            "proveedores:listar"
-        ),
+      ipcRenderer.invoke(
+        "proveedores:listar"
+      ),
 
     crear: (proveedor) =>
-        ipcRenderer.invoke(
-            "proveedores:crear",
-            proveedor
-        ),
+      ipcRenderer.invoke(
+        "proveedores:crear",
+        proveedor
+      ),
 
     actualizar: (proveedor) =>
-        ipcRenderer.invoke(
-            "proveedores:actualizar",
-            proveedor
-        ),
+      ipcRenderer.invoke(
+        "proveedores:actualizar",
+        proveedor
+      ),
 
     eliminar: (id) =>
-        ipcRenderer.invoke(
-            "proveedores:eliminar",
-            id
-        ),
+      ipcRenderer.invoke(
+        "proveedores:eliminar",
+        id
+      ),
 
     productos: (proveedorId) =>
-        ipcRenderer.invoke(
-            "proveedores:productos",
-            proveedorId
-        ),
+      ipcRenderer.invoke(
+        "proveedores:productos",
+        proveedorId
+      ),
 
     porProducto: (productoId) =>
-        ipcRenderer.invoke(
-            "proveedores:por-producto",
-            productoId
-        ),
+      ipcRenderer.invoke(
+        "proveedores:por-producto",
+        productoId
+      ),
 
     vincularProducto: (datos) =>
-        ipcRenderer.invoke(
-            "proveedores:vincular-producto",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "proveedores:vincular-producto",
+        datos
+      ),
 
     actualizarVinculo: (datos) =>
-        ipcRenderer.invoke(
-            "proveedores:actualizar-vinculo",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "proveedores:actualizar-vinculo",
+        datos
+      ),
 
     desvincularProducto: (id) =>
-        ipcRenderer.invoke(
-            "proveedores:desvincular-producto",
-            id
-        )
+      ipcRenderer.invoke(
+        "proveedores:desvincular-producto",
+        id
+      )
 
-},
-compras: {
+  }, compras: {
     revertir: (datos) =>
-    ipcRenderer.invoke(
+      ipcRenderer.invoke(
         "compras:revertir",
         datos
-    ),
+      ),
 
     crear: (datos) =>
-        ipcRenderer.invoke(
-            "compras:crear",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "compras:crear",
+        datos
+      ),
 
     pendientesProveedor: (proveedorId) =>
-        ipcRenderer.invoke(
-            "compras:pendientes-proveedor",
-            proveedorId
-        ),
+      ipcRenderer.invoke(
+        "compras:pendientes-proveedor",
+        proveedorId
+      ),
+
+    listar: (filtros) =>
+      ipcRenderer.invoke(
+        "compras:listar",
+        filtros
+      ),
+
+    obtener: (id) =>
+      ipcRenderer.invoke(
+        "compras:obtener",
+        id
+      )
+
+  },
+  precios: {
 
     listar: (filtros) =>
         ipcRenderer.invoke(
-            "compras:listar",
+            "precios:listar",
             filtros
         ),
 
-    obtener: (id) =>
+    detalle: (productoId) =>
         ipcRenderer.invoke(
-            "compras:obtener",
-            id
+            "precios:detalle",
+            productoId
+        ),
+
+    vigente: (productoId) =>
+        ipcRenderer.invoke(
+            "precios:vigente",
+            productoId
+        ),
+
+    guardar: (datos) =>
+        ipcRenderer.invoke(
+            "precios:guardar",
+            datos
         )
 
 },
