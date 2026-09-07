@@ -677,24 +677,21 @@ const registrarVentaTransaction =
 
             );
 
+            movimientoStockStmt.run(
 
-            movimientoCajaStmt.run(
+                producto.id,
 
                 "VENTA",
 
-                `Venta #${venta.id} · ${metodoPago}`,
+                -item.cantidad,
 
-                total,
+                stockAnterior,
 
-                fecha,
+                stockNuevo,
 
-                caja.id,
+                `Venta #${venta.id}`,
 
-                metodoPago,
-
-                venta.id,
-
-                notas
+                fecha
 
             );
 
@@ -710,6 +707,10 @@ const registrarVentaTransaction =
             total,
 
             fecha,
+
+            caja.id,
+
+            metodoPago,
 
             venta.id,
 
@@ -871,23 +872,21 @@ const revertirVentaTransaction =
             );
 
 
-            movimientoCajaStmt.run(
+            movimientoStockStmt.run(
+
+                item.producto_id,
 
                 "REVERSA_VENTA",
 
-                `Reversión venta #${venta.id}`,
+                item.cantidad,
 
-                -venta.total,
+                stockAnterior,
 
-                fecha,
+                stockNuevo,
 
-                caja.id,
+                `Reversión venta #${venta.id}: ${motivo}`,
 
-                venta.metodo_pago,
-
-                venta.id,
-
-                motivo
+                fecha
 
             );
 
@@ -903,6 +902,10 @@ const revertirVentaTransaction =
             -venta.total,
 
             fecha,
+
+            caja.id,
+
+            venta.metodo_pago,
 
             venta.id,
 
