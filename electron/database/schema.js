@@ -289,13 +289,42 @@ CREATE TABLE IF NOT EXISTS items_venta (
         REFERENCES precios(id)
 );
 
+CREATE TABLE IF NOT EXISTS categorias_gasto (
+    id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    activo INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS gastos (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    categoria   TEXT NOT NULL,
-    descripcion TEXT,
-    monto       REAL NOT NULL,
-    fecha       TEXT NOT NULL,
-    notas       TEXT
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    categoria_id       INTEGER,
+    categoria          TEXT NOT NULL,
+
+    descripcion        TEXT,
+    monto              REAL NOT NULL,
+    fecha              TEXT NOT NULL,
+
+    metodo_pago        TEXT NOT NULL DEFAULT 'EFECTIVO',
+
+    notas              TEXT,
+
+    estado             TEXT NOT NULL DEFAULT 'ACTIVO',
+
+    fecha_reversion    TEXT,
+    motivo_reversion   TEXT,
+
+    caja_id            INTEGER,
+    caja_reversion_id  INTEGER,
+
+    FOREIGN KEY (categoria_id)
+        REFERENCES categorias_gasto(id),
+
+    FOREIGN KEY (caja_id)
+        REFERENCES cajas(id),
+
+    FOREIGN KEY (caja_reversion_id)
+        REFERENCES cajas(id)
 );
 
 CREATE TABLE IF NOT EXISTS cajas (

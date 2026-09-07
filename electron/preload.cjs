@@ -375,6 +375,60 @@ caja: {
         )
 
 },
+gastos: {
+
+    categorias: {
+
+        listar: () =>
+            ipcRenderer.invoke(
+                "gastos:categorias-listar"
+            ),
+
+        crear: (datos) =>
+            ipcRenderer.invoke(
+                "gastos:categoria-crear",
+                datos
+            ),
+
+        actualizar: (datos) =>
+            ipcRenderer.invoke(
+                "gastos:categoria-actualizar",
+                datos
+            ),
+
+        eliminar: (id) =>
+            ipcRenderer.invoke(
+                "gastos:categoria-eliminar",
+                id
+            )
+
+    },
+
+    crear: (datos) =>
+        ipcRenderer.invoke(
+            "gastos:crear",
+            datos
+        ),
+
+    listar: (filtros) =>
+        ipcRenderer.invoke(
+            "gastos:listar",
+            filtros
+        ),
+
+    obtener: (id) =>
+        ipcRenderer.invoke(
+            "gastos:obtener",
+            id
+        ),
+
+    revertir: (datos) =>
+        ipcRenderer.invoke(
+            "gastos:revertir",
+            datos
+        )
+
+},
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

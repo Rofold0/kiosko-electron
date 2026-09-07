@@ -398,6 +398,14 @@ function Dashboard() {
                         )
                     }
                 />
+                <DashboardCard
+                    title="Gastos"
+                    onClick={() =>
+                        navigate(
+                            ROUTES.gastos
+                        )
+                    }
+                />
 
             </div>
 

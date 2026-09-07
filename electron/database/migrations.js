@@ -763,6 +763,267 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 10,
+
+    name: "gastos-categorias-caja-reversion",
+
+    up(db) {
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS categorias_gasto (
+                id     INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                activo INTEGER NOT NULL DEFAULT 1
+            );
+
+
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_categorias_gasto_nombre_activo
+            ON categorias_gasto(
+                LOWER(nombre)
+            )
+            WHERE activo = 1;
+        `);
+
+
+        /*
+         * Categorías iniciales.
+         */
+
+        const categoriasIniciales = [
+            "Mercadería",
+            "Servicios",
+            "Alquiler",
+            "Transporte",
+            "Mantenimiento",
+            "Limpieza",
+            "Impuestos",
+            "Insumos",
+            "Retiro personal",
+            "Otro"
+        ];
+
+
+        const insertarCategoria =
+            db.prepare(`
+                INSERT OR IGNORE
+                INTO categorias_gasto (
+                    nombre,
+                    activo
+                )
+
+                VALUES (?, 1)
+            `);
+
+
+        for (
+            const nombre
+            of categoriasIniciales
+        ) {
+
+            insertarCategoria.run(
+                nombre
+            );
+
+        }
+
+
+        /*
+         * Recuperamos categorías que
+         * pudieran existir en gastos viejos.
+         */
+
+        db.exec(`
+            INSERT OR IGNORE
+            INTO categorias_gasto (
+                nombre,
+                activo
+            )
+
+            SELECT DISTINCT
+                TRIM(categoria),
+                1
+
+            FROM gastos
+
+            WHERE
+                categoria IS NOT NULL
+                AND TRIM(categoria) <> '';
+        `);
+
+
+        const columnas =
+            db.pragma(
+                "table_info(gastos)"
+            );
+
+
+        const agregarColumna =
+            (
+                nombre,
+                sql
+            ) => {
+
+                const existe =
+                    columnas.some(
+                        (columna) =>
+                            columna.name ===
+                            nombre
+                    );
+
+
+                if (!existe) {
+                    db.exec(sql);
+                }
+
+            };
+
+
+        agregarColumna(
+            "categoria_id",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN categoria_id INTEGER
+                REFERENCES categorias_gasto(id);
+            `
+        );
+
+
+        agregarColumna(
+            "metodo_pago",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN metodo_pago TEXT;
+            `
+        );
+
+
+        agregarColumna(
+            "estado",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN estado TEXT
+                NOT NULL
+                DEFAULT 'ACTIVO';
+            `
+        );
+
+
+        agregarColumna(
+            "fecha_reversion",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN fecha_reversion TEXT;
+            `
+        );
+
+
+        agregarColumna(
+            "motivo_reversion",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN motivo_reversion TEXT;
+            `
+        );
+
+
+        agregarColumna(
+            "caja_id",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN caja_id INTEGER
+                REFERENCES cajas(id);
+            `
+        );
+
+
+        agregarColumna(
+            "caja_reversion_id",
+            `
+                ALTER TABLE gastos
+                ADD COLUMN caja_reversion_id INTEGER
+                REFERENCES cajas(id);
+            `
+        );
+
+
+        /*
+         * Vinculamos gastos históricos
+         * con su categoría.
+         */
+
+        db.exec(`
+            UPDATE gastos
+
+            SET categoria_id = (
+                SELECT cg.id
+
+                FROM categorias_gasto cg
+
+                WHERE
+                    LOWER(cg.nombre) =
+                    LOWER(gastos.categoria)
+                    AND cg.activo = 1
+
+                LIMIT 1
+            )
+
+            WHERE categoria_id IS NULL;
+        `);
+
+
+        /*
+         * Si hubiese gastos antiguos sin
+         * método, no inventamos efectivo:
+         * usamos OTRO.
+         */
+
+        db.exec(`
+            UPDATE gastos
+
+            SET metodo_pago = 'OTRO'
+
+            WHERE
+                metodo_pago IS NULL
+                OR TRIM(metodo_pago) = '';
+        `);
+
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_gastos_fecha
+            ON gastos(fecha DESC);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_gastos_estado_fecha
+            ON gastos(
+                estado,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_gastos_categoria_fecha
+            ON gastos(
+                categoria_id,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_gastos_caja
+            ON gastos(caja_id);
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_movimientos_caja_gasto
+            ON movimientos_caja(gasto_id);
+        `);
+
+    }
 }
 ];
 

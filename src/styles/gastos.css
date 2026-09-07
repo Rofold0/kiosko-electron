@@ -1,0 +1,190 @@
+.expense-warning {
+    padding: 14px;
+    margin-bottom: 20px;
+
+    border:
+        1px solid #aaa;
+
+    border-radius: 8px;
+}
+
+
+.expense-form-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(180px, 1fr)
+        );
+
+    gap: 12px;
+}
+
+
+.expense-categories {
+    margin-top: 30px;
+}
+
+
+.expense-category-new {
+    display: grid;
+
+    grid-template-columns:
+        1fr auto;
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+}
+
+
+.expense-category-row {
+    display: grid;
+
+    grid-template-columns:
+        1fr auto auto;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 6px 0;
+
+    border-bottom:
+        1px solid #ddd;
+}
+
+
+.expense-filters {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 1fr)
+        auto
+        auto
+        auto
+        auto;
+
+    gap: 8px;
+
+    margin-bottom: 16px;
+}
+
+
+.expense-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(150px, 1fr)
+        );
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+}
+
+
+.expense-summary > div {
+    display: flex;
+
+    flex-direction: column;
+
+    padding: 12px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 8px;
+}
+
+
+.expense-summary strong {
+    font-size: 1.2rem;
+}
+
+
+.expense-history {
+    display: grid;
+
+    gap: 6px;
+}
+
+
+.expense-history > button {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr
+        auto
+        auto;
+
+    gap: 12px;
+
+    text-align: left;
+}
+
+
+.expense-detail {
+    margin-top: 32px;
+}
+
+
+.expense-reversal {
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border:
+        1px solid #ccc;
+
+    border-radius: 8px;
+}
+
+
+.expense-reversal textarea {
+    width: 100%;
+
+    margin-bottom: 10px;
+}
+
+
+@media (max-width: 850px) {
+
+    .expense-filters {
+        grid-template-columns:
+            repeat(
+                2,
+                1fr
+            );
+    }
+
+
+    .expense-history > button {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .expense-form-grid,
+    .expense-filters,
+    .expense-summary,
+    .expense-history > button {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .expense-category-row {
+        grid-template-columns:
+            1fr;
+    }
+
+}

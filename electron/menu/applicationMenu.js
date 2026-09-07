@@ -147,6 +147,17 @@ export function createMenu(mainWindow) {
 
                     }
                 },
+                {
+                    label: "Gastos",
+
+                    click() {
+
+                        navigateTo(
+                            ROUTES.gastos
+                        );
+
+                    }
+                },
             ]
         }
     ];

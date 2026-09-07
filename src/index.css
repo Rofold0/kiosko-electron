@@ -10,6 +10,7 @@
 @import "./styles/precios.css";
 @import "./styles/ventas.css";
 @import "./styles/caja.css";
+@import "./styles/gastos.css";
 
 :root {
     font-family:
