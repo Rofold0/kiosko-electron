@@ -192,6 +192,16 @@ function Precios() {
     ] = useState(null);
 
     const [
+        proveedoresProducto,
+        setProveedoresProducto
+    ] = useState([]);
+
+
+    const [
+        proveedorId,
+        setProveedorId
+    ] = useState("");
+    const [
         historial,
         setHistorial
     ] = useState([]);
@@ -409,6 +419,24 @@ function Precios() {
                             item.producto_id
                         );
 
+                setProveedoresProducto(
+                    detalle.proveedores ||
+                    []
+                );
+
+
+                const proveedorReferencia =
+                    detalle.proveedor_referencia;
+
+
+                setProveedorId(
+                    proveedorReferencia
+                        ? String(
+                            proveedorReferencia
+                                .proveedor_id
+                        )
+                        : ""
+                );
 
                 setProducto(
                     detalle.producto
@@ -488,6 +516,72 @@ function Precios() {
      * criterio que el usuario estaba
      * usando.
      */
+
+    let costoInicial =
+        0;
+
+
+    /*
+     * 1° costo guardado para el proveedor
+     * elegido.
+     */
+
+    if (
+        proveedorReferencia
+            ?.ultimo_costo !== null &&
+        proveedorReferencia
+            ?.ultimo_costo !== undefined
+    ) {
+
+        costoInicial =
+            proveedorReferencia
+                .ultimo_costo;
+
+
+        /*
+         * 2° costo de la última compra.
+         */
+
+    } else if (
+        detalle
+            .costo_referencia
+            ?.costo_unitario !==
+        undefined
+    ) {
+
+        costoInicial =
+            detalle
+                .costo_referencia
+                .costo_unitario;
+
+
+        /*
+         * 3° costo del precio vigente.
+         */
+
+    } else if (
+        detalle.vigente
+    ) {
+
+        costoInicial =
+            detalle
+                .vigente
+                .costo;
+
+    }
+
+    const precioInicial =
+        detalle.vigente
+            ? detalle
+                .vigente
+                .precio_venta
+            : costoInicial;
+
+
+    aplicarValores(
+        costoInicial,
+        precioInicial
+    );
 
     const cambiarCosto =
         (valor) => {
@@ -851,16 +945,21 @@ function Precios() {
                     .electronAPI
                     .precios
                     .guardar({
-
                         producto_id:
                             producto.id,
+
+                        proveedor_id:
+                            proveedorId
+                                ? Number(
+                                    proveedorId
+                                )
+                                : null,
 
                         costo:
                             costoNumero,
 
                         precio_venta:
                             ventaNumero
-
                     });
 
 
@@ -898,6 +997,43 @@ function Precios() {
         );
 
 
+    const cambiarProveedor =
+        (valor) => {
+
+            setProveedorId(
+                valor
+            );
+
+
+            const proveedor =
+                proveedoresProducto.find(
+                    (item) =>
+                        String(
+                            item.proveedor_id
+                        ) ===
+                        String(valor)
+                );
+
+
+            if (
+                proveedor &&
+                proveedor.ultimo_costo !==
+                null &&
+                proveedor.ultimo_costo !==
+                undefined
+            ) {
+
+                cambiarCosto(
+                    String(
+                        proveedor
+                            .ultimo_costo
+                    )
+                );
+
+            }
+
+        };
+
     return (
 
         <div className="page">
@@ -928,7 +1064,7 @@ function Precios() {
                             )
                         }
                         placeholder=
-                            "Nombre o código"
+                        "Nombre o código"
                     />
 
                 </div>
@@ -1150,7 +1286,61 @@ function Precios() {
                             <div className="price-grid">
 
                                 <div className="form-field">
+                                    {proveedoresProducto.length > 0 && (
 
+                                        <div className="form-field">
+
+                                            <label>
+                                                Proveedor de referencia
+                                            </label>
+
+                                            <select
+                                                value={proveedorId}
+                                                onChange={(event) =>
+                                                    cambiarProveedor(
+                                                        event.target.value
+                                                    )
+                                                }
+                                            >
+
+                                                <option value="">
+                                                    Sin proveedor
+                                                </option>
+
+
+                                                {proveedoresProducto.map(
+                                                    (proveedor) => (
+
+                                                        <option
+                                                            key={
+                                                                proveedor.vinculo_id
+                                                            }
+                                                            value={
+                                                                proveedor.proveedor_id
+                                                            }
+                                                        >
+                                                            {
+                                                                proveedor.proveedor_nombre
+                                                            }
+
+                                                            {
+                                                                proveedor.ultimo_costo !==
+                                                                    null
+                                                                    ? ` · ${moneda.format(
+                                                                        proveedor.ultimo_costo
+                                                                    )}`
+                                                                    : " · sin costo"
+                                                            }
+                                                        </option>
+
+                                                    )
+                                                )}
+
+                                            </select>
+
+                                        </div>
+
+                                    )}
                                     <label>
                                         Costo $
                                     </label>
@@ -1364,7 +1554,7 @@ function Precios() {
 
                                 {
                                     historial.length ===
-                                    0 ? (
+                                        0 ? (
 
                                         <tr>
 

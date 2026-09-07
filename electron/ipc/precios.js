@@ -32,6 +32,26 @@ function validarId(valor) {
 
 }
 
+function validarIdOpcional(
+    valor
+) {
+
+    if (
+        valor === null ||
+        valor === undefined ||
+        valor === ""
+    ) {
+
+        return null;
+
+    }
+
+
+    return validarId(
+        valor
+    );
+
+}
 
 function validarDinero(
     valor,
@@ -177,6 +197,11 @@ export function registerPreciosHandlers() {
                 productoId:
                     validarId(
                         datos?.producto_id
+                    ),
+
+                proveedorId:
+                    validarIdOpcional(
+                        datos?.proveedor_id
                     ),
 
                 costo,

@@ -280,6 +280,8 @@ const costoUltimaCompraStmt =
 
             c.id
                 AS compra_id,
+            
+            c.proveedor_id,
 
             c.fecha,
 
@@ -411,6 +413,59 @@ export function obtenerDetallePrecio(
     }
 
 
+    const proveedores =
+        proveedoresProductoStmt.all(
+            productoId
+        );
+
+
+    const costoReferencia =
+        costoUltimaCompraStmt.get(
+            productoId
+        ) || null;
+
+
+    let proveedorReferencia =
+        null;
+
+
+    /*
+     * Preferimos el proveedor
+     * de la última compra.
+     */
+
+    if (
+        costoReferencia
+            ?.proveedor_id
+    ) {
+
+        proveedorReferencia =
+            proveedores.find(
+                (proveedor) =>
+                    proveedor.proveedor_id ===
+                    costoReferencia.proveedor_id
+            ) || null;
+
+    }
+
+
+    /*
+     * Si sólo tiene un proveedor,
+     * no hace falta que el usuario
+     * lo elija.
+     */
+
+    if (
+        !proveedorReferencia &&
+        proveedores.length === 1
+    ) {
+
+        proveedorReferencia =
+            proveedores[0];
+
+    }
+
+
     return {
 
         producto,
@@ -421,9 +476,12 @@ export function obtenerDetallePrecio(
             ) || null,
 
         costo_referencia:
-            costoUltimaCompraStmt.get(
-                productoId
-            ) || null,
+            costoReferencia,
+
+        proveedores,
+
+        proveedor_referencia:
+            proveedorReferencia,
 
         historial:
             historialStmt.all(
@@ -434,10 +492,36 @@ export function obtenerDetallePrecio(
 
 }
 
+const vinculoProveedorStmt =
+    db.prepare(`
+        SELECT
+            id,
+            ultimo_costo
+
+        FROM productos_proveedores
+
+        WHERE
+            producto_id = ?
+            AND proveedor_id = ?
+    `);
+
+
+const actualizarCostoProveedorStmt =
+    db.prepare(`
+        UPDATE productos_proveedores
+
+        SET ultimo_costo = ?
+
+        WHERE
+            producto_id = ?
+            AND proveedor_id = ?
+    `);
+
 
 const guardarPrecioTransaction =
     db.transaction(({
         productoId,
+        proveedorId,
         costo,
         precioVenta
     }) => {
@@ -456,10 +540,46 @@ const guardarPrecioTransaction =
 
         }
 
+        let vinculoProveedor =
+            null;
+
+
+        if (proveedorId !== null) {
+
+            vinculoProveedor =
+                vinculoProveedorStmt.get(
+                    productoId,
+                    proveedorId
+                );
+
+
+            if (!vinculoProveedor) {
+
+                throw new Error(
+                    "El proveedor seleccionado no está vinculado al producto."
+                );
+
+            }
+
+        }
 
         const costoNormalizado =
             redondear(costo);
 
+
+        if (vinculoProveedor) {
+
+            actualizarCostoProveedorStmt.run(
+
+                costoNormalizado,
+
+                productoId,
+
+                proveedorId
+
+            );
+
+        }
 
         const ventaNormalizada =
             redondear(
@@ -481,9 +601,9 @@ const guardarPrecioTransaction =
         if (
             vigente &&
             vigente.costo ===
-                costoNormalizado &&
+            costoNormalizado &&
             vigente.precio_venta ===
-                ventaNormalizada
+            ventaNormalizada
         ) {
 
             return {
@@ -550,6 +670,34 @@ const guardarPrecioTransaction =
         };
 
     });
+
+const proveedoresProductoStmt =
+    db.prepare(`
+        SELECT
+            pp.id
+                AS vinculo_id,
+
+            pp.proveedor_id,
+
+            pr.nombre
+                AS proveedor_nombre,
+
+            pp.codigo_proveedor,
+
+            pp.ultimo_costo
+
+        FROM productos_proveedores pp
+
+        INNER JOIN proveedores pr
+            ON pr.id = pp.proveedor_id
+
+        WHERE
+            pp.producto_id = ?
+            AND pr.activo = 1
+
+        ORDER BY
+            pr.nombre COLLATE NOCASE ASC
+    `);
 
 
 export function guardarPrecio(datos) {
