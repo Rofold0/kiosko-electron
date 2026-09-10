@@ -3,6 +3,10 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -62,6 +66,17 @@ const filtrosVacios = {
 
 
 function Productos() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeModificar =
+        puede(
+            "productos.modificar"
+        );
 
     // LISTADO
 
@@ -584,7 +599,7 @@ function Productos() {
 
                 const paginaObjetivo =
                     productos.length === 1 &&
-                    pagina > 1
+                        pagina > 1
                         ? pagina - 1
                         : pagina;
 
@@ -720,302 +735,302 @@ function Productos() {
 
 
             {/* FORMULARIO */}
+            {puedeModificar && (
+                <section>
 
-            <section>
-
-                <h2>
-                    {
-                        editandoId
-                            ? "Editar producto"
-                            : "Nuevo producto"
-                    }
-                </h2>
+                    <h2>
+                        {
+                            editandoId
+                                ? "Editar producto"
+                                : "Nuevo producto"
+                        }
+                    </h2>
 
 
-                <form
-                    className="product-form"
-                    onSubmit={
-                        guardarProducto
-                    }
-                >
+                    <form
+                        className="product-form"
+                        onSubmit={
+                            guardarProducto
+                        }
+                    >
 
-                    <div className="form-field">
+                        <div className="form-field">
 
-                        <label htmlFor="producto-nombre">
-                            Nombre
-                        </label>
+                            <label htmlFor="producto-nombre">
+                                Nombre
+                            </label>
 
-                        <input
-                            id="producto-nombre"
-                            type="text"
-                            value={nombre}
-                            onChange={(e) =>
-                                setNombre(
-                                    e.target.value
+                            <input
+                                id="producto-nombre"
+                                type="text"
+                                value={nombre}
+                                onChange={(e) =>
+                                    setNombre(
+                                        e.target.value
+                                    )
+                                }
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="form-field">
+
+                            <label htmlFor="producto-codigo">
+                                Código
+                            </label>
+
+                            <input
+                                id="producto-codigo"
+                                type="text"
+                                value={codigo}
+                                onChange={(e) =>
+                                    setCodigo(
+                                        e.target.value
+                                    )
+                                }
+                                placeholder="Opcional"
+                            />
+
+                        </div>
+
+
+                        <div className="form-field">
+
+                            <label htmlFor="producto-categoria">
+                                Categoría
+                            </label>
+
+                            <select
+                                id="producto-categoria"
+                                value={categoriaId}
+                                onChange={(e) =>
+                                    cambiarCategoria(
+                                        e.target.value
+                                    )
+                                }
+                                required
+                            >
+
+                                <option value="">
+                                    Seleccionar
+                                </option>
+
+                                {categorias.map(
+                                    (categoria) => (
+
+                                        <option
+                                            key={
+                                                categoria.id
+                                            }
+                                            value={
+                                                categoria.id
+                                            }
+                                        >
+                                            {
+                                                categoria.nombre
+                                            }
+                                        </option>
+
+                                    )
+                                )}
+
+                            </select>
+
+                        </div>
+
+
+                        <div className="form-field">
+
+                            <label htmlFor="producto-subcategoria">
+                                Subcategoría
+                            </label>
+
+                            <select
+                                id="producto-subcategoria"
+                                value={subcategoriaId}
+                                onChange={(e) =>
+                                    setSubcategoriaId(
+                                        e.target.value
+                                    )
+                                }
+                                disabled={
+                                    !categoriaId
+                                }
+                            >
+
+                                <option value="">
+                                    Sin subcategoría
+                                </option>
+
+                                {
+                                    subcategoriasFormulario
+                                        .map(
+                                            (subcategoria) => (
+
+                                                <option
+                                                    key={
+                                                        subcategoria.id
+                                                    }
+                                                    value={
+                                                        subcategoria.id
+                                                    }
+                                                >
+                                                    {
+                                                        subcategoria.nombre
+                                                    }
+                                                </option>
+
+                                            )
+                                        )
+                                }
+
+                            </select>
+
+                        </div>
+
+
+                        {
+                            editandoId
+                                ? (
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Stock actual
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            value={
+                                                stockActual ??
+                                                0
+                                            }
+                                            disabled
+                                        />
+
+                                    </div>
+
+                                )
+                                : (
+
+                                    <div className="form-field">
+
+                                        <label htmlFor="producto-stock-inicial">
+                                            Stock inicial
+                                        </label>
+
+                                        <input
+                                            id="producto-stock-inicial"
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            value={
+                                                stockInicial
+                                            }
+                                            onChange={(e) =>
+                                                setStockInicial(
+                                                    e.target.value
+                                                )
+                                            }
+                                            required
+                                        />
+
+                                    </div>
+
+                                )
+                        }
+
+
+                        <div className="form-field">
+
+                            <label htmlFor="producto-stock-minimo">
+                                Stock mínimo
+                            </label>
+
+                            <input
+                                id="producto-stock-minimo"
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={
+                                    stockMinimo
+                                }
+                                onChange={(e) =>
+                                    setStockMinimo(
+                                        e.target.value
+                                    )
+                                }
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="form-field">
+
+                            <label htmlFor="producto-unidad">
+                                Unidad
+                            </label>
+
+                            <input
+                                id="producto-unidad"
+                                type="text"
+                                value={unidad}
+                                onChange={(e) =>
+                                    setUnidad(
+                                        e.target.value
+                                    )
+                                }
+                                placeholder="unidad"
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="form-field product-description">
+
+                            <label htmlFor="producto-descripcion">
+                                Descripción
+                            </label>
+
+                            <textarea
+                                id="producto-descripcion"
+                                value={
+                                    descripcion
+                                }
+                                onChange={(e) =>
+                                    setDescripcion(
+                                        e.target.value
+                                    )
+                                }
+                                rows="3"
+                                placeholder="Opcional"
+                            />
+
+                        </div>
+
+
+                        <FormActions
+                            editando={
+                                Boolean(
+                                    editandoId
                                 )
                             }
-                            required
-                        />
-
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label htmlFor="producto-codigo">
-                            Código
-                        </label>
-
-                        <input
-                            id="producto-codigo"
-                            type="text"
-                            value={codigo}
-                            onChange={(e) =>
-                                setCodigo(
-                                    e.target.value
-                                )
-                            }
-                            placeholder="Opcional"
-                        />
-
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label htmlFor="producto-categoria">
-                            Categoría
-                        </label>
-
-                        <select
-                            id="producto-categoria"
-                            value={categoriaId}
-                            onChange={(e) =>
-                                cambiarCategoria(
-                                    e.target.value
-                                )
-                            }
-                            required
-                        >
-
-                            <option value="">
-                                Seleccionar
-                            </option>
-
-                            {categorias.map(
-                                (categoria) => (
-
-                                    <option
-                                        key={
-                                            categoria.id
-                                        }
-                                        value={
-                                            categoria.id
-                                        }
-                                    >
-                                        {
-                                            categoria.nombre
-                                        }
-                                    </option>
-
-                                )
-                            )}
-
-                        </select>
-
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label htmlFor="producto-subcategoria">
-                            Subcategoría
-                        </label>
-
-                        <select
-                            id="producto-subcategoria"
-                            value={subcategoriaId}
-                            onChange={(e) =>
-                                setSubcategoriaId(
-                                    e.target.value
-                                )
+                            onCancel={
+                                limpiarFormulario
                             }
                             disabled={
-                                !categoriaId
+                                guardando
                             }
-                        >
-
-                            <option value="">
-                                Sin subcategoría
-                            </option>
-
-                            {
-                                subcategoriasFormulario
-                                    .map(
-                                        (subcategoria) => (
-
-                                            <option
-                                                key={
-                                                    subcategoria.id
-                                                }
-                                                value={
-                                                    subcategoria.id
-                                                }
-                                            >
-                                                {
-                                                    subcategoria.nombre
-                                                }
-                                            </option>
-
-                                        )
-                                    )
-                            }
-
-                        </select>
-
-                    </div>
-
-
-                    {
-                        editandoId
-                            ? (
-
-                                <div className="form-field">
-
-                                    <label>
-                                        Stock actual
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        value={
-                                            stockActual ??
-                                            0
-                                        }
-                                        disabled
-                                    />
-
-                                </div>
-
-                            )
-                            : (
-
-                                <div className="form-field">
-
-                                    <label htmlFor="producto-stock-inicial">
-                                        Stock inicial
-                                    </label>
-
-                                    <input
-                                        id="producto-stock-inicial"
-                                        type="number"
-                                        min="0"
-                                        step="1"
-                                        value={
-                                            stockInicial
-                                        }
-                                        onChange={(e) =>
-                                            setStockInicial(
-                                                e.target.value
-                                            )
-                                        }
-                                        required
-                                    />
-
-                                </div>
-
-                            )
-                    }
-
-
-                    <div className="form-field">
-
-                        <label htmlFor="producto-stock-minimo">
-                            Stock mínimo
-                        </label>
-
-                        <input
-                            id="producto-stock-minimo"
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={
-                                stockMinimo
-                            }
-                            onChange={(e) =>
-                                setStockMinimo(
-                                    e.target.value
-                                )
-                            }
-                            required
                         />
 
-                    </div>
+                    </form>
 
-
-                    <div className="form-field">
-
-                        <label htmlFor="producto-unidad">
-                            Unidad
-                        </label>
-
-                        <input
-                            id="producto-unidad"
-                            type="text"
-                            value={unidad}
-                            onChange={(e) =>
-                                setUnidad(
-                                    e.target.value
-                                )
-                            }
-                            placeholder="unidad"
-                            required
-                        />
-
-                    </div>
-
-
-                    <div className="form-field product-description">
-
-                        <label htmlFor="producto-descripcion">
-                            Descripción
-                        </label>
-
-                        <textarea
-                            id="producto-descripcion"
-                            value={
-                                descripcion
-                            }
-                            onChange={(e) =>
-                                setDescripcion(
-                                    e.target.value
-                                )
-                            }
-                            rows="3"
-                            placeholder="Opcional"
-                        />
-
-                    </div>
-
-
-                    <FormActions
-                        editando={
-                            Boolean(
-                                editandoId
-                            )
-                        }
-                        onCancel={
-                            limpiarFormulario
-                        }
-                        disabled={
-                            guardando
-                        }
-                    />
-
-                </form>
-
-            </section>
-
+                </section>
+            )}
 
             {/* FILTROS */}
 
@@ -1188,13 +1203,17 @@ function Productos() {
                         productos
                     }
                     onEdit={
-                        editarProducto
+                        puedeModificar
+                            ? editarProducto
+                            : null
                     }
                     onDelete={
-                        eliminarProducto
+                        puedeModificar
+                            ? eliminarProducto
+                            : null
                     }
                     emptyMessage=
-                        "No hay productos."
+                    "No hay productos."
                 />
 
 
