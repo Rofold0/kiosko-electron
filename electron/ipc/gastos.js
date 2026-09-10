@@ -1,7 +1,6 @@
 import {
-    ipcMain
-} from "electron";
-
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     listarCategoriasGasto,
     crearCategoriaGasto,
@@ -171,14 +170,14 @@ export function registerGastosHandlers() {
      * CATEGORÍAS
      */
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:categorias-listar",
         () =>
             listarCategoriasGasto()
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:categoria-crear",
         (_event, datos) =>
 
@@ -190,7 +189,7 @@ export function registerGastosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:categoria-actualizar",
         (_event, datos) =>
 
@@ -210,7 +209,7 @@ export function registerGastosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:categoria-eliminar",
         (_event, id) =>
 
@@ -224,7 +223,7 @@ export function registerGastosHandlers() {
      * GASTOS
      */
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:crear",
         (_event, datos) =>
 
@@ -265,7 +264,7 @@ export function registerGastosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:listar",
         (_event, filtros = {}) => {
 
@@ -363,7 +362,7 @@ export function registerGastosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:obtener",
         (_event, id) =>
 
@@ -376,7 +375,7 @@ export function registerGastosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "gastos:revertir",
         (_event, datos) => {
 

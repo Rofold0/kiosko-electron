@@ -1,7 +1,6 @@
 import {
-    ipcMain
-} from "electron";
-
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     listarResumenPrecios,
     obtenerDetallePrecio,
@@ -81,7 +80,7 @@ function validarDinero(
 
 export function registerPreciosHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "precios:listar",
         (_event, filtros = {}) => {
 
@@ -146,7 +145,7 @@ export function registerPreciosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "precios:detalle",
         (_event, productoId) => {
 
@@ -160,7 +159,7 @@ export function registerPreciosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "precios:vigente",
         (_event, productoId) => {
 
@@ -174,7 +173,7 @@ export function registerPreciosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "precios:guardar",
         (_event, datos) => {
 

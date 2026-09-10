@@ -1,7 +1,6 @@
 import {
-    ipcMain
-} from "electron";
-
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     abrirCaja,
     cerrarCaja,
@@ -130,14 +129,14 @@ function texto(
 
 export function registerCajaHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:actual",
         () =>
             obtenerCajaActual()
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:abrir",
         (_event, datos) =>
 
@@ -158,7 +157,7 @@ export function registerCajaHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:movimiento-manual",
         (_event, datos) => {
 
@@ -223,7 +222,7 @@ export function registerCajaHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
     "caja:revertir-manual",
     (_event, datos) => {
 
@@ -260,7 +259,7 @@ export function registerCajaHandlers() {
 );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:cerrar",
         (_event, datos) =>
 
@@ -281,7 +280,7 @@ export function registerCajaHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:movimientos",
         (_event, filtros = {}) => {
 
@@ -354,7 +353,7 @@ export function registerCajaHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:historial",
         (_event, filtros = {}) => {
 
@@ -404,7 +403,7 @@ export function registerCajaHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "caja:obtener",
         (_event, id) =>
             obtenerCaja(

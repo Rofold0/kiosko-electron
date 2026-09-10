@@ -1,8 +1,11 @@
 import {
     BrowserWindow,
-    dialog,
-    ipcMain
+    dialog
 } from "electron";
+
+import {
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     writeFile
 } from "node:fs/promises";
@@ -789,7 +792,7 @@ function prepararRango({
 
 export function registerReportesHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "reportes:dashboard",
         (
             _event,
@@ -819,7 +822,7 @@ export function registerReportesHandlers() {
 
         }
     );
-    ipcMain.handle(
+    handleProtegido(
         "reportes:exportar-pdf",
 
         async (
@@ -920,7 +923,7 @@ export function registerReportesHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "reportes:exportar-csv",
 
         async (
@@ -1025,7 +1028,7 @@ export function registerReportesHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "reportes:imprimir",
 
         async (
@@ -1115,7 +1118,7 @@ export function registerReportesHandlers() {
 
         }
     );
-    ipcMain.handle(
+    handleProtegido(
     "reportes:exportar-excel",
 
     async (

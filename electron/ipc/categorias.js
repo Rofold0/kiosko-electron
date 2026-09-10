@@ -1,5 +1,6 @@
-import { ipcMain } from "electron";
-
+import {
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     listarCategorias,
     crearCategoria,
@@ -43,7 +44,7 @@ function validarNombre(valor) {
 
 export function registerCategoriasHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "categorias:listar",
         () => {
             return listarCategorias();
@@ -51,7 +52,7 @@ export function registerCategoriasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "categorias:crear",
         (_event, categoria) => {
 
@@ -66,7 +67,7 @@ export function registerCategoriasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "categorias:actualizar",
         (_event, categoria) => {
 
@@ -89,7 +90,7 @@ export function registerCategoriasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "categorias:eliminar",
         (_event, id) => {
 

@@ -1,7 +1,13 @@
 import {
+    createContext,
+    useCallback,
+    useContext,
     useEffect,
     useState
 } from "react";
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 
 import { useNavigate }
     from "react-router-dom";
@@ -14,6 +20,22 @@ import { ROUTES }
 
 
 function Dashboard() {
+
+    const puede =
+        useCallback(
+            (permiso) => {
+
+                return Boolean(
+                    usuario
+                        ?.permisos
+                        ?.includes(
+                            permiso
+                        )
+                );
+
+            },
+            [usuario]
+        );
 
     const navigate =
         useNavigate();
@@ -39,6 +61,20 @@ function Dashboard() {
 
     useEffect(() => {
 
+        if (
+            !puede(
+                "stock.ver"
+            )
+        ) {
+
+            setAlertasStock([]);
+            setCargandoAlertas(false);
+
+            return;
+
+        }
+
+
         const cargarAlertas =
             async () => {
 
@@ -59,16 +95,21 @@ function Dashboard() {
                 } catch (error) {
 
                     console.error(
-                        "Error cargando alertas de stock:",
+                        "Error cargando alertas:",
                         error
                     );
 
-                    setErrorAlertas(true);
+
+                    setErrorAlertas(
+                        true
+                    );
 
 
                 } finally {
 
-                    setCargandoAlertas(false);
+                    setCargandoAlertas(
+                        false
+                    );
 
                 }
 
@@ -77,7 +118,7 @@ function Dashboard() {
 
         cargarAlertas();
 
-    }, []);
+    }, [puede]);
 
 
     const sinStock =
@@ -312,30 +353,63 @@ function Dashboard() {
 
             <div className="dashboard-grid">
 
-                <DashboardCard
-                    title="Mercaderia"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.mercaderia
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Gestión"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.gestion
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Reportes"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.reportes
-                        )
-                    }
-                />
+                {(
+                    puede("productos.ver") ||
+                    puede("stock.ver") ||
+                    puede("categorias.ver") ||
+                    puede("lista_compras.ver")
+                ) && (
+
+                        <DashboardCard
+                            title="Mercadería"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.mercaderia
+                                )
+                            }
+                        />
+
+                    )}
+
+
+                {(
+                    puede("proveedores.ver") ||
+                    puede("compras.ver") ||
+                    puede("compras.crear") ||
+                    puede("precios.ver") ||
+                    puede("ventas.ver") ||
+                    puede("ventas.crear") ||
+                    puede("caja.ver") ||
+                    puede("gastos.ver") ||
+                    puede("usuarios.ver")
+                ) && (
+
+                        <DashboardCard
+                            title="Gestión"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.gestion
+                                )
+                            }
+                        />
+
+                    )}
+
+
+                {puede(
+                    "reportes.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Reportes"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.reportes
+                                )
+                            }
+                        />
+
+                    )}
 
             </div>
 

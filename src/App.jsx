@@ -12,6 +12,8 @@ import ConfiguracionInicial
 
 import Usuarios
   from "./pages/usuarios.jsx";
+import RutaProtegida
+  from "./auth/rutaProtegida.jsx";
 import Dashboard from "./pages/dashboard";
 import Categorias from "./pages/categorias";
 import Subcategorias from "./pages/subcategorias";
@@ -102,54 +104,165 @@ function AplicacionProtegida() {
 
         <Route
           path={ROUTES.categorias}
-          element={<Categorias />}
+          element={
+            <RutaProtegida
+              permisos="categorias.ver"
+            >
+              <Categorias />
+            </RutaProtegida>
+          }
         />
+
 
         <Route
           path={ROUTES.subcategorias}
-          element={<Subcategorias />}
+          element={
+            <RutaProtegida
+              permisos="categorias.ver"
+            >
+              <Subcategorias />
+            </RutaProtegida>
+          }
         />
+
 
         <Route
           path={ROUTES.productos}
-          element={<Productos />}
+          element={
+            <RutaProtegida
+              permisos="productos.ver"
+            >
+              <Productos />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.stock}
-          element={<Stock />}
+          element={
+            <RutaProtegida
+              permisos="stock.ver"
+            >
+              <Stock />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.listaCompras}
-          element={<ListaCompras />}
+          element={
+            <RutaProtegida
+              permisos="lista_compras.ver"
+            >
+              <ListaCompras />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.proveedores}
-          element={<Proveedores />}
+          element={
+            <RutaProtegida
+              permisos="proveedores.ver"
+            >
+              <Proveedores />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.compras}
-          element={<Compras />}
+          element={
+            <RutaProtegida
+              permisos={[
+                "compras.ver",
+                "compras.crear"
+              ]}
+            >
+              <Compras />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.precios}
-          element={<Precios />}
+          element={
+            <RutaProtegida
+              permisos="precios.ver"
+            >
+              <Precios />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.ventas}
-          element={<Ventas />}
+          element={
+            <RutaProtegida
+              permisos={[
+                "ventas.ver",
+                "ventas.crear"
+              ]}
+            >
+              <Ventas />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.caja}
-          element={<Caja />}
+          element={
+            <RutaProtegida
+              permisos="caja.ver"
+            >
+              <Caja />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.gastos}
-          element={<Gastos />}
+          element={
+            <RutaProtegida
+              permisos="gastos.ver"
+            >
+              <Gastos />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.reportes}
-          element={<Reportes />}
+          element={
+            <RutaProtegida
+              permisos="reportes.ver"
+            >
+              <Reportes />
+            </RutaProtegida>
+          }
         />
+
+
+        <Route
+          path={ROUTES.usuarios}
+          element={
+            <RutaProtegida
+              permisos="usuarios.ver"
+            >
+              <Usuarios />
+            </RutaProtegida>
+          }
+        />
+
         <Route
           path={ROUTES.mercaderia}
           element={<Mercaderia />}
@@ -158,19 +271,6 @@ function AplicacionProtegida() {
           path={ROUTES.gestion}
           element={<Gestion />}
         />
-
-
-        <Route
-          path={ROUTES.usuarios}
-          element={
-            puede(
-              "usuarios.ver"
-            )
-              ? <Usuarios />
-              : <Dashboard />
-          }
-        />
-
 
         <Route
           path="*"
@@ -187,65 +287,65 @@ function AplicacionProtegida() {
 
 function ContenidoApp() {
 
-    const {
-        cargando,
-        usuario,
-        requiereConfiguracion
-    } =
-        useAuth();
+  const {
+    cargando,
+    usuario,
+    requiereConfiguracion
+  } =
+    useAuth();
 
 
-    if (cargando) {
-
-        return (
-            <div className="auth-loading">
-                Cargando...
-            </div>
-        );
-
-    }
-
-
-    if (requiereConfiguracion) {
-
-        return (
-            <ConfiguracionInicial />
-        );
-
-    }
-
-
-    if (!usuario) {
-
-        return (
-            <Login />
-        );
-
-    }
-
+  if (cargando) {
 
     return (
-        <AplicacionProtegida />
+      <div className="auth-loading">
+        Cargando...
+      </div>
     );
+
+  }
+
+
+  if (requiereConfiguracion) {
+
+    return (
+      <ConfiguracionInicial />
+    );
+
+  }
+
+
+  if (!usuario) {
+
+    return (
+      <Login />
+    );
+
+  }
+
+
+  return (
+    <AplicacionProtegida />
+  );
 
 }
 
 
 function App() {
 
-    return (
+  return (
 
-        <HashRouter>
+    <HashRouter>
 
-            <AuthProvider>
+      <AuthProvider>
 
-                <ContenidoApp />
+        <ContenidoApp />
 
-            </AuthProvider>
+      </AuthProvider>
 
-        </HashRouter>
+    </HashRouter>
 
-    );
+  );
 
 }
 

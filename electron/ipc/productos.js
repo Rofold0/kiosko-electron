@@ -1,6 +1,6 @@
 import {
-    ipcMain
-} from "electron";
+    handleProtegido
+} from "../security/ipcPermissions.js";
 
 import {
     listarProductos,
@@ -110,7 +110,7 @@ function enteroNoNegativo(
 
 export function registerProductosHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "productos:listar",
         (_event, filtros = {}) => {
 
@@ -191,7 +191,7 @@ export function registerProductosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "productos:crear",
         (_event, producto) => {
 
@@ -246,7 +246,7 @@ export function registerProductosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "productos:actualizar",
         (_event, producto) => {
 
@@ -301,7 +301,7 @@ export function registerProductosHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "productos:eliminar",
         (_event, id) => {
 

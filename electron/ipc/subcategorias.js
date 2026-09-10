@@ -1,4 +1,6 @@
-import { ipcMain } from "electron";
+import {
+    handleProtegido
+} from "../security/ipcPermissions.js";
 
 import {
     listarSubcategorias,
@@ -49,7 +51,7 @@ function validarNombre(valor) {
 
 export function registerSubcategoriasHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "subcategorias:listar",
         () => {
 
@@ -59,7 +61,7 @@ export function registerSubcategoriasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "subcategorias:crear",
         (_event, subcategoria) => {
 
@@ -84,7 +86,7 @@ export function registerSubcategoriasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "subcategorias:actualizar",
         (_event, subcategoria) => {
 
@@ -116,7 +118,7 @@ export function registerSubcategoriasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "subcategorias:eliminar",
         (_event, id) => {
 

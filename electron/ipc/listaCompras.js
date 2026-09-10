@@ -1,7 +1,6 @@
 import {
-    ipcMain
-} from "electron";
-
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     obtenerListaActual,
     agregarProducto,
@@ -85,14 +84,14 @@ function validarNombre(valor) {
 
 export function registerListaComprasHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:actual",
         () =>
             obtenerListaActual()
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:agregar-producto",
         (_event, datos) => {
 
@@ -115,7 +114,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:agregar-libre",
         (_event, datos) => {
 
@@ -137,7 +136,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:cantidad",
         (_event, datos) => {
 
@@ -159,7 +158,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:comprado",
         (_event, datos) => {
 
@@ -181,7 +180,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:eliminar-item",
         (_event, id) => {
 
@@ -193,7 +192,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:notas",
         (_event, notas) => {
 
@@ -206,7 +205,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:agregar-stock-bajo",
         () => {
 
@@ -216,7 +215,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:historial",
         () => {
 
@@ -226,7 +225,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:obtener",
         (_event, id) => {
 
@@ -238,7 +237,7 @@ export function registerListaComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "lista-compras:completar",
         () => {
 

@@ -1,6 +1,6 @@
 import {
-    ipcMain
-} from "electron";
+    handleProtegido
+} from "../security/ipcPermissions.js";
 
 import {
     registrarCompra,
@@ -244,7 +244,7 @@ function validarItems(items) {
 
 export function registerComprasHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "compras:crear",
         (_event, datos) => {
             const registrarEnCaja =
@@ -289,7 +289,7 @@ export function registerComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "compras:pendientes-proveedor",
         (_event, proveedorId) => {
 
@@ -304,7 +304,7 @@ export function registerComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "compras:listar",
         (_event, filtros = {}) => {
 
@@ -373,7 +373,7 @@ export function registerComprasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "compras:obtener",
         (_event, id) => {
 
@@ -387,7 +387,7 @@ export function registerComprasHandlers() {
         }
     );
 
-    ipcMain.handle(
+    handleProtegido(
         "compras:revertir",
         (_event, datos) => {
 

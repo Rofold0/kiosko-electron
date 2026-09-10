@@ -1,6 +1,6 @@
 import {
-    ipcMain
-} from "electron";
+    handleProtegido
+} from "../security/ipcPermissions.js";
 
 import {
     buscarProductosVenta,
@@ -182,7 +182,7 @@ function validarItems(items) {
 
 export function registerVentasHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "ventas:productos",
         (
             _event,
@@ -212,7 +212,7 @@ export function registerVentasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "ventas:crear",
         (
             _event,
@@ -248,7 +248,7 @@ export function registerVentasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "ventas:listar",
         (
             _event,
@@ -344,7 +344,7 @@ export function registerVentasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "ventas:obtener",
         (
             _event,
@@ -362,7 +362,7 @@ export function registerVentasHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "ventas:revertir",
         (
             _event,

@@ -1,7 +1,6 @@
 import {
-    ipcMain
-} from "electron";
-
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     listarProveedores,
     crearProveedor,
@@ -108,7 +107,7 @@ function costoOpcional(valor) {
 
 export function registerProveedoresHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:listar",
         () => {
 
@@ -118,7 +117,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:crear",
         (_event, proveedor) => {
 
@@ -150,7 +149,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:actualizar",
         (_event, proveedor) => {
 
@@ -188,7 +187,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:eliminar",
         (_event, id) => {
 
@@ -203,7 +202,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:productos",
         (_event, proveedorId) => {
 
@@ -218,7 +217,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:por-producto",
         (_event, productoId) => {
 
@@ -233,7 +232,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:vincular-producto",
         (_event, datos) => {
 
@@ -272,7 +271,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:actualizar-vinculo",
         (_event, datos) => {
 
@@ -304,7 +303,7 @@ export function registerProveedoresHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "proveedores:desvincular-producto",
         (_event, id) => {
 

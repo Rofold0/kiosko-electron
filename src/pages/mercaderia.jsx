@@ -1,3 +1,10 @@
+import {
+    useNavigate
+} from "react-router-dom";
+
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 import DashboardCard
     from "../components/dashboardCard.jsx";
 
@@ -6,58 +13,92 @@ import { ROUTES }
 import PageHeader
     from "../components/pageHeader.jsx";
 function Mercaderia() {
+    const navigate =
+        useNavigate();
+
+    const {
+        puede
+    } =
+        useAuth();
     return (
         <div className="page">
             <PageHeader
                 title="Mercaderia"
             />
             <div className="dashboard-grid">
-                <DashboardCard
-                    title="Productos"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.productos
-                        )
-                    }
-                />
+                {puede(
+                    "productos.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Productos"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.productos
+                                )
+                            }
+                        />
+
+                    )}
 
 
-                <DashboardCard
-                    title="Stock"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.stock
-                        )
-                    }
-                />
+                {puede(
+                    "stock.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Stock"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.stock
+                                )
+                            }
+                        />
+
+                    )}
 
 
-                <DashboardCard
-                    title="Categorías"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.categorias
-                        )
-                    }
-                />
+                {puede(
+                    "categorias.ver"
+                ) && (
+
+                        <>
+                            <DashboardCard
+                                title="Categorías"
+                                onClick={() =>
+                                    navigate(
+                                        ROUTES.categorias
+                                    )
+                                }
+                            />
+
+                            <DashboardCard
+                                title="Subcategorías"
+                                onClick={() =>
+                                    navigate(
+                                        ROUTES.subcategorias
+                                    )
+                                }
+                            />
+                        </>
+
+                    )}
 
 
-                <DashboardCard
-                    title="Subcategorías"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.subcategorias
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Lista de compras"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.listaCompras
-                        )
-                    }
-                />
+                {puede(
+                    "lista_compras.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Lista de compras"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.listaCompras
+                                )
+                            }
+                        />
+
+                    )}
 
             </div>
         </div>

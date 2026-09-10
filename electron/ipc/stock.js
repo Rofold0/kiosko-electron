@@ -1,7 +1,6 @@
 import {
-    ipcMain
-} from "electron";
-
+    handleProtegido
+} from "../security/ipcPermissions.js";
 import {
     registrarEntrada,
     registrarSalida,
@@ -89,7 +88,7 @@ function motivoOpcional(valor) {
 
 export function registerStockHandlers() {
 
-    ipcMain.handle(
+    handleProtegido(
         "stock:entrada",
         (_event, datos) => {
 
@@ -116,7 +115,7 @@ export function registerStockHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "stock:salida",
         (_event, datos) => {
 
@@ -143,7 +142,7 @@ export function registerStockHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "stock:ajustar",
         (_event, datos) => {
 
@@ -170,7 +169,7 @@ export function registerStockHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "stock:movimientos",
         (_event, filtros) => {
 
@@ -239,7 +238,7 @@ export function registerStockHandlers() {
     );
 
 
-    ipcMain.handle(
+    handleProtegido(
         "stock:bajo-minimo",
         () => {
 
