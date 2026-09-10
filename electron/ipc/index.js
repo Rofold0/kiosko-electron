@@ -38,8 +38,12 @@ import {
 import {
     registerReportesHandlers
 } from "./reportes.js";
+import {
+    registerUsuariosHandlers
+} from "./usuarios.js";
 export function registerIpcHandlers() {
-
+    registerUsuariosHandlers();
+    
     registerCategoriasHandlers();
 
     registerSubcategoriasHandlers();

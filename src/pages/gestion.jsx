@@ -1,11 +1,25 @@
+import {
+    useNavigate
+} from "react-router-dom";
+
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 import DashboardCard
     from "../components/dashboardCard.jsx";
-
 import { ROUTES }
     from "../../shared/routes.js";
 import PageHeader
     from "../components/pageHeader.jsx";
 function Gestion() {
+    const navigate =
+        useNavigate();
+
+
+    const {
+        puede
+    } =
+        useAuth();
     return (
         <div className="page">
             <PageHeader
@@ -60,6 +74,20 @@ function Gestion() {
                         )
                     }
                 />
+                {puede(
+                    "usuarios.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Usuarios"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.usuarios
+                                )
+                            }
+                        />
+
+                    )}
 
             </div>
         </div>

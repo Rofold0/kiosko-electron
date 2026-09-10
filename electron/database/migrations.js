@@ -1146,6 +1146,337 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 13,
+
+    name: "usuarios-roles-permisos",
+
+    up(db) {
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS roles (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                clave       TEXT NOT NULL UNIQUE,
+                nombre      TEXT NOT NULL,
+                descripcion TEXT,
+                activo      INTEGER NOT NULL DEFAULT 1,
+                sistema     INTEGER NOT NULL DEFAULT 0
+            );
+
+
+            CREATE TABLE IF NOT EXISTS permisos (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                clave       TEXT NOT NULL UNIQUE,
+                descripcion TEXT NOT NULL
+            );
+
+
+            CREATE TABLE IF NOT EXISTS roles_permisos (
+                rol_id      INTEGER NOT NULL,
+                permiso_id  INTEGER NOT NULL,
+
+                PRIMARY KEY (
+                    rol_id,
+                    permiso_id
+                ),
+
+                FOREIGN KEY (rol_id)
+                    REFERENCES roles(id),
+
+                FOREIGN KEY (permiso_id)
+                    REFERENCES permisos(id)
+            );
+
+
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                usuario         TEXT NOT NULL,
+                nombre          TEXT NOT NULL,
+
+                password_hash   TEXT NOT NULL,
+                password_salt   TEXT NOT NULL,
+
+                rol_id          INTEGER NOT NULL,
+
+                activo          INTEGER NOT NULL DEFAULT 1,
+
+                ultimo_acceso   TEXT,
+                creado_en       TEXT NOT NULL,
+                actualizado_en  TEXT NOT NULL,
+
+                FOREIGN KEY (rol_id)
+                    REFERENCES roles(id)
+            );
+
+
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_usuarios_usuario
+            ON usuarios(
+                LOWER(usuario)
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_usuarios_rol_activo
+            ON usuarios(
+                rol_id,
+                activo
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_roles_permisos_permiso
+            ON roles_permisos(
+                permiso_id
+            );
+        `);
+
+
+        const insertarPermiso =
+            db.prepare(`
+                INSERT OR IGNORE
+                INTO permisos (
+                    clave,
+                    descripcion
+                )
+                VALUES (?, ?)
+            `);
+
+
+        const permisos = [
+
+            ["categorias.ver", "Ver categorías"],
+            ["categorias.modificar", "Modificar categorías"],
+
+            ["productos.ver", "Ver productos"],
+            ["productos.modificar", "Modificar productos"],
+
+            ["stock.ver", "Ver stock"],
+            ["stock.ajustar", "Realizar ajustes de stock"],
+
+            ["lista_compras.ver", "Ver lista de compras"],
+            ["lista_compras.modificar", "Modificar lista de compras"],
+
+            ["proveedores.ver", "Ver proveedores"],
+            ["proveedores.modificar", "Modificar proveedores"],
+
+            ["compras.ver", "Ver compras"],
+            ["compras.crear", "Registrar compras"],
+            ["compras.revertir", "Revertir compras"],
+
+            ["precios.ver", "Ver precios"],
+            ["precios.modificar", "Modificar precios"],
+
+            ["ventas.ver", "Ver ventas"],
+            ["ventas.crear", "Registrar ventas"],
+            ["ventas.revertir", "Revertir ventas"],
+
+            ["caja.ver", "Ver caja"],
+            ["caja.abrir", "Abrir caja"],
+            ["caja.cerrar", "Cerrar caja"],
+            ["caja.movimiento", "Crear movimientos manuales"],
+            ["caja.revertir", "Revertir movimientos manuales"],
+
+            ["gastos.ver", "Ver gastos"],
+            ["gastos.crear", "Registrar gastos"],
+            ["gastos.revertir", "Revertir gastos"],
+
+            ["reportes.ver", "Ver reportes"],
+            ["reportes.exportar", "Exportar reportes"],
+
+            ["usuarios.ver", "Ver usuarios"],
+            ["usuarios.crear", "Crear usuarios"],
+            ["usuarios.modificar", "Modificar usuarios"],
+            ["usuarios.desactivar", "Activar o desactivar usuarios"],
+
+            ["roles.ver", "Ver roles"],
+            ["roles.modificar", "Modificar permisos de roles"]
+
+        ];
+
+
+        for (
+            const permiso
+            of permisos
+        ) {
+
+            insertarPermiso.run(
+                permiso[0],
+                permiso[1]
+            );
+
+        }
+
+
+        const insertarRol =
+            db.prepare(`
+                INSERT OR IGNORE
+                INTO roles (
+                    clave,
+                    nombre,
+                    descripcion,
+                    activo,
+                    sistema
+                )
+                VALUES (?, ?, ?, 1, ?)
+            `);
+
+
+        insertarRol.run(
+            "ADMIN",
+            "Administrador",
+            "Acceso completo al sistema.",
+            1
+        );
+
+
+        insertarRol.run(
+            "ENCARGADO",
+            "Encargado",
+            "Gestión comercial sin administración de usuarios.",
+            1
+        );
+
+
+        insertarRol.run(
+            "CAJERO",
+            "Cajero",
+            "Ventas y operación básica de caja.",
+            1
+        );
+
+
+        insertarRol.run(
+            "CONSULTA",
+            "Consulta",
+            "Acceso de sólo consulta.",
+            1
+        );
+
+
+        /*
+         * Administrador:
+         * todos los permisos.
+         */
+
+        db.exec(`
+            INSERT OR IGNORE
+            INTO roles_permisos (
+                rol_id,
+                permiso_id
+            )
+
+            SELECT
+                r.id,
+                p.id
+
+            FROM roles r
+            CROSS JOIN permisos p
+
+            WHERE r.clave = 'ADMIN';
+        `);
+
+
+        /*
+         * Encargado:
+         * todo excepto usuarios y roles.
+         */
+
+        db.exec(`
+            INSERT OR IGNORE
+            INTO roles_permisos (
+                rol_id,
+                permiso_id
+            )
+
+            SELECT
+                r.id,
+                p.id
+
+            FROM roles r
+            CROSS JOIN permisos p
+
+            WHERE
+                r.clave = 'ENCARGADO'
+
+                AND p.clave NOT LIKE
+                    'usuarios.%'
+
+                AND p.clave NOT LIKE
+                    'roles.%';
+        `);
+
+
+        /*
+         * Cajero.
+         */
+
+        const permisosCajero = [
+            "productos.ver",
+            "stock.ver",
+            "ventas.ver",
+            "ventas.crear",
+            "caja.ver",
+            "caja.abrir",
+            "caja.cerrar"
+        ];
+
+
+        const asignarPermiso =
+            db.prepare(`
+                INSERT OR IGNORE
+                INTO roles_permisos (
+                    rol_id,
+                    permiso_id
+                )
+
+                SELECT
+                    r.id,
+                    p.id
+
+                FROM roles r
+                INNER JOIN permisos p
+                    ON p.clave = ?
+
+                WHERE r.clave = ?
+            `);
+
+
+        for (
+            const permiso
+            of permisosCajero
+        ) {
+
+            asignarPermiso.run(
+                permiso,
+                "CAJERO"
+            );
+
+        }
+
+
+        const permisosConsulta = [
+            "productos.ver",
+            "stock.ver",
+            "reportes.ver"
+        ];
+
+
+        for (
+            const permiso
+            of permisosConsulta
+        ) {
+
+            asignarPermiso.run(
+                permiso,
+                "CONSULTA"
+            );
+
+        }
+
+    }
 }
 ];
 

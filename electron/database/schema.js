@@ -2,6 +2,86 @@ export function createSchema(db) {
 
     db.exec(`
 -- ============================================================================
+-- USUARIOS, ROLES Y PERMISOS
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS roles (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    clave       TEXT NOT NULL UNIQUE,
+    nombre      TEXT NOT NULL,
+    descripcion TEXT,
+    activo      INTEGER NOT NULL DEFAULT 1,
+    sistema     INTEGER NOT NULL DEFAULT 0
+);
+
+
+CREATE TABLE IF NOT EXISTS permisos (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    clave       TEXT NOT NULL UNIQUE,
+    descripcion TEXT NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS roles_permisos (
+    rol_id      INTEGER NOT NULL,
+    permiso_id  INTEGER NOT NULL,
+
+    PRIMARY KEY (
+        rol_id,
+        permiso_id
+    ),
+
+    FOREIGN KEY (rol_id)
+        REFERENCES roles(id),
+
+    FOREIGN KEY (permiso_id)
+        REFERENCES permisos(id)
+);
+
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    usuario         TEXT NOT NULL,
+    nombre          TEXT NOT NULL,
+
+    password_hash   TEXT NOT NULL,
+    password_salt   TEXT NOT NULL,
+
+    rol_id          INTEGER NOT NULL,
+
+    activo          INTEGER NOT NULL DEFAULT 1,
+
+    ultimo_acceso   TEXT,
+    creado_en       TEXT NOT NULL,
+    actualizado_en  TEXT NOT NULL,
+
+    FOREIGN KEY (rol_id)
+        REFERENCES roles(id)
+);
+
+
+CREATE UNIQUE INDEX IF NOT EXISTS
+idx_usuarios_usuario
+ON usuarios(
+    LOWER(usuario)
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_usuarios_rol_activo
+ON usuarios(
+    rol_id,
+    activo
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_roles_permisos_permiso
+ON roles_permisos(
+    permiso_id
+);
+-- ============================================================================
 -- CATEGORÍAS Y SUBCATEGORÍAS
 -- ============================================================================
 

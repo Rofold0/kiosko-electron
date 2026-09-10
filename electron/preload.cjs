@@ -17,6 +17,86 @@ contextBridge.exposeInMainWorld("electronAPI", {
       )
 
   },
+  auth: {
+
+    estado: () =>
+        ipcRenderer.invoke(
+            "auth:estado"
+        ),
+
+    configurarInicial: (datos) =>
+        ipcRenderer.invoke(
+            "auth:configurar-inicial",
+            datos
+        ),
+
+    login: (datos) =>
+        ipcRenderer.invoke(
+            "auth:login",
+            datos
+        ),
+
+    logout: () =>
+        ipcRenderer.invoke(
+            "auth:logout"
+        )
+
+},
+
+
+usuarios: {
+
+    listar: () =>
+        ipcRenderer.invoke(
+            "usuarios:listar"
+        ),
+
+    roles: () =>
+        ipcRenderer.invoke(
+            "usuarios:roles"
+        ),
+
+    permisos: () =>
+        ipcRenderer.invoke(
+            "usuarios:permisos"
+        ),
+
+    crear: (datos) =>
+        ipcRenderer.invoke(
+            "usuarios:crear",
+            datos
+        ),
+
+    actualizar: (datos) =>
+        ipcRenderer.invoke(
+            "usuarios:actualizar",
+            datos
+        ),
+
+    cambiarPassword: (datos) =>
+        ipcRenderer.invoke(
+            "usuarios:cambiar-password",
+            datos
+        ),
+
+    cambiarActivo: (datos) =>
+        ipcRenderer.invoke(
+            "usuarios:cambiar-activo",
+            datos
+        )
+
+},
+
+
+roles: {
+
+    actualizarPermisos: (datos) =>
+        ipcRenderer.invoke(
+            "roles:actualizar-permisos",
+            datos
+        )
+
+},
   subcategorias: {
 
     listar: () =>

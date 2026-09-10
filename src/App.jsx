@@ -1,4 +1,17 @@
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
+import {
+  AuthProvider,
+  useAuth
+} from "./auth/authContext.jsx";
+
+import Login
+  from "./pages/login.jsx";
+
+import ConfiguracionInicial
+  from "./pages/configuracionInicial.jsx";
+
+import Usuarios
+  from "./pages/usuarios.jsx";
 import Dashboard from "./pages/dashboard";
 import Categorias from "./pages/categorias";
 import Subcategorias from "./pages/subcategorias";
@@ -16,6 +29,8 @@ import Gastos from "./pages/gastos";
 import Reportes from "./pages/reportes";
 import Mercaderia from "./pages/mercaderia";
 import Gestion from "./pages/gestion";
+
+
 
 function NavegacionElectron() {
 
@@ -47,13 +62,36 @@ function NavegacionElectron() {
   return null; // Este componente no necesita renderizar nada
 }
 
-function App() {
+function AplicacionProtegida() {
+
+  const {
+    logout,
+    puede
+  } =
+    useAuth();
+
 
   return (
-
-    <HashRouter>
+    <>
 
       <NavegacionElectron />
+
+
+      <div className="app-session-bar">
+
+        <span>
+          Sesión activa
+        </span>
+
+        <button
+          type="button"
+          onClick={logout}
+        >
+          Cerrar sesión
+        </button>
+
+      </div>
+
 
       <Routes>
 
@@ -120,15 +158,95 @@ function App() {
           path={ROUTES.gestion}
           element={<Gestion />}
         />
+
+
+        <Route
+          path={ROUTES.usuarios}
+          element={
+            puede(
+              "usuarios.ver"
+            )
+              ? <Usuarios />
+              : <Dashboard />
+          }
+        />
+
+
         <Route
           path="*"
           element={<Dashboard />}
         />
+
       </Routes>
 
-    </HashRouter>
-
+    </>
   );
+
+}
+
+
+function ContenidoApp() {
+
+    const {
+        cargando,
+        usuario,
+        requiereConfiguracion
+    } =
+        useAuth();
+
+
+    if (cargando) {
+
+        return (
+            <div className="auth-loading">
+                Cargando...
+            </div>
+        );
+
+    }
+
+
+    if (requiereConfiguracion) {
+
+        return (
+            <ConfiguracionInicial />
+        );
+
+    }
+
+
+    if (!usuario) {
+
+        return (
+            <Login />
+        );
+
+    }
+
+
+    return (
+        <AplicacionProtegida />
+    );
+
+}
+
+
+function App() {
+
+    return (
+
+        <HashRouter>
+
+            <AuthProvider>
+
+                <ContenidoApp />
+
+            </AuthProvider>
+
+        </HashRouter>
+
+    );
+
 }
 
 export default App;

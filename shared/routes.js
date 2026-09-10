@@ -14,5 +14,6 @@ export const ROUTES = {
     gastos: "/gastos",
     reportes: "/reportes",
     mercaderia: "/mercaderia",
-    gestion: "/gestion"
+    gestion: "/gestion",
+    usuarios: "/usuarios"
 };

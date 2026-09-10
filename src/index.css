@@ -12,6 +12,7 @@
 @import "./styles/caja.css";
 @import "./styles/gastos.css";
 @import "./styles/reportes.css";
+@import ".styles/usuarios.css";
 
 :root {
     font-family:
