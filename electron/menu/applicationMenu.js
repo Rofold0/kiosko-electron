@@ -39,7 +39,7 @@ export function createMenu(mainWindow) {
 
         },
         {
-            label: "Administración",
+            label: "Mercadería",
             submenu: [
                 {
                     label: "Categorías",

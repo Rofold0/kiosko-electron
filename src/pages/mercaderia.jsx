@@ -5,11 +5,11 @@ import { ROUTES }
     from "../../shared/routes.js";
 import PageHeader
     from "../components/pageHeader.jsx";
-function Administracion() {
+function Mercaderia() {
     return (
         <div className="page">
             <PageHeader
-                title="Administración"
+                title="Mercaderia"
             />
             <div className="dashboard-grid">
                 <DashboardCard
@@ -63,4 +63,4 @@ function Administracion() {
         </div>
     );
 }
-export default Administracion;
+export default Mercaderia;

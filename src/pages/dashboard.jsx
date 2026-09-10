@@ -313,10 +313,10 @@ function Dashboard() {
             <div className="dashboard-grid">
 
                 <DashboardCard
-                    title="Administración"
+                    title="Mercaderia"
                     onClick={() =>
                         navigate(
-                            ROUTES.administracion
+                            ROUTES.mercaderia
                         )
                     }
                 />

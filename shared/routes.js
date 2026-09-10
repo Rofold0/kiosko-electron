@@ -13,6 +13,6 @@ export const ROUTES = {
     caja: "/caja",
     gastos: "/gastos",
     reportes: "/reportes",
-    administracion: "/administracion",
+    mercaderia: "/mercaderia",
     gestion: "/gestion"
 };

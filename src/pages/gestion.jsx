@@ -5,7 +5,7 @@ import { ROUTES }
     from "../../shared/routes.js";
 import PageHeader
     from "../components/pageHeader.jsx";
-function Administracion() {
+function Gestion() {
     return (
         <div className="page">
             <PageHeader
@@ -65,4 +65,4 @@ function Administracion() {
         </div>
     );
 }
-export default Administracion;
+export default Gestion;

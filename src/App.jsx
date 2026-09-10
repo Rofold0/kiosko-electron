@@ -14,7 +14,7 @@ import Ventas from "./pages/ventas";
 import Caja from "./pages/caja";
 import Gastos from "./pages/gastos";
 import Reportes from "./pages/reportes";
-import Administracion from "./pages/administracion";
+import Mercaderia from "./pages/mercaderia";
 import Gestion from "./pages/gestion";
 
 function NavegacionElectron() {
@@ -113,8 +113,8 @@ function App() {
           element={<Reportes />}
         />
         <Route
-          path={ROUTES.administracion}
-          element={<Administracion />}
+          path={ROUTES.mercaderia}
+          element={<Mercaderia />}
         />
         <Route
           path={ROUTES.gestion}
