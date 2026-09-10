@@ -313,96 +313,18 @@ function Dashboard() {
             <div className="dashboard-grid">
 
                 <DashboardCard
-                    title="Productos"
+                    title="Administración"
                     onClick={() =>
                         navigate(
-                            ROUTES.productos
-                        )
-                    }
-                />
-
-
-                <DashboardCard
-                    title="Stock"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.stock
-                        )
-                    }
-                />
-
-
-                <DashboardCard
-                    title="Categorías"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.categorias
-                        )
-                    }
-                />
-
-
-                <DashboardCard
-                    title="Subcategorías"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.subcategorias
+                            ROUTES.administracion
                         )
                     }
                 />
                 <DashboardCard
-                    title="Lista de compras"
+                    title="Gestión"
                     onClick={() =>
                         navigate(
-                            ROUTES.listaCompras
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Proveedores"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.proveedores
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Compras"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.compras
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Precios"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.precios
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Ventas"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.ventas
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Caja"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.caja
-                        )
-                    }
-                />
-                <DashboardCard
-                    title="Gastos"
-                    onClick={() =>
-                        navigate(
-                            ROUTES.gastos
+                            ROUTES.gestion
                         )
                     }
                 />

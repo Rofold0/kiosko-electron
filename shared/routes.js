@@ -12,5 +12,7 @@ export const ROUTES = {
     ventas: "/ventas",
     caja: "/caja",
     gastos: "/gastos",
-    reportes: "/reportes"
+    reportes: "/reportes",
+    administracion: "/administracion",
+    gestion: "/gestion"
 };
