@@ -1,7 +1,4 @@
 import {
-    createContext,
-    useCallback,
-    useContext,
     useEffect,
     useState
 } from "react";
@@ -21,21 +18,11 @@ import { ROUTES }
 
 function Dashboard() {
 
-    const puede =
-        useCallback(
-            (permiso) => {
+    const {
+        puede
+    } =
+        useAuth();
 
-                return Boolean(
-                    usuario
-                        ?.permisos
-                        ?.includes(
-                            permiso
-                        )
-                );
-
-            },
-            [usuario]
-        );
 
     const navigate =
         useNavigate();
@@ -165,6 +152,7 @@ function Dashboard() {
 
     return (
 
+
         <div className="page">
 
             <h1>Kiosko</h1>
@@ -172,181 +160,193 @@ function Dashboard() {
 
             {/* ALERTAS */}
 
-            <section className="stock-alert-panel">
+            {puede(
+                "stock.ver"
+            ) && (
 
-                <div className="stock-alert-header">
+                    <section className="stock-alert-panel">
 
-                    <div>
+                        <div className="stock-alert-header">
 
-                        <h2>
-                            Alertas de stock
-                        </h2>
+                            <div>
 
-                        <p>
-                            Productos que necesitan reposición.
-                        </p>
+                                <h2>
+                                    Alertas de stock
+                                </h2>
 
-                    </div>
-
-
-                    <button
-                        type="button"
-                        onClick={() =>
-                            navigate(
-                                ROUTES.stock
-                            )
-                        }
-                    >
-                        Ir a Stock
-                    </button>
-                    <button
-                        type="button"
-                        onClick={
-                            agregarFaltantes
-                        }
-                    >
-                        Agregar faltantes a compras
-                    </button>
-
-                </div>
-
-
-                {cargandoAlertas ? (
-
-                    <p>
-                        Cargando stock...
-                    </p>
-
-                ) : errorAlertas ? (
-
-                    <p>
-                        No se pudieron cargar
-                        las alertas.
-                    </p>
-
-                ) : alertasStock.length === 0 ? (
-
-                    <p className="stock-alert-ok">
-                        No hay productos con
-                        stock bajo.
-                    </p>
-
-                ) : (
-
-                    <>
-
-                        <div className="stock-alert-summary">
-
-                            <div className="stock-alert-stat stock-alert-stat--critical">
-
-                                <strong>
-                                    {sinStock.length}
-                                </strong>
-
-                                <span>
-                                    Sin stock
-                                </span>
+                                <p>
+                                    Productos que necesitan reposición.
+                                </p>
 
                             </div>
 
 
-                            <div className="stock-alert-stat">
-
-                                <strong>
-                                    {stockBajo.length}
-                                </strong>
-
-                                <span>
-                                    Stock bajo
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <div className="stock-alert-list">
-
-                            {alertasStock
-                                .slice(0, 6)
-                                .map(
-                                    (producto) => (
-
-                                        <button
-                                            key={
-                                                producto.id
-                                            }
-                                            type="button"
-                                            className={
-                                                producto
-                                                    .stock_actual === 0
-                                                    ? "stock-alert-item stock-alert-item--critical"
-                                                    : "stock-alert-item"
-                                            }
-                                            onClick={() =>
-                                                navigate(
-                                                    ROUTES.stock
-                                                )
-                                            }
-                                        >
-
-                                            <span className="stock-alert-product">
-
-                                                {
-                                                    producto.nombre
-                                                }
-
-                                                {
-                                                    producto.codigo
-                                                        ? ` · ${producto.codigo}`
-                                                        : ""
-                                                }
-
-                                            </span>
-
-
-                                            <span>
-
-                                                Stock:{" "}
-                                                <strong>
-                                                    {
-                                                        producto.stock_actual
-                                                    }
-                                                </strong>
-
-                                                {" / mín. "}
-
-                                                {
-                                                    producto.stock_minimo
-                                                }
-
-                                            </span>
-
-                                        </button>
-
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    navigate(
+                                        ROUTES.stock
                                     )
+                                }
+                            >
+                                Ir a Stock
+                            </button>
+                            {puede(
+                                "lista_compras.modificar"
+                            ) && (
+
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            agregarFaltantes
+                                        }
+                                    >
+                                        Agregar faltantes a compras
+                                    </button>
+
                                 )}
 
                         </div>
 
 
-                        {alertasStock.length > 6 && (
+                        {cargandoAlertas ? (
 
-                            <p className="stock-alert-more">
-
-                                +{
-                                    alertasStock.length - 6
-                                } productos más
-
+                            <p>
+                                Cargando stock...
                             </p>
+
+                        ) : errorAlertas ? (
+
+                            <p>
+                                No se pudieron cargar
+                                las alertas.
+                            </p>
+
+                        ) : alertasStock.length === 0 ? (
+
+                            <p className="stock-alert-ok">
+                                No hay productos con
+                                stock bajo.
+                            </p>
+
+                        ) : (
+
+                            <>
+
+                                <div className="stock-alert-summary">
+
+                                    <div className="stock-alert-stat stock-alert-stat--critical">
+
+                                        <strong>
+                                            {sinStock.length}
+                                        </strong>
+
+                                        <span>
+                                            Sin stock
+                                        </span>
+
+                                    </div>
+
+
+                                    <div className="stock-alert-stat">
+
+                                        <strong>
+                                            {stockBajo.length}
+                                        </strong>
+
+                                        <span>
+                                            Stock bajo
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div className="stock-alert-list">
+
+                                    {alertasStock
+                                        .slice(0, 6)
+                                        .map(
+                                            (producto) => (
+
+                                                <button
+                                                    key={
+                                                        producto.id
+                                                    }
+                                                    type="button"
+                                                    className={
+                                                        producto
+                                                            .stock_actual === 0
+                                                            ? "stock-alert-item stock-alert-item--critical"
+                                                            : "stock-alert-item"
+                                                    }
+                                                    onClick={() =>
+                                                        navigate(
+                                                            ROUTES.stock
+                                                        )
+                                                    }
+                                                >
+
+                                                    <span className="stock-alert-product">
+
+                                                        {
+                                                            producto.nombre
+                                                        }
+
+                                                        {
+                                                            producto.codigo
+                                                                ? ` · ${producto.codigo}`
+                                                                : ""
+                                                        }
+
+                                                    </span>
+
+
+                                                    <span>
+
+                                                        Stock:{" "}
+                                                        <strong>
+                                                            {
+                                                                producto.stock_actual
+                                                            }
+                                                        </strong>
+
+                                                        {" / mín. "}
+
+                                                        {
+                                                            producto.stock_minimo
+                                                        }
+
+                                                    </span>
+
+                                                </button>
+
+                                            )
+                                        )}
+
+                                </div>
+
+
+                                {alertasStock.length > 6 && (
+
+                                    <p className="stock-alert-more">
+
+                                        +{
+                                            alertasStock.length - 6
+                                        } productos más
+
+                                    </p>
+
+                                )}
+
+                            </>
 
                         )}
 
-                    </>
+                    </section>
 
                 )}
-
-            </section>
 
 
             {/* NAVEGACIÓN */}

@@ -1,11 +1,10 @@
 import {
     createContext,
+    useCallback,
     useContext,
     useEffect,
     useState
 } from "react";
-
-
 const AuthContext =
     createContext(null);
 
@@ -134,17 +133,20 @@ export function AuthProvider({
 
 
     const puede =
-        (permiso) => {
+        useCallback(
+            (permiso) => {
 
-            return Boolean(
-                usuario
-                    ?.permisos
-                    ?.includes(
-                        permiso
-                    )
-            );
+                return Boolean(
+                    usuario
+                        ?.permisos
+                        ?.includes(
+                            permiso
+                        )
+                );
 
-        };
+            },
+            [usuario]
+        );
 
 
     return (
