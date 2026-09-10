@@ -268,176 +268,199 @@ contextBridge.exposeInMainWorld("electronAPI", {
   precios: {
 
     listar: (filtros) =>
-        ipcRenderer.invoke(
-            "precios:listar",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "precios:listar",
+        filtros
+      ),
 
     detalle: (productoId) =>
-        ipcRenderer.invoke(
-            "precios:detalle",
-            productoId
-        ),
+      ipcRenderer.invoke(
+        "precios:detalle",
+        productoId
+      ),
 
     vigente: (productoId) =>
-        ipcRenderer.invoke(
-            "precios:vigente",
-            productoId
-        ),
+      ipcRenderer.invoke(
+        "precios:vigente",
+        productoId
+      ),
 
     guardar: (datos) =>
-        ipcRenderer.invoke(
-            "precios:guardar",
-            datos
-        )
+      ipcRenderer.invoke(
+        "precios:guardar",
+        datos
+      )
 
-},
-ventas: {
+  },
+  ventas: {
 
     productos: (filtros) =>
-        ipcRenderer.invoke(
-            "ventas:productos",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "ventas:productos",
+        filtros
+      ),
 
     crear: (datos) =>
-        ipcRenderer.invoke(
-            "ventas:crear",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "ventas:crear",
+        datos
+      ),
 
     listar: (filtros) =>
-        ipcRenderer.invoke(
-            "ventas:listar",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "ventas:listar",
+        filtros
+      ),
 
     obtener: (id) =>
-        ipcRenderer.invoke(
-            "ventas:obtener",
-            id
-        ),
+      ipcRenderer.invoke(
+        "ventas:obtener",
+        id
+      ),
 
     revertir: (datos) =>
-        ipcRenderer.invoke(
-            "ventas:revertir",
-            datos
-        )
+      ipcRenderer.invoke(
+        "ventas:revertir",
+        datos
+      )
 
-},
-caja: {
+  },
+  caja: {
 
     actual: () =>
-        ipcRenderer.invoke(
-            "caja:actual"
-        ),
+      ipcRenderer.invoke(
+        "caja:actual"
+      ),
 
     abrir: (datos) =>
-        ipcRenderer.invoke(
-            "caja:abrir",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "caja:abrir",
+        datos
+      ),
 
     cerrar: (datos) =>
-        ipcRenderer.invoke(
-            "caja:cerrar",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "caja:cerrar",
+        datos
+      ),
 
     movimientoManual: (datos) =>
-        ipcRenderer.invoke(
-            "caja:movimiento-manual",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "caja:movimiento-manual",
+        datos
+      ),
 
     revertirManual: (datos) =>
-        ipcRenderer.invoke(
-            "caja:revertir-manual",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "caja:revertir-manual",
+        datos
+      ),
 
     movimientos: (filtros) =>
-        ipcRenderer.invoke(
-            "caja:movimientos",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "caja:movimientos",
+        filtros
+      ),
 
     historial: (filtros) =>
-        ipcRenderer.invoke(
-            "caja:historial",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "caja:historial",
+        filtros
+      ),
 
     obtener: (id) =>
-        ipcRenderer.invoke(
-            "caja:obtener",
-            id
-        )
+      ipcRenderer.invoke(
+        "caja:obtener",
+        id
+      )
 
-},
-gastos: {
+  },
+  gastos: {
 
     categorias: {
 
-        listar: () =>
-            ipcRenderer.invoke(
-                "gastos:categorias-listar"
-            ),
+      listar: () =>
+        ipcRenderer.invoke(
+          "gastos:categorias-listar"
+        ),
 
-        crear: (datos) =>
-            ipcRenderer.invoke(
-                "gastos:categoria-crear",
-                datos
-            ),
+      crear: (datos) =>
+        ipcRenderer.invoke(
+          "gastos:categoria-crear",
+          datos
+        ),
 
-        actualizar: (datos) =>
-            ipcRenderer.invoke(
-                "gastos:categoria-actualizar",
-                datos
-            ),
+      actualizar: (datos) =>
+        ipcRenderer.invoke(
+          "gastos:categoria-actualizar",
+          datos
+        ),
 
-        eliminar: (id) =>
-            ipcRenderer.invoke(
-                "gastos:categoria-eliminar",
-                id
-            )
+      eliminar: (id) =>
+        ipcRenderer.invoke(
+          "gastos:categoria-eliminar",
+          id
+        )
 
     },
 
     crear: (datos) =>
-        ipcRenderer.invoke(
-            "gastos:crear",
-            datos
-        ),
+      ipcRenderer.invoke(
+        "gastos:crear",
+        datos
+      ),
 
     listar: (filtros) =>
-        ipcRenderer.invoke(
-            "gastos:listar",
-            filtros
-        ),
+      ipcRenderer.invoke(
+        "gastos:listar",
+        filtros
+      ),
 
     obtener: (id) =>
-        ipcRenderer.invoke(
-            "gastos:obtener",
-            id
-        ),
+      ipcRenderer.invoke(
+        "gastos:obtener",
+        id
+      ),
 
     revertir: (datos) =>
-        ipcRenderer.invoke(
-            "gastos:revertir",
-            datos
-        )
+      ipcRenderer.invoke(
+        "gastos:revertir",
+        datos
+      )
 
-},
-reportes: {
+  },
+  reportes: {
 
     dashboard: (filtros) =>
-        ipcRenderer.invoke(
-            "reportes:dashboard",
-            filtros
-        )
+      ipcRenderer.invoke(
+        "reportes:dashboard",
+        filtros
+      ),
 
-},
+    exportarPdf: (filtros) =>
+      ipcRenderer.invoke(
+        "reportes:exportar-pdf",
+        filtros
+      ),
+
+    exportarCsv: (datos) =>
+      ipcRenderer.invoke(
+        "reportes:exportar-csv",
+        datos
+      ),
+
+    exportarExcel: (datos) =>
+    ipcRenderer.invoke(
+        "reportes:exportar-excel",
+        datos
+    ),
+
+    imprimir: () =>
+      ipcRenderer.invoke(
+        "reportes:imprimir"
+      )
+
+  },
 
   // Navegación desde el menú de Electron hacia React
   onNavigate: (callback) => {

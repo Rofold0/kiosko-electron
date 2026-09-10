@@ -3,7 +3,8 @@ import {
     useMemo,
     useState
 } from "react";
-
+import ReportExportDropdown
+    from "../components/reportExportDropdown.jsx";
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -300,6 +301,127 @@ function Reportes() {
 
         };
 
+    const exportarPdf =
+        async () => {
+
+            if (!datos) {
+                return;
+            }
+
+
+            try {
+
+                await window
+                    .electronAPI
+                    .reportes
+                    .exportarPdf({
+
+                        desde,
+                        hasta
+
+                    });
+
+
+            } catch (error) {
+
+                await mostrarError(
+                    error
+                );
+
+            }
+
+        };
+
+
+    const exportarCsv =
+        async () => {
+
+            if (!datos) {
+                return;
+            }
+
+
+            try {
+
+                await window
+                    .electronAPI
+                    .reportes
+                    .exportarCsv({
+
+                        desde,
+                        hasta,
+                        datos
+
+                    });
+
+
+            } catch (error) {
+
+                await mostrarError(
+                    error
+                );
+
+            }
+
+        };
+
+    const exportarExcel =
+        async () => {
+
+            if (!datos) {
+                return;
+            }
+
+
+            try {
+
+                await window
+                    .electronAPI
+                    .reportes
+                    .exportarExcel({
+
+                        desde,
+                        hasta,
+                        datos
+
+                    });
+
+
+            } catch (error) {
+
+                await mostrarError(
+                    error
+                );
+
+            }
+
+        };
+
+    const imprimir =
+        async () => {
+
+            if (!datos) {
+                return;
+            }
+
+
+            try {
+
+                await window
+                    .electronAPI
+                    .reportes
+                    .imprimir();
+
+
+            } catch (error) {
+
+                await mostrarError(
+                    error
+                );
+
+            }
+
+        };
 
     const maxHora =
         Math.max(
@@ -376,6 +498,7 @@ function Reportes() {
                 </div>
 
 
+
                 <button
                     type="submit"
                     disabled={
@@ -391,6 +514,47 @@ function Reportes() {
 
             </form>
 
+            <div className="reports-export-row">
+
+                <ReportExportDropdown
+
+                    disabled={
+                        !datos ||
+                        cargando
+                    }
+
+                    onPdf={
+                        exportarPdf
+                    }
+
+                    onCsv={
+                        exportarCsv
+                    }
+
+                    onExcel={
+                        exportarExcel
+                    }
+
+                    onPrint={
+                        imprimir
+                    }
+
+                />
+
+            </div>
+
+
+            <div className="report-print-meta">
+
+                <strong>
+                    Reporte general
+                </strong>
+
+                <span>
+                    Período: {desde} al {hasta}
+                </span>
+
+            </div>
 
             {!datos ? (
 
