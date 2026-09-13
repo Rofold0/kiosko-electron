@@ -196,7 +196,7 @@ export function registerProductosHandlers() {
 
     handleProtegido(
         "productos:crear",
-        (_event, producto) => {
+        (event, producto) => {
 
             const resultado =
                 crearProducto({
@@ -287,7 +287,7 @@ export function registerProductosHandlers() {
 
     handleProtegido(
         "productos:actualizar",
-        (_event, producto) => {
+        (event, producto) => {
 
             const resultado =
                 actualizarProducto({
@@ -380,7 +380,7 @@ export function registerProductosHandlers() {
 
     handleProtegido(
         "productos:eliminar",
-        (_event, id) => {
+        (event, id) => {
 
             const productoId =
                 validarId(

@@ -67,10 +67,28 @@ export function registerSubcategoriasHandlers() {
 
     handleProtegido(
         "subcategorias:crear",
-        (_event, subcategoria) => {
+
+        (
+            event,
+            subcategoria
+        ) => {
+
+            const categoriaId =
+                validarId(
+                    subcategoria?.categoria_id,
+                    "Debe seleccionar una categoría."
+                );
+
+
+            const nombre =
+                validarNombre(
+                    subcategoria?.nombre
+                );
+
 
             const resultado =
                 crearSubcategoria(
+                    categoriaId,
                     nombre
                 );
 
@@ -79,7 +97,7 @@ export function registerSubcategoriasHandlers() {
                 event,
                 {
                     modulo:
-                        "SUBCATEGORIA   ",
+                        "SUBCATEGORIAS",
 
                     accion:
                         "CREAR",
@@ -91,23 +109,56 @@ export function registerSubcategoriasHandlers() {
                         resultado.id,
 
                     descripcion:
-                        `Subategoría "${resultado.nombre}" creada.`
+                        `Subcategoría "${resultado.nombre}" creada.`,
+
+                    detalles: {
+                        categoria_id:
+                            categoriaId,
+
+                        nombre
+                    }
                 }
             );
 
 
             return resultado;
+
         }
     );
 
 
     handleProtegido(
         "subcategorias:actualizar",
-        (_event, subcategoria) => {
+
+        (
+            event,
+            subcategoria
+        ) => {
+
+            const id =
+                validarId(
+                    subcategoria?.id,
+                    "ID de subcategoría inválido."
+                );
+
+
+            const categoriaId =
+                validarId(
+                    subcategoria?.categoria_id,
+                    "Debe seleccionar una categoría."
+                );
+
+
+            const nombre =
+                validarNombre(
+                    subcategoria?.nombre
+                );
+
 
             const resultado =
                 actualizarSubcategoria(
                     id,
+                    categoriaId,
                     nombre
                 );
 
@@ -116,7 +167,7 @@ export function registerSubcategoriasHandlers() {
                 event,
                 {
                     modulo:
-                        "SUBCATEGORIA",
+                        "SUBCATEGORIAS",
 
                     accion:
                         "ACTUALIZAR",
@@ -131,7 +182,9 @@ export function registerSubcategoriasHandlers() {
                         `Subcategoría #${id} actualizada.`,
 
                     detalles: {
-                        subcategoria_id: subcategoriaId,
+                        categoria_id:
+                            categoriaId,
+
                         nombre
                     }
                 }
@@ -146,10 +199,17 @@ export function registerSubcategoriasHandlers() {
 
     handleProtegido(
         "subcategorias:eliminar",
-        (_event, id) => {
 
-            const subategoriaId =
-                validarId(id);
+        (
+            event,
+            valor
+        ) => {
+
+            const subcategoriaId =
+                validarId(
+                    valor,
+                    "ID de subcategoría inválido."
+                );
 
 
             const resultado =
@@ -171,7 +231,7 @@ export function registerSubcategoriasHandlers() {
                         "subcategoria",
 
                     entidadId:
-                        categoriaId,
+                        subcategoriaId,
 
                     descripcion:
                         `Subcategoría #${subcategoriaId} desactivada.`

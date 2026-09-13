@@ -58,7 +58,17 @@ export function registerCategoriasHandlers() {
 
     handleProtegido(
         "categorias:crear",
-        (_event, categoria) => {
+
+        (
+            event,
+            categoria
+        ) => {
+
+            const nombre =
+                validarNombre(
+                    categoria?.nombre
+                );
+
 
             const resultado =
                 crearCategoria(
@@ -95,7 +105,23 @@ export function registerCategoriasHandlers() {
 
     handleProtegido(
         "categorias:actualizar",
-        (_event, categoria) => {
+
+        (
+            event,
+            categoria
+        ) => {
+
+            const id =
+                validarId(
+                    categoria?.id
+                );
+
+
+            const nombre =
+                validarNombre(
+                    categoria?.nombre
+                );
+
 
             const resultado =
                 actualizarCategoria(
@@ -123,7 +149,6 @@ export function registerCategoriasHandlers() {
                         `Categoría #${id} actualizada.`,
 
                     detalles: {
-                        categoria_id:categoriaId,
                         nombre
                     }
                 }
@@ -138,10 +163,16 @@ export function registerCategoriasHandlers() {
 
     handleProtegido(
         "categorias:eliminar",
-        (_event, id) => {
+
+        (
+            event,
+            valor
+        ) => {
 
             const categoriaId =
-                validarId(id);
+                validarId(
+                    valor
+                );
 
 
             const resultado =

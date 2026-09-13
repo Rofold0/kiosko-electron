@@ -1131,10 +1131,7 @@ export function registerReportesHandlers() {
                                             descripcion:
                                                 "Reporte impreso.",
 
-                                            detalles: {
-                                                desde,
-                                                hasta
-                                            }
+                                            
                                         }
                                     );
                                     return;

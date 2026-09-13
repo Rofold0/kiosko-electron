@@ -203,124 +203,128 @@ export function registerCajaHandlers() {
 
 
     handleProtegido(
-    "caja:movimiento-manual",
+        "caja:movimiento-manual",
 
-    (
-        event,
-        datos
-    ) => {
-
-        const tipo =
-            datos?.tipo === "INGRESO"
-                ? "INGRESO_MANUAL"
-                : datos?.tipo === "EGRESO"
-                    ? "EGRESO_MANUAL"
-                    : null;
-
-
-        if (!tipo) {
-
-            throw new Error(
-                "Tipo de movimiento inválido."
-            );
-
-        }
-
-
-        const monto =
-            validarDinero(
-                datos?.monto,
-                "Monto"
-            );
-
-
-        if (monto <= 0) {
-
-            throw new Error(
-                "El monto debe ser mayor que cero."
-            );
-
-        }
-
-
-        const concepto =
-            texto(
-                datos?.concepto,
-                true
-            );
-
-
-        const metodoPago =
-            validarMetodo(
-                datos?.metodo_pago
-            );
-
-
-        const movimiento =
-            registrarMovimientoManual({
-
-                tipo,
-                concepto,
-                monto,
-                metodoPago,
-
-                notas:
-                    texto(
-                        datos?.notas
-                    )
-
-            });
-
-
-        auditar(
+        (
             event,
-            {
-                modulo:
-                    "CAJA",
+            datos
+        ) => {
 
-                accion:
-                    tipo ===
-                        "INGRESO_MANUAL"
-                        ? "INGRESO_MANUAL"
-                        : "EGRESO_MANUAL",
+            const tipo =
+                datos?.tipo === "INGRESO"
+                    ? "INGRESO_MANUAL"
+                    : datos?.tipo === "EGRESO"
+                        ? "EGRESO_MANUAL"
+                        : null;
 
-                entidad:
-                    "movimiento_caja",
 
-                entidadId:
-                    movimiento.id,
+            if (!tipo) {
 
-                descripcion:
-                    `${concepto} · ${movimiento.monto}`,
+                throw new Error(
+                    "Tipo de movimiento inválido."
+                );
 
-                detalles: {
-
-                    caja_id:
-                        movimiento.caja_id,
-
-                    tipo:
-                        movimiento.tipo,
-
-                    monto:
-                        movimiento.monto,
-
-                    metodo_pago:
-                        movimiento.metodo_pago
-
-                }
             }
-        );
 
 
-        return movimiento;
+            const monto =
+                validarDinero(
+                    datos?.monto,
+                    "Monto"
+                );
 
-    }
-);
+
+            if (monto <= 0) {
+
+                throw new Error(
+                    "El monto debe ser mayor que cero."
+                );
+
+            }
+
+
+            const concepto =
+                texto(
+                    datos?.concepto,
+                    true
+                );
+
+
+            const metodoPago =
+                validarMetodo(
+                    datos?.metodo_pago
+                );
+
+
+            const movimiento =
+                registrarMovimientoManual({
+
+                    tipo,
+                    concepto,
+                    monto,
+                    metodoPago,
+
+                    notas:
+                        texto(
+                            datos?.notas
+                        )
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "CAJA",
+
+                    accion:
+                        tipo ===
+                            "INGRESO_MANUAL"
+                            ? "INGRESO_MANUAL"
+                            : "EGRESO_MANUAL",
+
+                    entidad:
+                        "movimiento_caja",
+
+                    entidadId:
+                        movimiento.id,
+
+                    descripcion:
+                        `${concepto} · ${movimiento.monto}`,
+
+                    detalles: {
+
+                        caja_id:
+                            movimiento.caja_id,
+
+                        tipo:
+                            movimiento.tipo,
+
+                        monto:
+                            movimiento.monto,
+
+                        metodo_pago:
+                            movimiento.metodo_pago
+
+                    }
+                }
+            );
+
+
+            return movimiento;
+
+        }
+    );
 
 
     handleProtegido(
         "caja:revertir-manual",
-        (_event, datos) => {
+
+        (
+            event,
+            datos
+        ) => {
 
             const motivo =
                 datos
@@ -340,87 +344,130 @@ export function registerCajaHandlers() {
             }
 
 
-            return revertirMovimientoManual({
+            const movimientoId =
+                validarId(
+                    datos?.id
+                );
 
-                movimientoId:
-                    validarId(
-                        datos?.id
-                    ),
 
-                motivo
+            const movimiento =
+                revertirMovimientoManual({
 
-            });
+                    movimientoId,
+                    motivo
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "CAJA",
+
+                    accion:
+                        "REVERTIR_MOVIMIENTO",
+
+                    entidad:
+                        "movimiento_caja",
+
+                    entidadId:
+                        movimiento.id,
+
+                    descripcion:
+                        `Movimiento manual #${movimientoId} revertido.`,
+
+                    detalles: {
+                        movimiento_origen_id:
+                            movimientoId,
+
+                        movimiento_reversion_id:
+                            movimiento.id,
+
+                        caja_id:
+                            movimiento.caja_id,
+
+                        monto:
+                            movimiento.monto,
+
+                        motivo
+                    }
+                }
+            );
+
+
+            return movimiento;
 
         }
     );
 
 
     handleProtegido(
-    "caja:cerrar",
+        "caja:cerrar",
 
-    (
-        event,
-        datos
-    ) => {
+        (
+            event,
+            datos
+        ) => {
 
-        const efectivoReal =
-            validarDinero(
-                datos?.efectivo_real,
-                "Efectivo contado"
+            const efectivoReal =
+                validarDinero(
+                    datos?.efectivo_real,
+                    "Efectivo contado"
+                );
+
+
+            const caja =
+                cerrarCaja({
+
+                    efectivoReal,
+
+                    notas:
+                        texto(
+                            datos?.notas
+                        )
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "CAJA",
+
+                    accion:
+                        "CERRAR",
+
+                    entidad:
+                        "caja",
+
+                    entidadId:
+                        caja.id,
+
+                    descripcion:
+                        `Caja #${caja.id} cerrada.`,
+
+                    detalles: {
+
+                        efectivo_esperado:
+                            caja.efectivo_esperado,
+
+                        efectivo_real:
+                            caja.efectivo_real,
+
+                        diferencia:
+                            caja.diferencia
+
+                    }
+                }
             );
 
 
-        const caja =
-            cerrarCaja({
+            return caja;
 
-                efectivoReal,
-
-                notas:
-                    texto(
-                        datos?.notas
-                    )
-
-            });
-
-
-        auditar(
-            event,
-            {
-                modulo:
-                    "CAJA",
-
-                accion:
-                    "CERRAR",
-
-                entidad:
-                    "caja",
-
-                entidadId:
-                    caja.id,
-
-                descripcion:
-                    `Caja #${caja.id} cerrada.`,
-
-                detalles: {
-
-                    efectivo_esperado:
-                        caja.efectivo_esperado,
-
-                    efectivo_real:
-                        caja.efectivo_real,
-
-                    diferencia:
-                        caja.diferencia
-
-                }
-            }
-        );
-
-
-        return caja;
-
-    }
-);
+        }
+    );
 
 
     handleProtegido(

@@ -123,47 +123,76 @@ export function registerProveedoresHandlers() {
 
 
     handleProtegido(
-        "proveedores:crear",
-        (_event, proveedor) => {
+    "proveedores:crear",
 
-            const resultado =
-                actualizarProveedor({
-                    // datos actuales
-                });
+    (
+        event,
+        proveedor
+    ) => {
+
+        const resultado =
+            crearProveedor({
+
+                nombre:
+                    validarNombre(
+                        proveedor?.nombre
+                    ),
+
+                telefono:
+                    textoOpcional(
+                        proveedor?.telefono
+                    ),
+
+                direccion:
+                    textoOpcional(
+                        proveedor?.direccion
+                    ),
+
+                notas:
+                    textoOpcional(
+                        proveedor?.notas
+                    )
+
+            });
 
 
-            auditar(
-                event,
-                {
-                    modulo:
-                        "PROVEEDORES",
+        auditar(
+            event,
+            {
+                modulo:
+                    "PROVEEDORES",
 
-                    accion:
-                        "ACTUALIZAR",
+                accion:
+                    "CREAR",
 
-                    entidad:
-                        "proveedor",
+                entidad:
+                    "proveedor",
 
-                    entidadId:
-                        resultado.id,
+                entidadId:
+                    resultado.id,
 
-                    descripcion:
-                        `Proveedor "${resultado.nombre}" actualizado.`
-                }
-            );
+                descripcion:
+                    `Proveedor "${resultado.nombre}" creado.`
+            }
+        );
 
 
-            return resultado;
+        return resultado;
 
-        }
-    );
+    }
+);
 
 
     handleProtegido(
-        "proveedores:actualizar",
-        (_event, proveedor) => {
+    "proveedores:actualizar",
 
-            return actualizarProveedor({
+    (
+        event,
+        proveedor
+    ) => {
+
+        const resultado =
+            actualizarProveedor({
 
                 id:
                     validarId(
@@ -193,52 +222,80 @@ export function registerProveedoresHandlers() {
 
             });
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "PROVEEDORES",
+
+                accion:
+                    "ACTUALIZAR",
+
+                entidad:
+                    "proveedor",
+
+                entidadId:
+                    resultado.id,
+
+                descripcion:
+                    `Proveedor "${resultado.nombre}" actualizado.`
+            }
+        );
+
+
+        return resultado;
+
+    }
+);  
 
 
     handleProtegido(
-        "proveedores:eliminar",
-        (_event, id) => {
+    "proveedores:eliminar",
 
-            const proveedorId =
-                validarId(
-                    id,
-                    "ID de proveedor inválido."
-                );
+    (
+        event,
+        valor
+    ) => {
 
-
-            const resultado =
-                eliminarProveedor(
-                    proveedorId
-                );
-
-
-            auditar(
-                event,
-                {
-                    modulo:
-                        "PROVEEDORES",
-
-                    accion:
-                        "DESACTIVAR",
-
-                    entidad:
-                        "proveedor",
-
-                    entidadId:
-                        proveedorId,
-
-                    descripcion:
-                        `Proveedor #${proveedorId} desactivado.`
-                }
+        const proveedorId =
+            validarId(
+                valor,
+                "ID de proveedor inválido."
             );
 
 
-            return resultado;
+        const resultado =
+            eliminarProveedor(
+                proveedorId
+            );
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "PROVEEDORES",
+
+                accion:
+                    "DESACTIVAR",
+
+                entidad:
+                    "proveedor",
+
+                entidadId:
+                    proveedorId,
+
+                descripcion:
+                    `Proveedor #${proveedorId} desactivado.`
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 
 
     handleProtegido(
@@ -272,126 +329,45 @@ export function registerProveedoresHandlers() {
 
 
     handleProtegido(
-        "proveedores:vincular-producto",
-        (_event, datos) => {
+    "proveedores:vincular-producto",
 
-            const proveedorId =
-                validarId(
-                    datos?.proveedor_id,
-                    "ID de proveedor inválido."
-                );
+    (
+        event,
+        datos
+    ) => {
 
-
-            const productoId =
-                validarId(
-                    datos?.producto_id,
-                    "ID de producto inválido."
-                );
-
-
-            const resultado =
-                vincularProducto({
-
-                    proveedorId,
-                    productoId,
-
-                    codigoProveedor:
-                        textoOpcional(
-                            datos?.codigo_proveedor
-                        ),
-
-                    ultimoCosto:
-                        costoOpcional(
-                            datos?.ultimo_costo
-                        ),
-
-                    notas:
-                        textoOpcional(
-                            datos?.notas
-                        )
-
-                });
-
-
-            auditar(
-                event,
-                {
-                    modulo:
-                        "PROVEEDORES",
-
-                    accion:
-                        "VINCULAR_PRODUCTO",
-
-                    entidad:
-                        "producto_proveedor",
-
-                    entidadId:
-                        resultado.id,
-
-                    descripcion:
-                        `Producto #${productoId} vinculado al proveedor #${proveedorId}.`,
-
-                    detalles: {
-                        producto_id:
-                            productoId,
-
-                        proveedor_id:
-                            proveedorId
-                    }
-                }
+        const proveedorId =
+            validarId(
+                datos?.proveedor_id,
+                "ID de proveedor inválido."
             );
 
 
-            return resultado;
-
-        }
-    );
-
-
-    handleProtegido(
-        "proveedores:actualizar-vinculo",
-        (_event, datos) => {
-
-            auditar(
-                event,
-                {
-                    modulo:
-                        "PROVEEDORES",
-
-                    accion:
-                        "ACTUALIZAR_VINCULO",
-
-                    entidad:
-                        "producto_proveedor",
-
-                    entidadId:
-                        vinculoId,
-
-                    descripcion:
-                        `Vínculo producto-proveedor #${vinculoId} actualizado.`,
-
-                    detalles: {
-                        ultimo_costo:
-                            ultimoCosto
-                    }
-                }
+        const productoId =
+            validarId(
+                datos?.producto_id,
+                "ID de producto inválido."
             );
-            return actualizarVinculo({
 
-                id:
-                    validarId(
-                        datos?.id
-                    ),
+
+        const ultimoCosto =
+            costoOpcional(
+                datos?.ultimo_costo
+            );
+
+
+        const resultado =
+            vincularProducto({
+
+                proveedorId,
+                productoId,
 
                 codigoProveedor:
                     textoOpcional(
                         datos?.codigo_proveedor
                     ),
 
-                ultimoCosto:
-                    costoOpcional(
-                        datos?.ultimo_costo
-                    ),
+                ultimoCosto,
 
                 notas:
                     textoOpcional(
@@ -400,39 +376,161 @@ export function registerProveedoresHandlers() {
 
             });
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "PROVEEDORES",
+
+                accion:
+                    "VINCULAR_PRODUCTO",
+
+                entidad:
+                    "producto_proveedor",
+
+                entidadId:
+                    resultado.id,
+
+                descripcion:
+                    `Producto #${productoId} vinculado al proveedor #${proveedorId}.`,
+
+                detalles: {
+                    producto_id:
+                        productoId,
+
+                    proveedor_id:
+                        proveedorId,
+
+                    ultimo_costo:
+                        ultimoCosto
+                }
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 
 
     handleProtegido(
-        "proveedores:desvincular-producto",
-        (_event, id) => {
+    "proveedores:actualizar-vinculo",
 
-            auditar(
-                event,
-                {
-                    modulo:
-                        "PROVEEDORES",
+    (
+        event,
+        datos
+    ) => {
 
-                    accion:
-                        "DESVINCULAR_PRODUCTO",
+        const vinculoId =
+            validarId(
+                datos?.id
+            );
 
-                    entidad:
-                        "producto_proveedor",
 
-                    entidadId:
-                        vinculoId,
+        const ultimoCosto =
+            costoOpcional(
+                datos?.ultimo_costo
+            );
 
-                    descripcion:
-                        `Vínculo producto-proveedor #${vinculoId} eliminado.`
+
+        const resultado =
+            actualizarVinculo({
+
+                id:
+                    vinculoId,
+
+                codigoProveedor:
+                    textoOpcional(
+                        datos?.codigo_proveedor
+                    ),
+
+                ultimoCosto,
+
+                notas:
+                    textoOpcional(
+                        datos?.notas
+                    )
+
+            });
+
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "PROVEEDORES",
+
+                accion:
+                    "ACTUALIZAR_VINCULO",
+
+                entidad:
+                    "producto_proveedor",
+
+                entidadId:
+                    vinculoId,
+
+                descripcion:
+                    `Vínculo producto-proveedor #${vinculoId} actualizado.`,
+
+                detalles: {
+                    ultimo_costo:
+                        ultimoCosto
                 }
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
+
+    handleProtegido(
+    "proveedores:desvincular-producto",
+
+    (
+        event,
+        valor
+    ) => {
+
+        const vinculoId =
+            validarId(
+                valor
             );
 
-            return desvincularProducto(
-                validarId(id)
+
+        const resultado =
+            desvincularProducto(
+                vinculoId
             );
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "PROVEEDORES",
+
+                accion:
+                    "DESVINCULAR_PRODUCTO",
+
+                entidad:
+                    "producto_proveedor",
+
+                entidadId:
+                    vinculoId,
+
+                descripcion:
+                    `Vínculo producto-proveedor #${vinculoId} eliminado.`
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 
 }
