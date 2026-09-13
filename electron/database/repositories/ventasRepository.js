@@ -499,15 +499,82 @@ const registrarVentaTransaction =
         }
 
 
-        if (
-            new Date(fecha) <
+        const fechaVenta =
+            new Date(
+                fecha
+            );
+
+
+        const fechaApertura =
             new Date(
                 caja.fecha_apertura
+            );
+
+
+        if (
+            Number.isNaN(
+                fechaVenta.getTime()
+            ) ||
+            Number.isNaN(
+                fechaApertura.getTime()
             )
         ) {
 
             throw new Error(
+                "No se pudo validar la fecha de la venta."
+            );
+
+        }
+
+
+        const minutoVenta =
+            new Date(
+                fechaVenta
+            );
+
+
+        minutoVenta.setSeconds(
+            0,
+            0
+        );
+
+
+        const minutoApertura =
+            new Date(
+                fechaApertura
+            );
+
+
+        minutoApertura.setSeconds(
+            0,
+            0
+        );
+
+
+        if (
+            minutoVenta <
+            minutoApertura
+        ) {
+
+            throw new Error(
                 "La fecha de venta no puede ser anterior a la apertura de caja."
+            );
+
+        }
+
+
+        const ahora =
+            new Date();
+
+
+        if (
+            fechaVenta.getTime() >
+            ahora.getTime() +
+            60_000
+        ) {
+
+            throw new Error(
+                "La fecha de venta no puede estar en el futuro."
             );
 
         }
@@ -780,18 +847,18 @@ const registrarVentaTransaction =
         }
 
         const conceptoCaja =
-    metodoPago ===
-        "EFECTIVO"
-        ? (
-            `Venta #${venta.id} · ` +
-            `EFECTIVO · ` +
-            `Recibido $${recibido.toFixed(2)} · ` +
-            `Vuelto $${vuelto.toFixed(2)}`
-        )
-        : (
-            `Venta #${venta.id} · ` +
-            metodoPago
-        );
+            metodoPago ===
+                "EFECTIVO"
+                ? (
+                    `Venta #${venta.id} · ` +
+                    `EFECTIVO · ` +
+                    `Recibido $${recibido.toFixed(2)} · ` +
+                    `Vuelto $${vuelto.toFixed(2)}`
+                )
+                : (
+                    `Venta #${venta.id} · ` +
+                    metodoPago
+                );
 
         movimientoCajaStmt.run(
 

@@ -38,7 +38,7 @@ function fechaLocalActual() {
 
     return fecha
         .toISOString()
-        .slice(0, 16);
+        .slice(0, 19);
 
 }
 
@@ -1265,16 +1265,28 @@ function Ventas() {
                                 <label>
                                     Fecha
                                 </label>
-
-                                <input
-                                    type="datetime-local"
-                                    value={fecha}
-                                    onChange={(event) =>
-                                        setFecha(
-                                            event.target.value
-                                        )
-                                    }
-                                />
+                                <div className="sale-date-field">
+                                    <input
+                                        type="datetime-local"
+                                        step="1"
+                                        value={fecha}
+                                        onChange={(event) =>
+                                            setFecha(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setFecha(
+                                                fechaLocalActual()
+                                            )
+                                        }
+                                    >
+                                        Ahora
+                                    </button>
+                                </div>
 
                             </div>
 

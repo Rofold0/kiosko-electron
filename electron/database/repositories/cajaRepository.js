@@ -249,47 +249,11 @@ const movimientosStmt =
         SELECT
             m.*,
 
-            CASE
+            v.efectivo_recibido
+                AS efectivo_recibido,
 
-                WHEN
-                    m.tipo = 'VENTA'
-                    AND
-                    m.metodo_pago =
-                        'EFECTIVO'
-
-                THEN
-                    v.efectivo_recibido
-
-                ELSE NULL
-
-            END AS efectivo_recibido,
-
-
-            CASE
-
-                WHEN
-                    m.tipo = 'VENTA'
-                    AND
-                    m.metodo_pago =
-                        'EFECTIVO'
-
-                THEN
-                    v.vuelto
-
-                ELSE NULL
-
-            END AS vuelto,
-
-
-            EXISTS(
-                SELECT 1
-
-                FROM movimientos_caja r
-
-                WHERE
-                    r.movimiento_origen_id =
-                        m.id
-            ) AS revertido
+            v.vuelto
+                AS vuelto
 
 
         FROM movimientos_caja m
