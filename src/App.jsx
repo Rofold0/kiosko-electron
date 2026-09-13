@@ -300,7 +300,7 @@ function AplicacionProtegida() {
             </RutaProtegida>
           }
         />
-  
+
         <Route
           path={ROUTES.auditoria}
           element={

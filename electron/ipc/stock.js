@@ -9,6 +9,10 @@ import {
     listarStockBajo
 } from "../database/repositories/stockRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 
 function validarId(valor) {
 
