@@ -249,6 +249,38 @@ const movimientosStmt =
         SELECT
             m.*,
 
+            CASE
+
+                WHEN
+                    m.tipo = 'VENTA'
+                    AND
+                    m.metodo_pago =
+                        'EFECTIVO'
+
+                THEN
+                    v.efectivo_recibido
+
+                ELSE NULL
+
+            END AS efectivo_recibido,
+
+
+            CASE
+
+                WHEN
+                    m.tipo = 'VENTA'
+                    AND
+                    m.metodo_pago =
+                        'EFECTIVO'
+
+                THEN
+                    v.vuelto
+
+                ELSE NULL
+
+            END AS vuelto,
+
+
             EXISTS(
                 SELECT 1
 
@@ -259,7 +291,14 @@ const movimientosStmt =
                         m.id
             ) AS revertido
 
+
         FROM movimientos_caja m
+
+
+        LEFT JOIN ventas v
+            ON v.id =
+                m.venta_id
+
 
         WHERE
             m.caja_id = @cajaId
@@ -271,9 +310,11 @@ const movimientosStmt =
                     @metodoPago
             )
 
+
         ORDER BY
             m.fecha DESC,
             m.id DESC
+
 
         LIMIT @limite
         OFFSET @offset

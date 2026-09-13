@@ -962,7 +962,7 @@ function Caja() {
                                                             "VENTA" &&
                                                             item.metodo_pago ===
                                                             "EFECTIVO" &&
-                                                            item.efectivo_recibido !==
+                                                            item.efectivo_recibido !=
                                                             null
 
                                                             ? moneda.format(
@@ -982,7 +982,7 @@ function Caja() {
                                                             "VENTA" &&
                                                             item.metodo_pago ===
                                                             "EFECTIVO" &&
-                                                            item.vuelto !==
+                                                            item.vuelto !=
                                                             null
 
                                                             ? moneda.format(
