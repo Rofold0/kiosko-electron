@@ -8,6 +8,10 @@ import {
     eliminarCategoria
 } from "../database/repositories/categoriasRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 function validarId(valor) {
 
     const id = Number(valor);
@@ -56,12 +60,34 @@ export function registerCategoriasHandlers() {
         "categorias:crear",
         (_event, categoria) => {
 
-            const nombre =
-                validarNombre(
-                    categoria?.nombre
+            const resultado =
+                crearCategoria(
+                    nombre
                 );
 
-            return crearCategoria(nombre);
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "CATEGORIAS",
+
+                    accion:
+                        "CREAR",
+
+                    entidad:
+                        "categoria",
+
+                    entidadId:
+                        resultado.id,
+
+                    descripcion:
+                        `Categoría "${resultado.nombre}" creada.`
+                }
+            );
+
+
+            return resultado;
 
         }
     );
@@ -71,20 +97,40 @@ export function registerCategoriasHandlers() {
         "categorias:actualizar",
         (_event, categoria) => {
 
-            const id =
-                validarId(
-                    categoria?.id
+            const resultado =
+                actualizarCategoria(
+                    id,
+                    nombre
                 );
 
-            const nombre =
-                validarNombre(
-                    categoria?.nombre
-                );
 
-            return actualizarCategoria(
-                id,
-                nombre
+            auditar(
+                event,
+                {
+                    modulo:
+                        "CATEGORIAS",
+
+                    accion:
+                        "ACTUALIZAR",
+
+                    entidad:
+                        "categoria",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Categoría #${id} actualizada.`,
+
+                    detalles: {
+                        categoria_id:categoriaId,
+                        nombre
+                    }
+                }
             );
+
+
+            return resultado;
 
         }
     );
@@ -94,9 +140,38 @@ export function registerCategoriasHandlers() {
         "categorias:eliminar",
         (_event, id) => {
 
-            return eliminarCategoria(
-                validarId(id)
+            const categoriaId =
+                validarId(id);
+
+
+            const resultado =
+                eliminarCategoria(
+                    categoriaId
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "CATEGORIAS",
+
+                    accion:
+                        "DESACTIVAR",
+
+                    entidad:
+                        "categoria",
+
+                    entidadId:
+                        categoriaId,
+
+                    descripcion:
+                        `Categoría #${categoriaId} desactivada.`
+                }
             );
+
+
+            return resultado;
 
         }
     );

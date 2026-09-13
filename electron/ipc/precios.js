@@ -8,6 +8,9 @@ import {
     guardarPrecio
 } from "../database/repositories/preciosRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
 
 function validarId(valor) {
 
@@ -174,42 +177,110 @@ export function registerPreciosHandlers() {
 
 
     handleProtegido(
-        "precios:guardar",
-        (_event, datos) => {
+    "precios:guardar",
 
-            const costo =
-                validarDinero(
-                    datos?.costo,
-                    "Costo"
-                );
+    (
+        event,
+        datos
+    ) => {
 
-
-            const precioVenta =
-                validarDinero(
-                    datos?.precio_venta,
-                    "Precio de venta"
-                );
+        const productoId =
+            validarId(
+                datos?.producto_id
+            );
 
 
-            return guardarPrecio({
+        const proveedorId =
+            validarIdOpcional(
+                datos?.proveedor_id
+            );
 
-                productoId:
-                    validarId(
-                        datos?.producto_id
-                    ),
 
-                proveedorId:
-                    validarIdOpcional(
-                        datos?.proveedor_id
-                    ),
+        const costo =
+            validarDinero(
+                datos?.costo,
+                "Costo"
+            );
 
+
+        const precioVenta =
+            validarDinero(
+                datos?.precio_venta,
+                "Precio de venta"
+            );
+
+
+        const anterior =
+            obtenerPrecioVigente(
+                productoId
+            );
+
+
+        const resultado =
+            guardarPrecio({
+
+                productoId,
+                proveedorId,
                 costo,
-
                 precioVenta
 
             });
 
-        }
-    );
 
+        auditar(
+            event,
+            {
+                modulo:
+                    "PRECIOS",
+
+                accion:
+                    "GUARDAR",
+
+                entidad:
+                    "producto",
+
+                entidadId:
+                    productoId,
+
+                descripcion:
+                    `Precio del producto #${productoId} actualizado.`,
+
+                detalles: {
+
+                    proveedor_id:
+                        proveedorId,
+
+                    anterior:
+                        anterior
+                            ? {
+                                costo:
+                                    anterior.costo,
+
+                                precio_venta:
+                                    anterior.precio_venta
+                            }
+                            : null,
+
+                    nuevo: {
+                        costo:
+                            resultado.costo,
+
+                        precio_venta:
+                            resultado.precio_venta
+                    },
+
+                    sin_cambios:
+                        Boolean(
+                            resultado.sin_cambios
+                        )
+
+                }
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 }

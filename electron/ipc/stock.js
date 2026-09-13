@@ -90,9 +90,92 @@ export function registerStockHandlers() {
 
     handleProtegido(
         "stock:entrada",
-        (_event, datos) => {
 
-            return registrarEntrada({
+        (
+            event,
+            datos
+        ) => {
+
+            const resultado =
+                registrarEntrada({
+
+                    productoId:
+                        validarId(
+                            datos?.producto_id
+                        ),
+
+                    cantidad:
+                        validarCantidad(
+                            datos?.cantidad
+                        ),
+
+                    motivo:
+                        motivoOpcional(
+                            datos?.motivo
+                        )
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "STOCK",
+
+                    accion:
+                        "ENTRADA",
+
+                    entidad:
+                        "movimiento_stock",
+
+                    entidadId:
+                        resultado.movimiento.id,
+
+                    descripcion:
+                        `Entrada de stock para ${resultado.producto.nombre}.`,
+
+                    detalles: {
+
+                        producto_id:
+                            resultado.producto.id,
+
+                        cantidad:
+                            resultado.movimiento.cantidad,
+
+                        stock_anterior:
+                            resultado
+                                .movimiento
+                                .stock_anterior,
+
+                        stock_nuevo:
+                            resultado
+                                .movimiento
+                                .stock_nuevo,
+
+                        motivo:
+                            resultado.movimiento.motivo
+
+                    }
+                }
+            );
+
+
+            return resultado;
+
+        }
+    );
+
+    handleProtegido(
+    "stock:salida",
+
+    (
+        event,
+        datos
+    ) => {
+
+        const resultado =
+            registrarSalida({
 
                 productoId:
                     validarId(
@@ -111,42 +194,67 @@ export function registerStockHandlers() {
 
             });
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "STOCK",
+
+                accion:
+                    "SALIDA",
+
+                entidad:
+                    "movimiento_stock",
+
+                entidadId:
+                    resultado.movimiento.id,
+
+                descripcion:
+                    `Salida de stock para ${resultado.producto.nombre}.`,
+
+                detalles: {
+
+                    producto_id:
+                        resultado.producto.id,
+
+                    cantidad:
+                        resultado.movimiento.cantidad,
+
+                    stock_anterior:
+                        resultado
+                            .movimiento
+                            .stock_anterior,
+
+                    stock_nuevo:
+                        resultado
+                            .movimiento
+                            .stock_nuevo,
+
+                    motivo:
+                        resultado.movimiento.motivo
+
+                }
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 
 
     handleProtegido(
-        "stock:salida",
-        (_event, datos) => {
+    "stock:ajustar",
 
-            return registrarSalida({
+    (
+        event,
+        datos
+    ) => {
 
-                productoId:
-                    validarId(
-                        datos?.producto_id
-                    ),
-
-                cantidad:
-                    validarCantidad(
-                        datos?.cantidad
-                    ),
-
-                motivo:
-                    motivoOpcional(
-                        datos?.motivo
-                    )
-
-            });
-
-        }
-    );
-
-
-    handleProtegido(
-        "stock:ajustar",
-        (_event, datos) => {
-
-            return ajustarStock({
+        const resultado =
+            ajustarStock({
 
                 productoId:
                     validarId(
@@ -165,8 +273,57 @@ export function registerStockHandlers() {
 
             });
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "STOCK",
+
+                accion:
+                    "AJUSTAR",
+
+                entidad:
+                    "movimiento_stock",
+
+                entidadId:
+                    resultado.movimiento.id,
+
+                descripcion:
+                    `Stock de ${resultado.producto.nombre} ajustado.`,
+
+                detalles: {
+
+                    producto_id:
+                        resultado.producto.id,
+
+                    stock_anterior:
+                        resultado
+                            .movimiento
+                            .stock_anterior,
+
+                    stock_nuevo:
+                        resultado
+                            .movimiento
+                            .stock_nuevo,
+
+                    diferencia:
+                        resultado
+                            .movimiento
+                            .cantidad,
+
+                    motivo:
+                        resultado.movimiento.motivo
+
+                }
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 
 
     handleProtegido(

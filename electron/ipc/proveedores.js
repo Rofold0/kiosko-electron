@@ -13,6 +13,11 @@ import {
     desvincularProducto
 } from "../database/repositories/proveedoresRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
+
 
 function validarId(
     valor,
@@ -121,29 +126,34 @@ export function registerProveedoresHandlers() {
         "proveedores:crear",
         (_event, proveedor) => {
 
-            return crearProveedor({
+            const resultado =
+                actualizarProveedor({
+                    // datos actuales
+                });
 
-                nombre:
-                    validarNombre(
-                        proveedor?.nombre
-                    ),
 
-                telefono:
-                    textoOpcional(
-                        proveedor?.telefono
-                    ),
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PROVEEDORES",
 
-                direccion:
-                    textoOpcional(
-                        proveedor?.direccion
-                    ),
+                    accion:
+                        "ACTUALIZAR",
 
-                notas:
-                    textoOpcional(
-                        proveedor?.notas
-                    )
+                    entidad:
+                        "proveedor",
 
-            });
+                    entidadId:
+                        resultado.id,
+
+                    descripcion:
+                        `Proveedor "${resultado.nombre}" actualizado.`
+                }
+            );
+
+
+            return resultado;
 
         }
     );
@@ -191,12 +201,41 @@ export function registerProveedoresHandlers() {
         "proveedores:eliminar",
         (_event, id) => {
 
-            return eliminarProveedor(
+            const proveedorId =
                 validarId(
                     id,
                     "ID de proveedor inválido."
-                )
+                );
+
+
+            const resultado =
+                eliminarProveedor(
+                    proveedorId
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PROVEEDORES",
+
+                    accion:
+                        "DESACTIVAR",
+
+                    entidad:
+                        "proveedor",
+
+                    entidadId:
+                        proveedorId,
+
+                    descripcion:
+                        `Proveedor #${proveedorId} desactivado.`
+                }
             );
+
+
+            return resultado;
 
         }
     );
@@ -236,36 +275,74 @@ export function registerProveedoresHandlers() {
         "proveedores:vincular-producto",
         (_event, datos) => {
 
-            return vincularProducto({
+            const proveedorId =
+                validarId(
+                    datos?.proveedor_id,
+                    "ID de proveedor inválido."
+                );
 
-                proveedorId:
-                    validarId(
-                        datos?.proveedor_id,
-                        "ID de proveedor inválido."
-                    ),
 
-                productoId:
-                    validarId(
-                        datos?.producto_id,
-                        "ID de producto inválido."
-                    ),
+            const productoId =
+                validarId(
+                    datos?.producto_id,
+                    "ID de producto inválido."
+                );
 
-                codigoProveedor:
-                    textoOpcional(
-                        datos?.codigo_proveedor
-                    ),
 
-                ultimoCosto:
-                    costoOpcional(
-                        datos?.ultimo_costo
-                    ),
+            const resultado =
+                vincularProducto({
 
-                notas:
-                    textoOpcional(
-                        datos?.notas
-                    )
+                    proveedorId,
+                    productoId,
 
-            });
+                    codigoProveedor:
+                        textoOpcional(
+                            datos?.codigo_proveedor
+                        ),
+
+                    ultimoCosto:
+                        costoOpcional(
+                            datos?.ultimo_costo
+                        ),
+
+                    notas:
+                        textoOpcional(
+                            datos?.notas
+                        )
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PROVEEDORES",
+
+                    accion:
+                        "VINCULAR_PRODUCTO",
+
+                    entidad:
+                        "producto_proveedor",
+
+                    entidadId:
+                        resultado.id,
+
+                    descripcion:
+                        `Producto #${productoId} vinculado al proveedor #${proveedorId}.`,
+
+                    detalles: {
+                        producto_id:
+                            productoId,
+
+                        proveedor_id:
+                            proveedorId
+                    }
+                }
+            );
+
+
+            return resultado;
 
         }
     );
@@ -275,6 +352,30 @@ export function registerProveedoresHandlers() {
         "proveedores:actualizar-vinculo",
         (_event, datos) => {
 
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PROVEEDORES",
+
+                    accion:
+                        "ACTUALIZAR_VINCULO",
+
+                    entidad:
+                        "producto_proveedor",
+
+                    entidadId:
+                        vinculoId,
+
+                    descripcion:
+                        `Vínculo producto-proveedor #${vinculoId} actualizado.`,
+
+                    detalles: {
+                        ultimo_costo:
+                            ultimoCosto
+                    }
+                }
+            );
             return actualizarVinculo({
 
                 id:
@@ -306,6 +407,26 @@ export function registerProveedoresHandlers() {
     handleProtegido(
         "proveedores:desvincular-producto",
         (_event, id) => {
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PROVEEDORES",
+
+                    accion:
+                        "DESVINCULAR_PRODUCTO",
+
+                    entidad:
+                        "producto_proveedor",
+
+                    entidadId:
+                        vinculoId,
+
+                    descripcion:
+                        `Vínculo producto-proveedor #${vinculoId} eliminado.`
+                }
+            );
 
             return desvincularProducto(
                 validarId(id)

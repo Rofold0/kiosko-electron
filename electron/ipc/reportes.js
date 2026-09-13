@@ -2,7 +2,6 @@ import {
     BrowserWindow,
     dialog
 } from "electron";
-
 import {
     handleProtegido
 } from "../security/ipcPermissions.js";
@@ -12,6 +11,9 @@ import {
 import {
     obtenerDashboardReportes
 } from "../database/repositories/reportesRepository.js";
+import {
+    auditar
+} from "../security/audit.js";
 
 
 const PATRON_FECHA =
@@ -913,11 +915,29 @@ export function registerReportesHandlers() {
                 resultado.filePath,
                 pdf
             );
+            auditar(
+                event,
+                {
+                    modulo:
+                        "REPORTES",
 
+                    accion:
+                        "EXPORTAR_PDF",
+
+                    descripcion:
+                        "Reporte exportado a PDF.",
+
+                    detalles: {
+                        desde,
+                        hasta
+                    }
+                }
+            );
 
             return {
                 cancelado: false
             };
+
 
         }
     );
@@ -1019,7 +1039,24 @@ export function registerReportesHandlers() {
                 "utf8"
             );
 
+            auditar(
+                event,
+                {
+                    modulo:
+                        "REPORTES",
 
+                    accion:
+                        "EXPORTAR_CSV",
+
+                    descripcion:
+                        "Reporte exportado a CSV.",
+
+                    detalles: {
+                        desde,
+                        hasta
+                    }
+                }
+            );
             return {
                 cancelado: false
             };
@@ -1082,7 +1119,24 @@ export function registerReportesHandlers() {
                                         cancelado:
                                             false
                                     });
+                                    auditar(
+                                        event,
+                                        {
+                                            modulo:
+                                                "REPORTES",
 
+                                            accion:
+                                                "IMPRIMIR",
+
+                                            descripcion:
+                                                "Reporte impreso.",
+
+                                            detalles: {
+                                                desde,
+                                                hasta
+                                            }
+                                        }
+                                    );
                                     return;
 
                                 }
@@ -1119,114 +1173,132 @@ export function registerReportesHandlers() {
         }
     );
     handleProtegido(
-    "reportes:exportar-excel",
+        "reportes:exportar-excel",
 
-    async (
-        event,
-        payload = {}
-    ) => {
+        async (
+            event,
+            payload = {}
+        ) => {
 
-        const {
-            desde,
-            hasta
-        } =
-            validarFechasExportacion(
-                payload
-            );
-
-
-        if (
-            !payload.datos ||
-            typeof payload.datos !==
-                "object"
-        ) {
-
-            throw new Error(
-                "No hay datos para exportar."
-            );
-
-        }
-
-
-        const ventana =
-            obtenerVentana(
-                event
-            );
-
-
-        const resultado =
-            await dialog
-                .showSaveDialog(
-                    ventana,
-                    {
-                        title:
-                            "Exportar reporte a Excel",
-
-                        defaultPath:
-                            `reporte-${desde}-${hasta}.xlsx`,
-
-                        buttonLabel:
-                            "Guardar Excel",
-
-                        filters: [
-                            {
-                                name:
-                                    "Libro de Excel",
-
-                                extensions: [
-                                    "xlsx"
-                                ]
-                            }
-                        ]
-                    }
+            const {
+                desde,
+                hasta
+            } =
+                validarFechasExportacion(
+                    payload
                 );
 
 
-        if (
-            resultado.canceled ||
-            !resultado.filePath
-        ) {
+            if (
+                !payload.datos ||
+                typeof payload.datos !==
+                "object"
+            ) {
+
+                throw new Error(
+                    "No hay datos para exportar."
+                );
+
+            }
+
+
+            const ventana =
+                obtenerVentana(
+                    event
+                );
+
+
+            const resultado =
+                await dialog
+                    .showSaveDialog(
+                        ventana,
+                        {
+                            title:
+                                "Exportar reporte a Excel",
+
+                            defaultPath:
+                                `reporte-${desde}-${hasta}.xlsx`,
+
+                            buttonLabel:
+                                "Guardar Excel",
+
+                            filters: [
+                                {
+                                    name:
+                                        "Libro de Excel",
+
+                                    extensions: [
+                                        "xlsx"
+                                    ]
+                                }
+                            ]
+                        }
+                    );
+
+
+            if (
+                resultado.canceled ||
+                !resultado.filePath
+            ) {
+
+                return {
+                    cancelado: true
+                };
+
+            }
+
+
+            /*
+             * Cargamos nuestro servicio sólo
+             * cuando realmente se necesita.
+             */
+
+            const {
+                exportarReportesExcel
+            } =
+                await import(
+                    "../services/reportesExcel.js"
+                );
+
+
+            await exportarReportesExcel({
+
+                filePath:
+                    resultado.filePath,
+
+                datos:
+                    payload.datos,
+
+                desde,
+
+                hasta
+
+            });
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "REPORTES",
+
+                    accion:
+                        "EXPORTAR_EXCEL",
+
+                    descripcion:
+                        "Reporte exportado a Excel",
+
+                    detalles: {
+                        desde,
+                        hasta
+                    }
+                }
+            );
 
             return {
-                cancelado: true
+                cancelado: false
             };
 
         }
-
-
-        /*
-         * Cargamos nuestro servicio sólo
-         * cuando realmente se necesita.
-         */
-
-        const {
-            exportarReportesExcel
-        } =
-            await import(
-                "../services/reportesExcel.js"
-            );
-
-
-        await exportarReportesExcel({
-
-            filePath:
-                resultado.filePath,
-
-            datos:
-                payload.datos,
-
-            desde,
-
-            hasta
-
-        });
-
-
-        return {
-            cancelado: false
-        };
-
-    }
-);
+    );
 
 }

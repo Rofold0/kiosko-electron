@@ -265,7 +265,8 @@ export function registerVentasHandlers() {
     );
 
 
-    hhandleProtegido(
+    
+    handleProtegido(
         "ventas:crear",
 
         (

@@ -10,6 +10,10 @@ import {
     revertirCompra
 } from "../database/repositories/comprasRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 const METODOS_PAGO =
     new Set([
         "EFECTIVO",
@@ -245,19 +249,43 @@ function validarItems(items) {
 export function registerComprasHandlers() {
 
     handleProtegido(
-        "compras:crear",
-        (_event, datos) => {
-            const registrarEnCaja =
-                datos?.registrar_en_caja ===
-                true;
+    "compras:crear",
 
-            return registrarCompra({
+    (
+        event,
+        datos
+    ) => {
 
-                proveedorId:
-                    validarId(
-                        datos?.proveedor_id,
-                        "Debe seleccionar un proveedor."
-                    ),
+        const registrarEnCaja =
+            datos?.registrar_en_caja ===
+            true;
+
+
+        const proveedorId =
+            validarId(
+                datos?.proveedor_id,
+                "Debe seleccionar un proveedor."
+            );
+
+
+        const metodoPago =
+            registrarEnCaja
+                ? validarMetodoPago(
+                    datos?.metodo_pago
+                )
+                : null;
+
+
+        const items =
+            validarItems(
+                datos?.items
+            );
+
+
+        const compra =
+            registrarCompra({
+
+                proveedorId,
 
                 fecha:
                     validarFecha(
@@ -271,22 +299,65 @@ export function registerComprasHandlers() {
 
                 registrarEnCaja,
 
-                metodoPago:
-                    registrarEnCaja
-                        ? validarMetodoPago(
-                            datos?.metodo_pago
-                        )
-                        : null,
+                metodoPago,
 
-                items:
-                    validarItems(
-                        datos?.items
-                    )
+                items
 
             });
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "COMPRAS",
+
+                accion:
+                    "CREAR",
+
+                entidad:
+                    "compra",
+
+                entidadId:
+                    compra.id,
+
+                descripcion:
+                    `Compra #${compra.id} registrada por ${compra.total}.`,
+
+                detalles: {
+
+                    proveedor_id:
+                        proveedorId,
+
+                    proveedor:
+                        compra.proveedor_nombre,
+
+                    total:
+                        compra.total,
+
+                    registrar_en_caja:
+                        registrarEnCaja,
+
+                    caja_id:
+                        compra.caja_id,
+
+                    metodo_pago:
+                        compra.metodo_pago,
+
+                    cantidad_items:
+                        compra.items
+                            ?.length ||
+                        items.length
+
+                }
+            }
+        );
+
+
+        return compra;
+
+    }
+);
 
 
     handleProtegido(
@@ -388,25 +459,82 @@ export function registerComprasHandlers() {
     );
 
     handleProtegido(
-        "compras:revertir",
-        (_event, datos) => {
+    "compras:revertir",
 
-            return revertirCompra({
+    (
+        event,
+        datos
+    ) => {
 
-                compraId:
-                    validarId(
-                        datos?.id,
-                        "ID de compra inválido."
-                    ),
+        const compraId =
+            validarId(
+                datos?.id,
+                "ID de compra inválido."
+            );
 
-                motivo:
-                    validarMotivoReversion(
-                        datos?.motivo
-                    )
+
+        const motivo =
+            validarMotivoReversion(
+                datos?.motivo
+            );
+
+
+        const resultado =
+            revertirCompra({
+
+                compraId,
+                motivo
 
             });
 
-        }
-    );
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "COMPRAS",
+
+                accion:
+                    "REVERTIR",
+
+                entidad:
+                    "compra",
+
+                entidadId:
+                    compraId,
+
+                descripcion:
+                    `Compra #${compraId} revertida.`,
+
+                detalles: {
+
+                    total:
+                        resultado.compra.total,
+
+                    proveedor:
+                        resultado
+                            .compra
+                            .proveedor_nombre,
+
+                    motivo,
+
+                    caja_reversion_id:
+                        resultado
+                            .compra
+                            .caja_reversion_id,
+
+                    listas_no_restauradas:
+                        resultado
+                            .listas_no_restauradas
+
+                }
+            }
+        );
+
+
+        return resultado;
+
+    }
+);
 
 }

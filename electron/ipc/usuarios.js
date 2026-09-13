@@ -35,6 +35,9 @@ import {
     actualizarPermisosRol
 } from "../database/repositories/usuariosRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
 
 const USUARIO_REGEX =
     /^[a-z0-9._-]{3,32}$/;
@@ -319,14 +322,38 @@ export function registerUsuariosHandlers() {
                 );
 
 
-            return establecerSesion(
+            const sesion =
+                establecerSesion(
+                    event,
+                    {
+                        ...usuario,
+                        permisos
+                    }
+                );
+
+
+            auditar(
                 event,
                 {
-                    ...usuario,
+                    modulo:
+                        "USUARIOS",
 
-                    permisos
+                    accion:
+                        "CONFIGURAR_INICIAL",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        usuario.id,
+
+                    descripcion:
+                        "Administrador inicial creado."
                 }
             );
+
+
+            return sesion;
 
         }
     );
@@ -402,14 +429,38 @@ export function registerUsuariosHandlers() {
             );
 
 
-            return establecerSesion(
+            const sesion =
+                establecerSesion(
+                    event,
+                    {
+                        ...usuario,
+                        permisos
+                    }
+                );
+
+
+            auditar(
                 event,
                 {
-                    ...usuario,
+                    modulo:
+                        "AUTH",
 
-                    permisos
+                    accion:
+                        "LOGIN",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        usuario.id,
+
+                    descripcion:
+                        `Inicio de sesión de ${usuario.usuario}.`
                 }
             );
+
+
+            return sesion;
 
         }
     );
@@ -417,7 +468,35 @@ export function registerUsuariosHandlers() {
 
     ipcMain.handle(
         "auth:logout",
+
         (event) => {
+
+            const sesion =
+                obtenerSesion(
+                    event
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "AUTH",
+
+                    accion:
+                        "LOGOUT",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        sesion?.id,
+
+                    descripcion:
+                        `Cierre de sesión de ${sesion?.usuario || "usuario"}.`
+                }
+            );
+
 
             cerrarSesion(
                 event
@@ -492,29 +571,64 @@ export function registerUsuariosHandlers() {
             );
 
 
-            return crearUsuarioInterno({
+            const usuarioCreado =
+                await crearUsuarioInterno({
 
-                usuario:
-                    normalizarUsuario(
-                        datos?.usuario
-                    ),
+                    usuario:
+                        normalizarUsuario(
+                            datos?.usuario
+                        ),
 
-                nombre:
-                    validarNombre(
-                        datos?.nombre
-                    ),
+                    nombre:
+                        validarNombre(
+                            datos?.nombre
+                        ),
 
-                password:
-                    validarPassword(
-                        datos?.password
-                    ),
+                    password:
+                        validarPassword(
+                            datos?.password
+                        ),
 
-                rolId:
-                    validarId(
-                        datos?.rol_id
-                    )
+                    rolId:
+                        validarId(
+                            datos?.rol_id
+                        )
 
-            });
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "USUARIOS",
+
+                    accion:
+                        "CREAR",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        usuarioCreado.id,
+
+                    descripcion:
+                        `Usuario ${usuarioCreado.usuario} creado.`,
+
+                    detalles: {
+
+                        nombre:
+                            usuarioCreado.nombre,
+
+                        rol_id:
+                            usuarioCreado.rol_id
+
+                    }
+                }
+            );
+
+
+            return usuarioCreado;
 
         }
     );
@@ -526,7 +640,19 @@ export function registerUsuariosHandlers() {
             event,
             datos
         ) => {
+            const anterior =
+                obtenerUsuario(
+                    id
+                );
 
+
+            if (!anterior) {
+
+                throw new Error(
+                    "El usuario no existe."
+                );
+
+            }
             exigirPermiso(
                 event,
                 "usuarios.modificar"
@@ -581,7 +707,46 @@ export function registerUsuariosHandlers() {
 
                     rolId
 
-                });
+                })
+            auditar(
+                event,
+                {
+                    modulo:
+                        "USUARIOS",
+
+                    accion:
+                        "ACTUALIZAR",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Usuario ${anterior.usuario} actualizado.`,
+
+                    detalles: {
+
+                        anterior: {
+                            nombre:
+                                anterior.nombre,
+
+                            rol_id:
+                                anterior.rol_id
+                        },
+
+                        nuevo: {
+                            nombre:
+                                resultado.nombre,
+
+                            rol_id:
+                                resultado.rol_id
+                        }
+
+                    }
+                }
+            );
 
 
             invalidarUsuario(
@@ -589,7 +754,7 @@ export function registerUsuariosHandlers() {
             );
 
 
-            return resultado;
+            return resultado;;
 
         }
     );
@@ -650,7 +815,31 @@ export function registerUsuariosHandlers() {
 
             });
 
+            const usuarioObjetivo =
+                obtenerUsuario(
+                    id
+                );
 
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "USUARIOS",
+
+                    accion:
+                        "CAMBIAR_PASSWORD",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Contraseña de ${usuarioObjetivo?.usuario || `usuario #${id}`} modificada.`
+                }
+            );
             invalidarUsuario(
                 id
             );
@@ -674,10 +863,9 @@ export function registerUsuariosHandlers() {
                 "usuarios.desactivar"
             );
 
-
-            const id =
-                validarId(
-                    datos?.id
+            const anterior =
+                obtenerUsuario(
+                    id
                 );
 
 
@@ -693,12 +881,32 @@ export function registerUsuariosHandlers() {
                 });
 
 
-            invalidarUsuario(
-                id
+            auditar(
+                event,
+                {
+                    modulo:
+                        "USUARIOS",
+
+                    accion:
+                        resultado.activo
+                            ? "ACTIVAR"
+                            : "DESACTIVAR",
+
+                    entidad:
+                        "usuario",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Usuario ${anterior?.usuario || `#${id}`} ${resultado.activo ? "activado" : "desactivado"}.`
+                }
             );
 
 
-            return resultado;
+            invalidarUsuario(
+                id
+            );
 
         }
     );
@@ -776,12 +984,56 @@ export function registerUsuariosHandlers() {
 
             }
 
+            const rolAnterior =
+                listarRoles()
+                    .find(
+                        (rol) =>
+                            rol.id ===
+                            rolId
+                    );
+
 
             actualizarPermisosRol(
                 rolId,
                 permisoIds
             );
 
+            auditar(
+                event,
+                {
+                    modulo:
+                        "USUARIOS",
+
+                    accion:
+                        "ACTUALIZAR_PERMISOS",
+
+                    entidad:
+                        "rol",
+
+                    entidadId:
+                        rolId,
+
+                    descripcion:
+                        `Permisos del rol ${rolAnterior?.nombre || `#${rolId}`} modificados.`,
+
+                    detalles: {
+
+                        permisos_anteriores:
+                            rolAnterior
+                                ?.permisos ||
+                            [],
+
+                        permisos_nuevos:
+                            permisoIds
+
+                    }
+                }
+            );
+
+
+            invalidarRol(
+                rolId
+            );
 
             invalidarRol(
                 rolId

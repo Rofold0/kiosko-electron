@@ -1,6 +1,10 @@
 import db
     from "../database.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 
 const productoStmt =
     db.prepare(`

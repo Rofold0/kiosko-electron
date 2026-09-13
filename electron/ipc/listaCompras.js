@@ -15,6 +15,10 @@ import {
     completarLista
 } from "../database/repositories/listaComprasRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 
 function validarId(
     valor,
@@ -95,20 +99,52 @@ export function registerListaComprasHandlers() {
         "lista-compras:agregar-producto",
         (_event, datos) => {
 
-            return agregarProducto({
+            const productoId =
+                validarId(
+                    datos?.producto_id,
+                    "ID de producto inválido."
+                );
 
-                productoId:
-                    validarId(
-                        datos?.producto_id,
-                        "ID de producto inválido."
-                    ),
 
-                cantidad:
-                    validarCantidad(
-                        datos?.cantidad
-                    )
+            const cantidad =
+                validarCantidad(
+                    datos?.cantidad
+                );
 
-            });
+
+            const resultado =
+                agregarProducto({
+                    productoId,
+                    cantidad
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
+
+                    accion:
+                        "AGREGAR_PRODUCTO",
+
+                    entidad:
+                        "lista_compra",
+
+                    entidadId:
+                        resultado.id,
+
+                    detalles: {
+                        producto_id:
+                            productoId,
+
+                        cantidad
+                    }
+                }
+            );
+
+
+            return resultado;
 
         }
     );
@@ -117,7 +153,27 @@ export function registerListaComprasHandlers() {
     handleProtegido(
         "lista-compras:agregar-libre",
         (_event, datos) => {
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
 
+                    accion:
+                        "AGREGAR_LIBRE",
+
+                    entidad:
+                        "lista_compra",
+
+                    entidadId:
+                        resultado.id,
+
+                    detalles: {
+                        nombre,
+                        cantidad
+                    }
+                }
+            );
             return agregarItemLibre({
 
                 nombre:
@@ -139,7 +195,26 @@ export function registerListaComprasHandlers() {
     handleProtegido(
         "lista-compras:cantidad",
         (_event, datos) => {
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
 
+                    accion:
+                        "CAMBIAR_CANTIDAD",
+
+                    entidad:
+                        "item_lista_compras",
+
+                    entidadId:
+                        itemId,
+
+                    detalles: {
+                        cantidad
+                    }
+                }
+            );
             return actualizarCantidad({
 
                 itemId:
@@ -161,7 +236,24 @@ export function registerListaComprasHandlers() {
     handleProtegido(
         "lista-compras:comprado",
         (_event, datos) => {
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
 
+                    accion:
+                        comprado
+                            ? "MARCAR_COMPRADO"
+                            : "MARCAR_PENDIENTE",
+
+                    entidad:
+                        "item_lista_compras",
+
+                    entidadId:
+                        itemId
+                }
+            );
             return marcarComprado({
 
                 itemId:
@@ -183,7 +275,22 @@ export function registerListaComprasHandlers() {
     handleProtegido(
         "lista-compras:eliminar-item",
         (_event, id) => {
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
 
+                    accion:
+                        "ELIMINAR_ITEM",
+
+                    entidad:
+                        "item_lista_compras",
+
+                    entidadId:
+                        itemId
+                }
+            );
             return eliminarItem(
                 validarId(id)
             );
@@ -195,7 +302,29 @@ export function registerListaComprasHandlers() {
     handleProtegido(
         "lista-compras:notas",
         (_event, notas) => {
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
 
+                    accion:
+                        "ACTUALIZAR_NOTAS",
+
+                    entidad:
+                        "lista_compra",
+
+                    entidadId:
+                        resultado.id,
+
+                    detalles: {
+                        tiene_notas:
+                            Boolean(
+                                notasNormalizadas
+                            )
+                    }
+                }
+            );
             return actualizarNotas(
                 notas?.trim() ||
                 null
@@ -209,7 +338,34 @@ export function registerListaComprasHandlers() {
         "lista-compras:agregar-stock-bajo",
         () => {
 
-            return agregarProductosStockBajo();
+            const resultado =
+                agregarProductosStockBajo();
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "LISTA_COMPRAS",
+
+                    accion:
+                        "AGREGAR_STOCK_BAJO",
+
+                    entidad:
+                        "lista_compra",
+
+                    entidadId:
+                        resultado.lista.id,
+
+                    detalles: {
+                        agregados:
+                            resultado.agregados
+                    }
+                }
+            );
+
+
+            return resultado;
 
         }
     );
@@ -241,7 +397,36 @@ export function registerListaComprasHandlers() {
         "lista-compras:completar",
         () => {
 
-            return completarLista();
+            const resultado =
+    completarLista();
+
+
+auditar(
+    event,
+    {
+        modulo:
+            "LISTA_COMPRAS",
+
+        accion:
+            "COMPLETAR",
+
+        entidad:
+            "lista_compra",
+
+        entidadId:
+            resultado
+                .lista_completada_id,
+
+        detalles: {
+            nueva_lista_id:
+                resultado
+                    .nueva_lista_id
+        }
+    }
+);
+
+
+return resultado;
 
         }
     );

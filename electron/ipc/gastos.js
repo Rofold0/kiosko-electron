@@ -13,6 +13,11 @@ import {
     revertirGasto
 } from "../database/repositories/gastosRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
+
 
 const METODOS =
     new Set([
@@ -179,43 +184,153 @@ export function registerGastosHandlers() {
 
     handleProtegido(
         "gastos:categoria-crear",
-        (_event, datos) =>
 
-            crearCategoriaGasto(
+        (
+            event,
+            datos
+        ) => {
+
+            const nombre =
                 validarNombreCategoria(
                     datos?.nombre
-                )
-            )
+                );
+
+
+            const categoria =
+                crearCategoriaGasto(
+                    nombre
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "GASTOS",
+
+                    accion:
+                        "CREAR_CATEGORIA",
+
+                    entidad:
+                        "categoria_gasto",
+
+                    entidadId:
+                        categoria.id,
+
+                    descripcion:
+                        `Categoría de gasto "${categoria.nombre}" creada.`
+                }
+            );
+
+
+            return categoria;
+
+        }
     );
 
 
     handleProtegido(
         "gastos:categoria-actualizar",
-        (_event, datos) =>
 
-            actualizarCategoriaGasto({
+        (
+            event,
+            datos
+        ) => {
 
-                id:
-                    validarId(
-                        datos?.id
-                    ),
+            const id =
+                validarId(
+                    datos?.id
+                );
 
-                nombre:
-                    validarNombreCategoria(
-                        datos?.nombre
-                    )
 
-            })
+            const nombre =
+                validarNombreCategoria(
+                    datos?.nombre
+                );
+
+
+            const categoria =
+                actualizarCategoriaGasto({
+                    id,
+                    nombre
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "GASTOS",
+
+                    accion:
+                        "ACTUALIZAR_CATEGORIA",
+
+                    entidad:
+                        "categoria_gasto",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Categoría de gasto #${id} actualizada.`,
+
+                    detalles: {
+                        nombre
+                    }
+                }
+            );
+
+
+            return categoria;
+
+        }
     );
 
 
     handleProtegido(
         "gastos:categoria-eliminar",
-        (_event, id) =>
 
-            eliminarCategoriaGasto(
-                validarId(id)
-            )
+        (
+            event,
+            valor
+        ) => {
+
+            const id =
+                validarId(
+                    valor
+                );
+
+
+            const resultado =
+                eliminarCategoriaGasto(
+                    id
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "GASTOS",
+
+                    accion:
+                        "DESACTIVAR_CATEGORIA",
+
+                    entidad:
+                        "categoria_gasto",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Categoría de gasto #${id} desactivada.`
+                }
+            );
+
+
+            return resultado;
+
+        }
     );
 
 
@@ -225,42 +340,89 @@ export function registerGastosHandlers() {
 
     handleProtegido(
         "gastos:crear",
-        (_event, datos) =>
 
-            registrarGasto({
+        (
+            event,
+            datos
+        ) => {
 
-                categoriaId:
-                    validarId(
-                        datos?.categoria_id,
-                        "Categoría inválida."
-                    ),
+            const gasto =
+                registrarGasto({
 
-                descripcion:
-                    textoOpcional(
-                        datos?.descripcion
-                    ),
+                    categoriaId:
+                        validarId(
+                            datos?.categoria_id,
+                            "Categoría inválida."
+                        ),
 
-                monto:
-                    validarMonto(
-                        datos?.monto
-                    ),
+                    descripcion:
+                        textoOpcional(
+                            datos?.descripcion
+                        ),
 
-                fecha:
-                    validarFecha(
-                        datos?.fecha
-                    ),
+                    monto:
+                        validarMonto(
+                            datos?.monto
+                        ),
 
-                metodoPago:
-                    validarMetodo(
-                        datos?.metodo_pago
-                    ),
+                    fecha:
+                        validarFecha(
+                            datos?.fecha
+                        ),
 
-                notas:
-                    textoOpcional(
-                        datos?.notas
-                    )
+                    metodoPago:
+                        validarMetodo(
+                            datos?.metodo_pago
+                        ),
 
-            })
+                    notas:
+                        textoOpcional(
+                            datos?.notas
+                        )
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "GASTOS",
+
+                    accion:
+                        "CREAR",
+
+                    entidad:
+                        "gasto",
+
+                    entidadId:
+                        gasto.id,
+
+                    descripcion:
+                        `Gasto #${gasto.id} registrado por ${gasto.monto}.`,
+
+                    detalles: {
+
+                        categoria:
+                            gasto.categoria,
+
+                        monto:
+                            gasto.monto,
+
+                        metodo_pago:
+                            gasto.metodo_pago,
+
+                        caja_id:
+                            gasto.caja_id
+
+                    }
+                }
+            );
+
+
+            return gasto;
+
+        }
     );
 
 
@@ -377,7 +539,11 @@ export function registerGastosHandlers() {
 
     handleProtegido(
         "gastos:revertir",
-        (_event, datos) => {
+
+        (
+            event,
+            datos
+        ) => {
 
             const motivo =
                 datos
@@ -397,17 +563,59 @@ export function registerGastosHandlers() {
             }
 
 
-            return revertirGasto({
+            const gastoId =
+                validarId(
+                    datos?.id,
+                    "ID de gasto inválido."
+                );
 
-                gastoId:
-                    validarId(
-                        datos?.id,
-                        "ID de gasto inválido."
-                    ),
 
-                motivo
+            const gasto =
+                revertirGasto({
 
-            });
+                    gastoId,
+                    motivo
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "GASTOS",
+
+                    accion:
+                        "REVERTIR",
+
+                    entidad:
+                        "gasto",
+
+                    entidadId:
+                        gastoId,
+
+                    descripcion:
+                        `Gasto #${gastoId} revertido.`,
+
+                    detalles: {
+
+                        monto:
+                            gasto.monto,
+
+                        metodo_pago:
+                            gasto.metodo_pago,
+
+                        motivo,
+
+                        caja_reversion_id:
+                            gasto.caja_reversion_id
+
+                    }
+                }
+            );
+
+
+            return gasto;
 
         }
     );

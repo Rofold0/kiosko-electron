@@ -9,6 +9,9 @@ import {
     eliminarProducto
 } from "../database/repositories/productosRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
 
 function validarId(
     valor,
@@ -195,52 +198,88 @@ export function registerProductosHandlers() {
         "productos:crear",
         (_event, producto) => {
 
-            return crearProducto({
+            const resultado =
+                crearProducto({
 
-                nombre:
-                    validarNombre(
-                        producto?.nombre
-                    ),
+                    nombre:
+                        validarNombre(
+                            producto?.nombre
+                        ),
 
-                descripcion:
-                    textoOpcional(
-                        producto?.descripcion
-                    ),
+                    descripcion:
+                        textoOpcional(
+                            producto?.descripcion
+                        ),
 
-                codigo:
-                    textoOpcional(
-                        producto?.codigo
-                    ),
+                    codigo:
+                        textoOpcional(
+                            producto?.codigo
+                        ),
 
-                categoriaId:
-                    validarId(
-                        producto?.categoria_id,
-                        "Debe seleccionar una categoría."
-                    ),
+                    categoriaId:
+                        validarId(
+                            producto?.categoria_id,
+                            "Debe seleccionar una categoría."
+                        ),
 
-                subcategoriaId:
-                    validarIdOpcional(
-                        producto?.subcategoria_id
-                    ),
+                    subcategoriaId:
+                        validarIdOpcional(
+                            producto?.subcategoria_id
+                        ),
 
-                stockInicial:
-                    enteroNoNegativo(
-                        producto?.stock_inicial,
-                        "El stock inicial es inválido."
-                    ),
+                    stockInicial:
+                        enteroNoNegativo(
+                            producto?.stock_inicial,
+                            "El stock inicial es inválido."
+                        ),
 
-                stockMinimo:
-                    enteroNoNegativo(
-                        producto?.stock_minimo,
-                        "El stock mínimo es inválido."
-                    ),
+                    stockMinimo:
+                        enteroNoNegativo(
+                            producto?.stock_minimo,
+                            "El stock mínimo es inválido."
+                        ),
 
-                unidad:
-                    producto?.unidad
-                        ?.trim() ||
+                    unidad:
+                        producto?.unidad
+                            ?.trim() ||
                         "unidad"
 
-            });
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PRODUCTOS",
+
+                    accion:
+                        "CREAR",
+
+                    entidad:
+                        "producto",
+
+                    entidadId:
+                        resultado.id,
+
+                    descripcion:
+                        `Producto "${resultado.nombre}" creado.`,
+
+                    detalles: {
+                        codigo:
+                            resultado.codigo,
+
+                        stock_inicial:
+                            resultado.stock_actual,
+
+                        stock_minimo:
+                            resultado.stock_minimo
+                    }
+                }
+            );
+
+
+            return resultado;
 
         }
     );
@@ -250,52 +289,90 @@ export function registerProductosHandlers() {
         "productos:actualizar",
         (_event, producto) => {
 
-            return actualizarProducto({
+            const resultado =
+                actualizarProducto({
 
-                id:
-                    validarId(
-                        producto?.id,
-                        "ID de producto inválido."
-                    ),
+                    id:
+                        validarId(
+                            producto?.id,
+                            "ID de producto inválido."
+                        ),
 
-                nombre:
-                    validarNombre(
-                        producto?.nombre
-                    ),
+                    nombre:
+                        validarNombre(
+                            producto?.nombre
+                        ),
 
-                descripcion:
-                    textoOpcional(
-                        producto?.descripcion
-                    ),
+                    descripcion:
+                        textoOpcional(
+                            producto?.descripcion
+                        ),
 
-                codigo:
-                    textoOpcional(
-                        producto?.codigo
-                    ),
+                    codigo:
+                        textoOpcional(
+                            producto?.codigo
+                        ),
 
-                categoriaId:
-                    validarId(
-                        producto?.categoria_id,
-                        "Debe seleccionar una categoría."
-                    ),
+                    categoriaId:
+                        validarId(
+                            producto?.categoria_id,
+                            "Debe seleccionar una categoría."
+                        ),
 
-                subcategoriaId:
-                    validarIdOpcional(
-                        producto?.subcategoria_id
-                    ),
+                    subcategoriaId:
+                        validarIdOpcional(
+                            producto?.subcategoria_id
+                        ),
 
-                stockMinimo:
-                    enteroNoNegativo(
-                        producto?.stock_minimo,
-                        "El stock mínimo es inválido."
-                    ),
+                    stockMinimo:
+                        enteroNoNegativo(
+                            producto?.stock_minimo,
+                            "El stock mínimo es inválido."
+                        ),
 
-                unidad:
-                    producto?.unidad
-                        ?.trim() ||
+                    unidad:
+                        producto?.unidad
+                            ?.trim() ||
                         "unidad"
 
-            });
+                });
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PRODUCTOS",
+
+                    accion:
+                        "ACTUALIZAR",
+
+                    entidad:
+                        "producto",
+
+                    entidadId:
+                        resultado.id,
+
+                    descripcion:
+                        `Producto "${resultado.nombre}" actualizado.`,
+
+                    detalles: {
+                        codigo:
+                            resultado.codigo,
+
+                        categoria_id:
+                            resultado.categoria_id,
+
+                        subcategoria_id:
+                            resultado.subcategoria_id,
+
+                        stock_minimo:
+                            resultado.stock_minimo,
+
+                        unidad:
+                            resultado.unidad
+                    }
+                }
+            );
+            return resultado;
 
         }
     );
@@ -305,12 +382,41 @@ export function registerProductosHandlers() {
         "productos:eliminar",
         (_event, id) => {
 
-            return eliminarProducto(
+            const productoId =
                 validarId(
                     id,
                     "ID de producto inválido."
-                )
+                );
+
+
+            const resultado =
+                eliminarProducto(
+                    productoId
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "PRODUCTOS",
+
+                    accion:
+                        "DESACTIVAR",
+
+                    entidad:
+                        "producto",
+
+                    entidadId:
+                        productoId,
+
+                    descripcion:
+                        `Producto #${productoId} desactivado.`
+                }
             );
+
+
+            return resultado;
 
         }
     );

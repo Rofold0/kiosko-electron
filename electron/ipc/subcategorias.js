@@ -9,6 +9,10 @@ import {
     eliminarSubcategoria
 } from "../database/repositories/subcategoriasRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 
 function validarId(
     valor,
@@ -65,23 +69,34 @@ export function registerSubcategoriasHandlers() {
         "subcategorias:crear",
         (_event, subcategoria) => {
 
-            const categoriaId =
-                validarId(
-                    subcategoria?.categoria_id,
-                    "Debe seleccionar una categoría."
-                );
-
-            const nombre =
-                validarNombre(
-                    subcategoria?.nombre
+            const resultado =
+                crearSubcategoria(
+                    nombre
                 );
 
 
-            return crearSubcategoria(
-                categoriaId,
-                nombre
+            auditar(
+                event,
+                {
+                    modulo:
+                        "SUBCATEGORIA   ",
+
+                    accion:
+                        "CREAR",
+
+                    entidad:
+                        "subcategoria",
+
+                    entidadId:
+                        resultado.id,
+
+                    descripcion:
+                        `Subategoría "${resultado.nombre}" creada.`
+                }
             );
 
+
+            return resultado;
         }
     );
 
@@ -90,29 +105,40 @@ export function registerSubcategoriasHandlers() {
         "subcategorias:actualizar",
         (_event, subcategoria) => {
 
-            const id =
-                validarId(
-                    subcategoria?.id,
-                    "ID de subcategoría inválido."
-                );
-
-            const categoriaId =
-                validarId(
-                    subcategoria?.categoria_id,
-                    "Debe seleccionar una categoría."
-                );
-
-            const nombre =
-                validarNombre(
-                    subcategoria?.nombre
+            const resultado =
+                actualizarSubcategoria(
+                    id,
+                    nombre
                 );
 
 
-            return actualizarSubcategoria(
-                id,
-                categoriaId,
-                nombre
+            auditar(
+                event,
+                {
+                    modulo:
+                        "SUBCATEGORIA",
+
+                    accion:
+                        "ACTUALIZAR",
+
+                    entidad:
+                        "subcategoria",
+
+                    entidadId:
+                        id,
+
+                    descripcion:
+                        `Subcategoría #${id} actualizada.`,
+
+                    detalles: {
+                        subcategoria_id: subcategoriaId,
+                        nombre
+                    }
+                }
             );
+
+
+            return resultado;
 
         }
     );
@@ -122,12 +148,38 @@ export function registerSubcategoriasHandlers() {
         "subcategorias:eliminar",
         (_event, id) => {
 
-            return eliminarSubcategoria(
-                validarId(
-                    id,
-                    "ID de subcategoría inválido."
-                )
+            const subategoriaId =
+                validarId(id);
+
+
+            const resultado =
+                eliminarSubcategoria(
+                    subcategoriaId
+                );
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "SUBCATEGORIAS",
+
+                    accion:
+                        "DESACTIVAR",
+
+                    entidad:
+                        "subcategoria",
+
+                    entidadId:
+                        categoriaId,
+
+                    descripcion:
+                        `Subcategoría #${subcategoriaId} desactivada.`
+                }
             );
+
+
+            return resultado;
 
         }
     );
