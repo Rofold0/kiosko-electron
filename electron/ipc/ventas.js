@@ -10,6 +10,10 @@ import {
     revertirVenta
 } from "../database/repositories/ventasRepository.js";
 
+import {
+    auditar
+} from "../security/audit.js";
+
 
 const METODOS_PAGO =
     new Set([
@@ -261,10 +265,11 @@ export function registerVentasHandlers() {
     );
 
 
-    handleProtegido(
+    hhandleProtegido(
         "ventas:crear",
+
         (
-            _event,
+            event,
             datos
         ) => {
 
@@ -274,33 +279,79 @@ export function registerVentasHandlers() {
                 );
 
 
-            return registrarVenta({
+            const venta =
+                registrarVenta({
 
-                fecha:
-                    validarFecha(
-                        datos?.fecha
-                    ),
+                    fecha:
+                        validarFecha(
+                            datos?.fecha
+                        ),
 
-                metodoPago,
+                    metodoPago,
 
-                efectivoRecibido:
-                    validarEfectivoRecibido(
-                        datos
-                            ?.efectivo_recibido,
-                        metodoPago
-                    ),
+                    efectivoRecibido:
+                        validarEfectivoRecibido(
+                            datos
+                                ?.efectivo_recibido,
+                            metodoPago
+                        ),
 
-                notas:
-                    textoOpcional(
-                        datos?.notas
-                    ),
+                    notas:
+                        textoOpcional(
+                            datos?.notas
+                        ),
 
-                items:
-                    validarItems(
-                        datos?.items
-                    )
+                    items:
+                        validarItems(
+                            datos?.items
+                        )
 
-            });
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "VENTAS",
+
+                    accion:
+                        "CREAR",
+
+                    entidad:
+                        "venta",
+
+                    entidadId:
+                        venta.id,
+
+                    descripcion:
+                        `Venta #${venta.id} registrada por ${venta.total}.`,
+
+                    detalles: {
+
+                        total:
+                            venta.total,
+
+                        metodo_pago:
+                            venta.metodo_pago,
+
+                        efectivo_recibido:
+                            venta.efectivo_recibido,
+
+                        vuelto:
+                            venta.vuelto,
+
+                        cantidad_items:
+                            venta.items
+                                ?.length ||
+                            0
+
+                    }
+                }
+            );
+
+
+            return venta;
 
         }
     );
@@ -422,8 +473,9 @@ export function registerVentasHandlers() {
 
     handleProtegido(
         "ventas:revertir",
+
         (
-            _event,
+            event,
             datos
         ) => {
 
@@ -445,17 +497,57 @@ export function registerVentasHandlers() {
             }
 
 
-            return revertirVenta({
+            const ventaId =
+                validarId(
+                    datos?.id,
+                    "ID de venta inválido."
+                );
 
-                ventaId:
-                    validarId(
-                        datos?.id,
-                        "ID de venta inválido."
-                    ),
 
-                motivo
+            const venta =
+                revertirVenta({
 
-            });
+                    ventaId,
+
+                    motivo
+
+                });
+
+
+            auditar(
+                event,
+                {
+                    modulo:
+                        "VENTAS",
+
+                    accion:
+                        "REVERTIR",
+
+                    entidad:
+                        "venta",
+
+                    entidadId:
+                        ventaId,
+
+                    descripcion:
+                        `Venta #${ventaId} revertida.`,
+
+                    detalles: {
+
+                        total:
+                            venta.total,
+
+                        metodo_pago:
+                            venta.metodo_pago,
+
+                        motivo
+
+                    }
+                }
+            );
+
+
+            return venta;
 
         }
     );

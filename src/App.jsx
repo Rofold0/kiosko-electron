@@ -1,19 +1,9 @@
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
-import {
-  AuthProvider,
-  useAuth
-} from "./auth/authContext.jsx";
-
-import Login
-  from "./pages/login.jsx";
-
-import ConfiguracionInicial
-  from "./pages/configuracionInicial.jsx";
-
-import Usuarios
-  from "./pages/usuarios.jsx";
-import RutaProtegida
-  from "./auth/rutaProtegida.jsx";
+import { AuthProvider, useAuth } from "./auth/authContext.jsx";
+import Login from "./pages/login.jsx";
+import ConfiguracionInicial from "./pages/configuracionInicial.jsx";
+import Usuarios from "./pages/usuarios.jsx";
+import RutaProtegida from "./auth/rutaProtegida.jsx";
 import Dashboard from "./pages/dashboard";
 import Categorias from "./pages/categorias";
 import Subcategorias from "./pages/subcategorias";
@@ -31,7 +21,7 @@ import Gastos from "./pages/gastos";
 import Reportes from "./pages/reportes";
 import Mercaderia from "./pages/mercaderia";
 import Gestion from "./pages/gestion";
-
+import Auditoria from "./pages/auditoria.jsx";
 
 
 function NavegacionElectron() {
@@ -310,7 +300,17 @@ function AplicacionProtegida() {
             </RutaProtegida>
           }
         />
-
+  
+        <Route
+          path={ROUTES.auditoria}
+          element={
+            <RutaProtegida
+              permisos="auditoria.ver"
+            >
+              <Auditoria />
+            </RutaProtegida>
+          }
+        />
         <Route
           path="*"
           element={<Dashboard />}

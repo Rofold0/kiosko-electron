@@ -13,6 +13,7 @@
 @import "./styles/gastos.css";
 @import "./styles/reportes.css";
 @import "./styles/usuarios.css";
+@import "./styles/auditorias.css";
 
 :root {
     font-family:

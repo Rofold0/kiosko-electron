@@ -293,7 +293,14 @@ export const IPC_PERMISSIONS =
             "reportes.exportar",
 
         "reportes:imprimir":
-            "reportes.exportar"
+            "reportes.exportar",
+            
+        /*
+         * AUDITORÍA
+         */
+
+        "auditoria:listar":
+            "auditoria.ver",
 
     });
 
@@ -305,7 +312,7 @@ export function handleProtegido(
 
     const permiso =
         IPC_PERMISSIONS[
-            canal
+        canal
         ];
 
 

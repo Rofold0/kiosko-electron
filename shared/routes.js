@@ -4,8 +4,7 @@ export const ROUTES = {
     subcategorias: "/subcategorias",
     productos: "/productos",
     stock: "/stock",
-    listaCompras:
-    "/lista-compras",
+    listaCompras: "/lista-compras",
     proveedores: "/proveedores",
     compras: "/compras",
     precios: "/precios",
@@ -15,5 +14,6 @@ export const ROUTES = {
     reportes: "/reportes",
     mercaderia: "/mercaderia",
     gestion: "/gestion",
-    usuarios: "/usuarios"
+    usuarios: "/usuarios",
+    auditoria: "/auditoria"
 };

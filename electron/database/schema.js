@@ -81,6 +81,66 @@ idx_roles_permisos_permiso
 ON roles_permisos(
     permiso_id
 );
+
+-- ============================================================================
+-- AUDITORÍA
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS auditoria (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    fecha           TEXT NOT NULL,
+
+    usuario_id      INTEGER,
+
+    usuario         TEXT,
+    usuario_nombre  TEXT,
+
+    modulo          TEXT NOT NULL,
+    accion          TEXT NOT NULL,
+
+    entidad         TEXT,
+    entidad_id      INTEGER,
+
+    descripcion     TEXT,
+
+    detalles_json   TEXT,
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE SET NULL
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_auditoria_fecha
+ON auditoria(
+    fecha DESC
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_auditoria_usuario_fecha
+ON auditoria(
+    usuario_id,
+    fecha DESC
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_auditoria_modulo_fecha
+ON auditoria(
+    modulo,
+    fecha DESC
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_auditoria_entidad
+ON auditoria(
+    entidad,
+    entidad_id
+);
 -- ============================================================================
 -- CATEGORÍAS Y SUBCATEGORÍAS
 -- ============================================================================

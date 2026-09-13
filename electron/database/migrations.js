@@ -1530,6 +1530,123 @@ const migrations = [
         }
 
     }
+},
+{
+    version: 15,
+
+    name: "auditoria",
+
+    up(db) {
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS auditoria (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                fecha           TEXT NOT NULL,
+
+                usuario_id      INTEGER,
+
+                usuario         TEXT,
+                usuario_nombre  TEXT,
+
+                modulo          TEXT NOT NULL,
+                accion          TEXT NOT NULL,
+
+                entidad         TEXT,
+                entidad_id      INTEGER,
+
+                descripcion     TEXT,
+
+                detalles_json   TEXT,
+
+                FOREIGN KEY (usuario_id)
+                    REFERENCES usuarios(id)
+                    ON DELETE SET NULL
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_auditoria_fecha
+            ON auditoria(
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_auditoria_usuario_fecha
+            ON auditoria(
+                usuario_id,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_auditoria_modulo_fecha
+            ON auditoria(
+                modulo,
+                fecha DESC
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_auditoria_entidad
+            ON auditoria(
+                entidad,
+                entidad_id
+            );
+        `);
+
+
+        /*
+         * Nuevo permiso.
+         */
+
+        db.prepare(`
+            INSERT OR IGNORE
+            INTO permisos (
+                clave,
+                descripcion
+            )
+
+            VALUES (
+                ?,
+                ?
+            )
+        `).run(
+            "auditoria.ver",
+            "Ver auditoría del sistema"
+        );
+
+
+        /*
+         * Como ADMIN fue creado antes,
+         * tenemos que asignarle explícitamente
+         * este nuevo permiso.
+         */
+
+        db.exec(`
+            INSERT OR IGNORE
+            INTO roles_permisos (
+                rol_id,
+                permiso_id
+            )
+
+            SELECT
+                r.id,
+                p.id
+
+            FROM roles r
+
+            INNER JOIN permisos p
+                ON p.clave =
+                    'auditoria.ver'
+
+            WHERE
+                r.clave =
+                    'ADMIN';
+        `);
+
+    }
 }
 ];
 

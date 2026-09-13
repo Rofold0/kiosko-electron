@@ -1,0 +1,38 @@
+.audit-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+
+.audit-table-wrapper {
+    overflow-x: auto;
+}
+
+
+.audit-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+}
+
+
+.audit-table th,
+.audit-table td {
+    padding: 9px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #ddd;
+}
+
+
+.audit-table pre {
+    max-width: 400px;
+    max-height: 250px;
+    overflow: auto;
+    white-space: pre-wrap;
+    margin: 8px 0 0;
+    font-size: 0.8rem;
+}

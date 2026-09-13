@@ -41,8 +41,14 @@ import {
 import {
     registerUsuariosHandlers
 } from "./usuarios.js";
+import {
+    registerAuditoriaHandlers
+} from "./auditoria.js";
 export function registerIpcHandlers() {
+
     registerUsuariosHandlers();
+    
+    registerAuditoriaHandlers();
     
     registerCategoriasHandlers();
 

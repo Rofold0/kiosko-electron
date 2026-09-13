@@ -97,6 +97,15 @@ roles: {
         )
 
 },
+auditoria: {
+
+    listar: (filtros) =>
+        ipcRenderer.invoke(
+            "auditoria:listar",
+            filtros
+        )
+
+},
   subcategorias: {
 
     listar: () =>

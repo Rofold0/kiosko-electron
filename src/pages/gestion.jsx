@@ -125,6 +125,20 @@ function Gestion() {
                             }
                         />
                     )}
+                {puede(
+                    "auditoria.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Auditoría"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.auditoria
+                                )
+                            }
+                        />
+
+                    )}
 
             </div>
         </div>
