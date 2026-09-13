@@ -1136,16 +1136,6 @@ function Compras() {
 
                 }
 
-
-                if (proveedorId) {
-
-                    await cargarProveedor(
-                        Number(proveedorId)
-                    );
-
-                }
-
-
             } catch (error) {
 
                 await mostrarError(error);
