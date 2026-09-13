@@ -78,6 +78,12 @@ function Productos() {
             "productos.modificar"
         );
 
+
+    const puedeVerCategorias =
+        puede(
+            "categorias.ver"
+        );
+
     // LISTADO
 
     const [
@@ -300,39 +306,57 @@ function Productos() {
 
                 try {
 
+                    const productosPromise =
+                        window
+                            .electronAPI
+                            .productos
+                            .listar({
+
+                                ...filtrosVacios,
+
+                                pagina: 1,
+
+                                limite:
+                                    LIMITE
+
+                            });
+
+
+                    const categoriasPromise =
+                        puedeVerCategorias
+                            ? window
+                                .electronAPI
+                                .categorias
+                                .listar()
+                            : Promise.resolve(
+                                []
+                            );
+
+
+                    const subcategoriasPromise =
+                        puedeVerCategorias
+                            ? window
+                                .electronAPI
+                                .subcategorias
+                                .listar()
+                            : Promise.resolve(
+                                []
+                            );
+
+
                     const [
+                        productosData,
                         categoriasData,
-                        subcategoriasData,
-                        productosData
+                        subcategoriasData
                     ] =
                         await Promise.all([
 
-                            window.electronAPI
-                                .categorias
-                                .listar(),
-
-                            window.electronAPI
-                                .subcategorias
-                                .listar(),
-
-                            window.electronAPI
-                                .productos
-                                .listar({
-                                    ...filtrosVacios,
-                                    pagina: 1,
-                                    limite: LIMITE
-                                })
+                            productosPromise,
+                            categoriasPromise,
+                            subcategoriasPromise
 
                         ]);
 
-
-                    setCategorias(
-                        categoriasData
-                    );
-
-                    setSubcategorias(
-                        subcategoriasData
-                    );
 
                     setProductos(
                         productosData.items
@@ -350,6 +374,14 @@ function Productos() {
                         productosData.total
                     );
 
+                    setCategorias(
+                        categoriasData
+                    );
+
+                    setSubcategorias(
+                        subcategoriasData
+                    );
+
 
                 } catch (error) {
 
@@ -364,7 +396,7 @@ function Productos() {
 
         iniciar();
 
-    }, []);
+    }, [puedeVerCategorias]);
 
 
     // LIMPIAR FORMULARIO
@@ -1067,104 +1099,106 @@ function Productos() {
                         />
 
                     </div>
+                    {puedeVerCategorias && (
 
+                        <div className="form-field">
 
-                    <div className="form-field">
+                            <label htmlFor="filtro-categoria">
+                                Categoría
+                            </label>
 
-                        <label htmlFor="filtro-categoria">
-                            Categoría
-                        </label>
-
-                        <select
-                            id="filtro-categoria"
-                            value={
-                                categoriaFiltro
-                            }
-                            onChange={(e) =>
-                                cambiarCategoriaFiltro(
-                                    e.target.value
-                                )
-                            }
-                        >
-
-                            <option value="">
-                                Todas
-                            </option>
-
-                            {categorias.map(
-                                (categoria) => (
-
-                                    <option
-                                        key={
-                                            categoria.id
-                                        }
-                                        value={
-                                            categoria.id
-                                        }
-                                    >
-                                        {
-                                            categoria.nombre
-                                        }
-                                    </option>
-
-                                )
-                            )}
-
-                        </select>
-
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label htmlFor="filtro-subcategoria">
-                            Subcategoría
-                        </label>
-
-                        <select
-                            id="filtro-subcategoria"
-                            value={
-                                subcategoriaFiltro
-                            }
-                            onChange={(e) =>
-                                setSubcategoriaFiltro(
-                                    e.target.value
-                                )
-                            }
-                            disabled={
-                                !categoriaFiltro
-                            }
-                        >
-
-                            <option value="">
-                                Todas
-                            </option>
-
-                            {
-                                subcategoriasFiltro
-                                    .map(
-                                        (subcategoria) => (
-
-                                            <option
-                                                key={
-                                                    subcategoria.id
-                                                }
-                                                value={
-                                                    subcategoria.id
-                                                }
-                                            >
-                                                {
-                                                    subcategoria.nombre
-                                                }
-                                            </option>
-
-                                        )
+                            <select
+                                id="filtro-categoria"
+                                value={
+                                    categoriaFiltro
+                                }
+                                onChange={(e) =>
+                                    cambiarCategoriaFiltro(
+                                        e.target.value
                                     )
-                            }
+                                }
+                            >
 
-                        </select>
+                                <option value="">
+                                    Todas
+                                </option>
 
-                    </div>
+                                {categorias.map(
+                                    (categoria) => (
+
+                                        <option
+                                            key={
+                                                categoria.id
+                                            }
+                                            value={
+                                                categoria.id
+                                            }
+                                        >
+                                            {
+                                                categoria.nombre
+                                            }
+                                        </option>
+
+                                    )
+                                )}
+
+                            </select>
+
+                        </div>
+
+                    )}{puedeVerCategorias && (
+                        <div className="form-field">
+
+                            <label htmlFor="filtro-subcategoria">
+                                Subcategoría
+                            </label>
+
+                            <select
+                                id="filtro-subcategoria"
+                                value={
+                                    subcategoriaFiltro
+                                }
+                                onChange={(e) =>
+                                    setSubcategoriaFiltro(
+                                        e.target.value
+                                    )
+                                }
+                                disabled={
+                                    !categoriaFiltro
+                                }
+                            >
+
+                                <option value="">
+                                    Todas
+                                </option>
+
+                                {
+                                    subcategoriasFiltro
+                                        .map(
+                                            (subcategoria) => (
+
+                                                <option
+                                                    key={
+                                                        subcategoria.id
+                                                    }
+                                                    value={
+                                                        subcategoria.id
+                                                    }
+                                                >
+                                                    {
+                                                        subcategoria.nombre
+                                                    }
+                                                </option>
+
+                                            )
+                                        )
+                                }
+
+                            </select>
+
+                        </div>
+                    )}
+
 
 
                     <div className="filter-actions">
@@ -1189,6 +1223,7 @@ function Productos() {
                 </form>
 
 
+
                 <p className="product-count">
                     {total} producto
                     {total !== 1 && "s"}
@@ -1199,23 +1234,26 @@ function Productos() {
                     columns={
                         columnasProductos
                     }
+
                     items={
                         productos
                     }
+
                     onEdit={
                         puedeModificar
                             ? editarProducto
                             : null
                     }
+
                     onDelete={
                         puedeModificar
                             ? eliminarProducto
                             : null
                     }
+
                     emptyMessage=
                     "No hay productos."
                 />
-
 
                 <div className="pagination">
 

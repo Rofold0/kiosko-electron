@@ -2,7 +2,9 @@ import {
     useEffect,
     useState
 } from "react";
-
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -62,6 +64,23 @@ const columnasMovimientos = [
 
 
 function Stock() {
+
+    const {
+    puede
+} =
+    useAuth();
+
+
+const puedeAjustar =
+    puede(
+        "stock.ajustar"
+    );
+
+
+const puedeVerProductos =
+    puede(
+        "productos.ver"
+    );
 
     const [
         alertas,
@@ -375,7 +394,7 @@ function Stock() {
     return (
 
         <div className="page">
-
+            
             <PageHeader
                 title="Stock"
             />
@@ -468,7 +487,7 @@ function Stock() {
                 Buscar producto
             </h2>
 
-
+{puedeVerProductos && (
             <form
                 className="stock-search"
                 onSubmit={
@@ -501,7 +520,8 @@ function Stock() {
 
             </form>
 
-
+)}
+{puedeVerProductos &&(
             <div className="stock-results">
 
                 {resultados.map(
@@ -525,7 +545,8 @@ function Stock() {
                 )}
 
             </div>
-
+            
+)}
 
             {producto && (
 
@@ -557,7 +578,7 @@ function Stock() {
                         }
                     </p>
 
-
+                    {puedeAjustar && (       
                     <form
                         className="stock-form"
                         onSubmit={
@@ -675,7 +696,7 @@ function Stock() {
                         </button>
 
                     </form>
-
+)}
 
                     <h2>
                         Historial

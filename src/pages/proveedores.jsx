@@ -3,6 +3,10 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -14,6 +18,23 @@ import FormActions
 
 
 function Proveedores() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeModificar =
+        puede(
+            "proveedores.modificar"
+        );
+
+
+    const puedeVerProductos =
+        puede(
+            "productos.ver"
+        );
 
     const [
         proveedores,
@@ -670,411 +691,416 @@ function Proveedores() {
                 title="Proveedores"
             />
 
+            {puedeModificar && (
+                <section>
 
-            <section>
-
-                <h2>
-                    {
-                        editandoId
-                            ? "Editar proveedor"
-                            : "Nuevo proveedor"
-                    }
-                </h2>
-
-
-                <form
-                    className="provider-form"
-                    onSubmit={
-                        guardarProveedor
-                    }
-                >
-
-                    <div className="form-field">
-
-                        <label>
-                            Nombre
-                        </label>
-
-                        <input
-                            value={nombre}
-                            onChange={(e) =>
-                                setNombre(
-                                    e.target.value
-                                )
-                            }
-                            required
-                        />
-
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label>
-                            Teléfono
-                        </label>
-
-                        <input
-                            value={telefono}
-                            onChange={(e) =>
-                                setTelefono(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label>
-                            Dirección
-                        </label>
-
-                        <input
-                            value={direccion}
-                            onChange={(e) =>
-                                setDireccion(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                    </div>
-
-
-                    <div className="form-field provider-notes">
-
-                        <label>
-                            Notas
-                        </label>
-
-                        <textarea
-                            rows="2"
-                            value={notas}
-                            onChange={(e) =>
-                                setNotas(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                    </div>
-
-
-                    <FormActions
-                        editando={
-                            Boolean(
-                                editandoId
-                            )
+                    <h2>
+                        {
+                            editandoId
+                                ? "Editar proveedor"
+                                : "Nuevo proveedor"
                         }
-                        onCancel={
-                            limpiarFormulario
+                    </h2>
+
+
+                    <form
+                        className="provider-form"
+                        onSubmit={
+                            guardarProveedor
                         }
-                    />
+                    >
 
-                </form>
+                        <div className="form-field">
 
-            </section>
+                            <label>
+                                Nombre
+                            </label>
 
+                            <input
+                                value={nombre}
+                                onChange={(e) =>
+                                    setNombre(
+                                        e.target.value
+                                    )
+                                }
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="form-field">
+
+                            <label>
+                                Teléfono
+                            </label>
+
+                            <input
+                                value={telefono}
+                                onChange={(e) =>
+                                    setTelefono(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+
+                        <div className="form-field">
+
+                            <label>
+                                Dirección
+                            </label>
+
+                            <input
+                                value={direccion}
+                                onChange={(e) =>
+                                    setDireccion(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+
+                        <div className="form-field provider-notes">
+
+                            <label>
+                                Notas
+                            </label>
+
+                            <textarea
+                                rows="2"
+                                value={notas}
+                                onChange={(e) =>
+                                    setNotas(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+
+                        <FormActions
+                            editando={
+                                Boolean(
+                                    editandoId
+                                )
+                            }
+                            onCancel={
+                                limpiarFormulario
+                            }
+                        />
+
+                    </form>
+
+                </section>
+            )}
 
             <CrudTable
                 columns={
                     columnasProveedores
                 }
+
                 items={
                     proveedores
                 }
+
                 onEdit={
-                    editarProveedor
+                    puedeModificar
+                        ? editarProveedor
+                        : null
                 }
+
                 onDelete={
-                    eliminarProveedor
+                    puedeModificar
+                        ? eliminarProveedor
+                        : null
                 }
+
                 emptyMessage=
-                    "No hay proveedores."
+                "No hay proveedores."
             />
 
 
-            {
-                proveedorSeleccionado && (
+            {proveedorSeleccionado && 
+                     puedeModificar && puedeVerProductos && (
+                        <section className="provider-products">
 
-                    <section className="provider-products">
-
-                        <h2>
-                            Productos de{" "}
-                            {
-                                proveedorSeleccionado
-                                    .nombre
-                            }
-                        </h2>
+                            <h2>
+                                Productos de{" "}
+                                {
+                                    proveedorSeleccionado
+                                        .nombre
+                                }
+                            </h2>
 
 
-                        <form
-                            className="provider-search"
-                            onSubmit={
-                                buscarProductos
-                            }
-                        >
+                            <form
+                                className="provider-search"
+                                onSubmit={
+                                    buscarProductos
+                                }
+                            >
 
-                            <div className="form-field">
+                                <div className="form-field">
 
-                                <label>
-                                    Buscar producto
-                                </label>
+                                    <label>
+                                        Buscar producto
+                                    </label>
 
-                                <input
-                                    value={busqueda}
-                                    onChange={(e) =>
-                                        setBusqueda(
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder=
+                                    <input
+                                        value={busqueda}
+                                        onChange={(e) =>
+                                            setBusqueda(
+                                                e.target.value
+                                            )
+                                        }
+                                        placeholder=
                                         "Nombre o código"
-                                />
+                                    />
+
+                                </div>
+
+
+                                <button type="submit">
+                                    Buscar
+                                </button>
+
+                            </form>
+
+
+                            <div className="provider-search-results">
+
+                                {resultados.map(
+                                    (producto) => (
+
+                                        <button
+                                            key={
+                                                producto.id
+                                            }
+                                            type="button"
+                                            onClick={() =>
+                                                elegirProducto(
+                                                    producto
+                                                )
+                                            }
+                                        >
+                                            {
+                                                producto.nombre
+                                            }
+                                        </button>
+
+                                    )
+                                )}
 
                             </div>
 
 
-                            <button type="submit">
-                                Buscar
-                            </button>
+                            {puedeModificar &&
+                                productoSeleccionado && (
 
-                        </form>
-
-
-                        <div className="provider-search-results">
-
-                            {resultados.map(
-                                (producto) => (
-
-                                    <button
-                                        key={
-                                            producto.id
-                                        }
-                                        type="button"
-                                        onClick={() =>
-                                            elegirProducto(
-                                                producto
-                                            )
+                                    <form
+                                        className="provider-link-form"
+                                        onSubmit={
+                                            guardarVinculo
                                         }
                                     >
-                                        {
-                                            producto.nombre
-                                        }
-                                    </button>
 
-                                )
-                            )}
-
-                        </div>
-
-
-                        {
-                            productoSeleccionado && (
-
-                                <form
-                                    className="provider-link-form"
-                                    onSubmit={
-                                        guardarVinculo
-                                    }
-                                >
-
-                                    <strong>
-                                        {
-                                            productoSeleccionado
-                                                .nombre
-                                        }
-                                    </strong>
-
-
-                                    <div className="form-field">
-
-                                        <label>
-                                            Código proveedor
-                                        </label>
-
-                                        <input
-                                            value={
-                                                codigoProveedor
-                                            }
-                                            onChange={(e) =>
-                                                setCodigoProveedor(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-
-                                    </div>
-
-
-                                    <div className="form-field">
-
-                                        <label>
-                                            Último costo
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={
-                                                ultimoCosto
-                                            }
-                                            onChange={(e) =>
-                                                setUltimoCosto(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-
-                                    </div>
-
-
-                                    <div className="form-field">
-
-                                        <label>
-                                            Notas
-                                        </label>
-
-                                        <input
-                                            value={
-                                                notasVinculo
-                                            }
-                                            onChange={(e) =>
-                                                setNotasVinculo(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-
-                                    </div>
-
-
-                                    <div className="form-actions">
-
-                                        <button type="submit">
-
+                                        <strong>
                                             {
-                                                vinculoId
-                                                    ? "Actualizar"
-                                                    : "Vincular"
+                                                productoSeleccionado
+                                                    .nombre
                                             }
-
-                                        </button>
-
-
-                                        <button
-                                            type="button"
-                                            onClick={
-                                                limpiarVinculo
-                                            }
-                                        >
-                                            Cancelar
-                                        </button>
-
-                                    </div>
-
-                                </form>
-
-                            )
-                        }
+                                        </strong>
 
 
-                        <div className="provider-links">
+                                        <div className="form-field">
 
-                            {productosProveedor.length === 0
-                                ? (
+                                            <label>
+                                                Código proveedor
+                                            </label>
 
-                                    <p>
-                                        Este proveedor todavía
-                                        no tiene productos.
-                                    </p>
-
-                                )
-                                : (
-
-                                    productosProveedor.map(
-                                        (item) => (
-
-                                            <div
-                                                key={
-                                                    item.id
+                                            <input
+                                                value={
+                                                    codigoProveedor
                                                 }
-                                                className="provider-link"
+                                                onChange={(e) =>
+                                                    setCodigoProveedor(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+
+                                        <div className="form-field">
+
+                                            <label>
+                                                Último costo
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={
+                                                    ultimoCosto
+                                                }
+                                                onChange={(e) =>
+                                                    setUltimoCosto(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+
+                                        <div className="form-field">
+
+                                            <label>
+                                                Notas
+                                            </label>
+
+                                            <input
+                                                value={
+                                                    notasVinculo
+                                                }
+                                                onChange={(e) =>
+                                                    setNotasVinculo(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+
+                                        <div className="form-actions">
+
+                                            <button type="submit">
+
+                                                {
+                                                    vinculoId
+                                                        ? "Actualizar"
+                                                        : "Vincular"
+                                                }
+
+                                            </button>
+
+
+                                            <button
+                                                type="button"
+                                                onClick={
+                                                    limpiarVinculo
+                                                }
                                             >
+                                                Cancelar
+                                            </button>
 
-                                                <div>
+                                        </div>
 
-                                                    <strong>
-                                                        {
-                                                            item.producto_nombre
-                                                        }
-                                                    </strong>
-
-                                                    <small>
-                                                        Código proveedor:{" "}
-                                                        {
-                                                            item.codigo_proveedor ||
-                                                            "—"
-                                                        }
-                                                    </small>
-
-                                                    <small>
-                                                        Último costo:{" "}
-
-                                                        {
-                                                            item.ultimo_costo ??
-                                                            "—"
-                                                        }
-                                                    </small>
-
-                                                </div>
-
-
-                                                <div className="table-actions">
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            editarVinculo(
-                                                                item
-                                                            )
-                                                        }
-                                                    >
-                                                        Editar
-                                                    </button>
-
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            desvincularProducto(
-                                                                item.id
-                                                            )
-                                                        }
-                                                    >
-                                                        Quitar
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        )
-                                    )
+                                    </form>
 
                                 )
                             }
 
-                        </div>
 
-                    </section>
+                            <div className="provider-links">
 
-                )
-            }
+                                {productosProveedor.length === 0
+                                    ? (
+
+                                        <p>
+                                            Este proveedor todavía
+                                            no tiene productos.
+                                        </p>
+
+                                    )
+                                    : (
+
+                                        productosProveedor.map(
+                                            (item) => (
+
+                                                <div
+                                                    key={
+                                                        item.id
+                                                    }
+                                                    className="provider-link"
+                                                >
+
+                                                    <div>
+
+                                                        <strong>
+                                                            {
+                                                                item.producto_nombre
+                                                            }
+                                                        </strong>
+
+                                                        <small>
+                                                            Código proveedor:{" "}
+                                                            {
+                                                                item.codigo_proveedor ||
+                                                                "—"
+                                                            }
+                                                        </small>
+
+                                                        <small>
+                                                            Último costo:{" "}
+
+                                                            {
+                                                                item.ultimo_costo ??
+                                                                "—"
+                                                            }
+                                                        </small>
+
+                                                    </div>
+
+                                                                {puedeModificar && (
+                                                    <div className="table-actions">
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                editarVinculo(
+                                                                    item
+                                                                )
+                                                            }
+                                                        >
+                                                            Editar
+                                                        </button>
+
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                desvincularProducto(
+                                                                    item.id
+                                                                )
+                                                            }
+                                                        >
+                                                            Quitar
+                                                        </button>
+
+                                                    </div>
+                                                                )}
+                                                </div>
+
+                                            )
+                                        )
+
+                                    )
+                                }
+
+                            </div>
+
+                        </section>
+                    )}
 
         </div>
 

@@ -3,6 +3,10 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -37,6 +41,29 @@ function fechaLocalActual() {
 
 
 function Gastos() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeCrear =
+        puede(
+            "gastos.crear"
+        );
+
+
+    const puedeRevertir =
+        puede(
+            "gastos.revertir"
+        );
+
+
+    const puedeVerCaja =
+        puede(
+            "caja.ver"
+        );
 
     // CAJA
 
@@ -298,11 +325,27 @@ function Gastos() {
 
                 try {
 
-                    await Promise.all([
+                    const tareas = [
+
                         cargarCategorias(),
-                        cargarCaja(),
+
                         cargarHistorial(1)
-                    ]);
+
+                    ];
+
+
+                    if (puedeVerCaja) {
+
+                        tareas.push(
+                            cargarCaja()
+                        );
+
+                    }
+
+
+                    await Promise.all(
+                        tareas
+                    );
 
 
                 } catch (error) {
@@ -318,7 +361,7 @@ function Gastos() {
 
         iniciar();
 
-    }, []);
+    }, [puedeVerCaja]);
 
 
     const registrarGasto =
@@ -500,7 +543,7 @@ function Gastos() {
             if (
                 !gastoDetalle ||
                 gastoDetalle.estado !==
-                    "ACTIVO" ||
+                "ACTIVO" ||
                 revirtiendo
             ) {
 
@@ -763,7 +806,7 @@ function Gastos() {
             />
 
 
-            {!cajaActual ? (
+            {puedeCrear ||  puedeRevertir && (!cajaActual ? (
 
                 <div className="expense-warning">
 
@@ -785,12 +828,14 @@ function Gastos() {
                         #{cajaActual.id}
                     </strong>
                 </p>
+            )
+        )}
 
-            )}
+            
 
 
             {/* NUEVO GASTO */}
-
+            {puedeCrear && (
             <section>
 
                 <h2>
@@ -988,10 +1033,11 @@ function Gastos() {
                 </button>
 
             </section>
+            )}
 
 
             {/* CATEGORÍAS */}
-
+            {puedeCrear && (
             <section className="expense-categories">
 
                 <h2>
@@ -1119,7 +1165,7 @@ function Gastos() {
                 )}
 
             </section>
-
+            )}
 
             {/* FILTROS */}
 
@@ -1470,78 +1516,78 @@ function Gastos() {
                     {gastoDetalle.estado ===
                         "REVERTIDO" && (
 
-                        <div>
+                            <div>
 
-                            <p>
-                                Revertido:{" "}
-                                {
-                                    new Date(
-                                        gastoDetalle
-                                            .fecha_reversion
-                                    )
-                                        .toLocaleString(
-                                            "es-AR"
+                                <p>
+                                    Revertido:{" "}
+                                    {
+                                        new Date(
+                                            gastoDetalle
+                                                .fecha_reversion
                                         )
-                                }
-                            </p>
+                                            .toLocaleString(
+                                                "es-AR"
+                                            )
+                                    }
+                                </p>
 
-                            <p>
-                                Motivo:{" "}
-                                {
-                                    gastoDetalle
-                                        .motivo_reversion
-                                }
-                            </p>
+                                <p>
+                                    Motivo:{" "}
+                                    {
+                                        gastoDetalle
+                                            .motivo_reversion
+                                    }
+                                </p>
 
-                        </div>
+                            </div>
 
-                    )}
+                        )}
 
 
-                    {gastoDetalle.estado ===
+                    {puedeRevertir && gastoDetalle.estado ===
                         "ACTIVO" && (
 
-                        <div className="expense-reversal">
+                            <div className="expense-reversal">
 
-                            <h3>
-                                Revertir gasto
-                            </h3>
-
-
-                            <textarea
-                                rows="3"
-                                value={
-                                    motivoReversion
-                                }
-                                onChange={(event) =>
-                                    setMotivoReversion(
-                                        event.target.value
-                                    )
-                                }
-                                placeholder="Motivo de la reversión"
-                            />
+                                <h3>
+                                    Revertir gasto
+                                </h3>
 
 
-                            <button
-                                type="button"
-                                disabled={
-                                    !cajaActual ||
-                                    revirtiendo
-                                }
-                                onClick={
-                                    revertirGasto
-                                }
-                            >
-                                {
-                                    revirtiendo
-                                        ? "Revirtiendo..."
-                                        : "Revertir gasto"
-                                }
-                            </button>
+                                <textarea
+                                    rows="3"
+                                    value={
+                                        motivoReversion
+                                    }
+                                    onChange={(event) =>
+                                        setMotivoReversion(
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder="Motivo de la reversión"
+                                />
 
-                        </div>
 
-                    )}
+                                <button
+                                    type="button"
+                                    disabled={
+                                        !cajaActual ||
+                                        revirtiendo
+                                    }
+                                    onClick={
+                                        revertirGasto
+                                    }
+                                >
+                                    {
+                                        revirtiendo
+                                            ? "Revirtiendo..."
+                                            : "Revertir gasto"
+                                    }
+                                </button>
+
+                            </div>
+
+                        )}
 
                 </section>
 

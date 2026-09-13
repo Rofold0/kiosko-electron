@@ -12,11 +12,30 @@ import {
 
 
 function Usuarios() {
-
     const {
         puede
     } =
         useAuth();
+    const puedeVerRoles =
+    puede(
+        "roles.ver"
+    );
+
+
+const puedeCrearUsuarios =
+    puede(
+        "usuarios.crear"
+    ) &&
+    puedeVerRoles;
+
+
+const puedeModificarRoles =
+    puede(
+        "roles.modificar"
+    ) &&
+    puedeVerRoles;
+
+    
 
 
     const [
@@ -74,62 +93,78 @@ function Usuarios() {
 
 
     const cargar =
-        async () => {
+    async () => {
 
-            const [
-                usuariosData,
-                rolesData,
-                permisosData
-            ] =
-                await Promise.all([
-
-                    window
-                        .electronAPI
-                        .usuarios
-                        .listar(),
-
-                    window
-                        .electronAPI
-                        .usuarios
-                        .roles(),
-
-                    window
-                        .electronAPI
-                        .usuarios
-                        .permisos()
-
-                ]);
+        const usuariosPromise =
+            window
+                .electronAPI
+                .usuarios
+                .listar();
 
 
-            setUsuarios(
-                usuariosData
-            );
-
-
-            setRoles(
-                rolesData
-            );
-
-
-            setPermisos(
-                permisosData
-            );
-
-
-            if (
-                !rolId &&
-                rolesData.length > 0
-            ) {
-
-                setRolId(
-                    String(
-                        rolesData[0].id
-                    )
+        const rolesPromise =
+            puedeVerRoles
+                ? window
+                    .electronAPI
+                    .usuarios
+                    .roles()
+                : Promise.resolve(
+                    []
                 );
 
-            }
 
-        };
+        const permisosPromise =
+            puedeVerRoles
+                ? window
+                    .electronAPI
+                    .usuarios
+                    .permisos()
+                : Promise.resolve(
+                    []
+                );
+
+
+        const [
+            usuariosData,
+            rolesData,
+            permisosData
+        ] =
+            await Promise.all([
+
+                usuariosPromise,
+                rolesPromise,
+                permisosPromise
+
+            ]);
+
+
+        setUsuarios(
+            usuariosData
+        );
+
+        setRoles(
+            rolesData
+        );
+
+        setPermisos(
+            permisosData
+        );
+
+
+        if (
+            rolesData.length > 0 &&
+            !rolId
+        ) {
+
+            setRolId(
+                String(
+                    rolesData[0].id
+                )
+            );
+
+        }
+
+    };
 
 
     useEffect(() => {
@@ -342,9 +377,7 @@ function Usuarios() {
             />
 
 
-            {puede(
-                "usuarios.crear"
-            ) && (
+            {puedeCrearUsuarios && (
 
                 <section>
 
@@ -565,9 +598,7 @@ function Usuarios() {
             </section>
 
 
-            {puede(
-                "roles.modificar"
-            ) && (
+            {puedeModificarRoles && (
 
                 <section>
 

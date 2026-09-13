@@ -2,7 +2,9 @@ import {
     useEffect,
     useState
 } from "react";
-
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -36,6 +38,23 @@ const columnasHistorico = [
 
 
 function ListaCompras() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeModificar =
+        puede(
+            "lista_compras.modificar"
+        );
+
+
+    const puedeVerProductos =
+        puede(
+            "productos.ver"
+        );
 
     const [
         lista,
@@ -656,182 +675,184 @@ function ListaCompras() {
 
                 </div>
 
+                {puedeModificar && (
 
-                <button
-                    type="button"
-                    onClick={
-                        agregarStockBajo
-                    }
-                >
-                    Agregar stock bajo
-                </button>
-
+                    <button
+                        type="button"
+                        onClick={
+                            agregarStockBajo
+                        }
+                    >
+                        Agregar stock bajo
+                    </button>
+                )}
             </section>
 
+            {puedeModificar &&
+                puedeVerProductos && (
+                    <section>
 
-            <section>
-
-                <h2>
-                    Agregar producto
-                </h2>
+                        <h2>
+                            Agregar producto
+                        </h2>
 
 
-                <form
-                    className="shopping-search"
-                    onSubmit={
-                        buscarProductos
-                    }
-                >
-
-                    <div className="form-field">
-
-                        <label>
-                            Nombre o código
-                        </label>
-
-                        <input
-                            value={busqueda}
-                            onChange={(e) =>
-                                setBusqueda(
-                                    e.target.value
-                                )
+                        <form
+                            className="shopping-search"
+                            onSubmit={
+                                buscarProductos
                             }
-                        />
+                        >
 
-                    </div>
+                            <div className="form-field">
 
+                                <label>
+                                    Nombre o código
+                                </label>
 
-                    <div className="form-field">
+                                <input
+                                    value={busqueda}
+                                    onChange={(e) =>
+                                        setBusqueda(
+                                            e.target.value
+                                        )
+                                    }
+                                />
 
-                        <label>
-                            Cantidad
-                        </label>
-
-                        <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={
-                                cantidadProducto
-                            }
-                            onChange={(e) =>
-                                setCantidadProducto(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                    </div>
+                            </div>
 
 
-                    <button type="submit">
-                        Buscar
-                    </button>
+                            <div className="form-field">
 
-                </form>
+                                <label>
+                                    Cantidad
+                                </label>
+
+                                <input
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    value={
+                                        cantidadProducto
+                                    }
+                                    onChange={(e) =>
+                                        setCantidadProducto(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
 
 
-                <div className="shopping-results">
-
-                    {resultados.map(
-                        (producto) => (
-
-                            <button
-                                key={
-                                    producto.id
-                                }
-                                type="button"
-                                onClick={() =>
-                                    agregarProducto(
-                                        producto
-                                    )
-                                }
-                            >
-
-                                {
-                                    producto.nombre
-                                }
-
-                                {" — Stock: "}
-
-                                {
-                                    producto.stock_actual
-                                }
-
+                            <button type="submit">
+                                Buscar
                             </button>
 
-                        )
-                    )}
-
-                </div>
-
-            </section>
+                        </form>
 
 
-            <section>
+                        <div className="shopping-results">
 
-                <h2>
-                    Agregar ítem libre
-                </h2>
+                            {resultados.map(
+                                (producto) => (
 
+                                    <button
+                                        key={
+                                            producto.id
+                                        }
+                                        type="button"
+                                        onClick={() =>
+                                            agregarProducto(
+                                                producto
+                                            )
+                                        }
+                                    >
 
-                <form
-                    className="shopping-search"
-                    onSubmit={
-                        agregarLibre
-                    }
-                >
+                                        {
+                                            producto.nombre
+                                        }
 
-                    <div className="form-field">
+                                        {" — Stock: "}
 
-                        <label>
-                            Descripción
-                        </label>
+                                        {
+                                            producto.stock_actual
+                                        }
 
-                        <input
-                            value={nombreLibre}
-                            onChange={(e) =>
-                                setNombreLibre(
-                                    e.target.value
+                                    </button>
+
                                 )
-                            }
-                            placeholder=
+                            )}
+
+                        </div>
+
+                    </section>
+                )}
+            {puedeModificar && (
+                <section>
+
+                    <h2>
+                        Agregar ítem libre
+                    </h2>
+
+
+                    <form
+                        className="shopping-search"
+                        onSubmit={
+                            agregarLibre
+                        }
+                    >
+
+                        <div className="form-field">
+
+                            <label>
+                                Descripción
+                            </label>
+
+                            <input
+                                value={nombreLibre}
+                                onChange={(e) =>
+                                    setNombreLibre(
+                                        e.target.value
+                                    )
+                                }
+                                placeholder=
                                 "Ej: bolsas, servilletas..."
-                        />
+                            />
 
-                    </div>
-
-
-                    <div className="form-field">
-
-                        <label>
-                            Cantidad
-                        </label>
-
-                        <input
-                            type="number"
-                            min="1"
-                            value={
-                                cantidadLibre
-                            }
-                            onChange={(e) =>
-                                setCantidadLibre(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                    </div>
+                        </div>
 
 
-                    <button type="submit">
-                        Agregar
-                    </button>
+                        <div className="form-field">
 
-                </form>
+                            <label>
+                                Cantidad
+                            </label>
 
-            </section>
+                            <input
+                                type="number"
+                                min="1"
+                                value={
+                                    cantidadLibre
+                                }
+                                onChange={(e) =>
+                                    setCantidadLibre(
+                                        e.target.value
+                                    )
+                                }
+                            />
 
+                        </div>
+
+
+                        <button type="submit">
+                            Agregar
+                        </button>
+
+                    </form>
+
+                </section>
+            )}
 
             <section>
 
@@ -864,9 +885,11 @@ function ListaCompras() {
                                     Stock
                                 </th>
 
-                                <th>
-                                    Acción
-                                </th>
+                                {puedeModificar && (
+                                    <th>
+                                        Acción
+                                    </th>
+                                )}
 
                             </tr>
 
@@ -880,7 +903,11 @@ function ListaCompras() {
                                 <tr>
 
                                     <td
-                                        colSpan="5"
+                                        colSpan={
+                                            puedeModificar
+                                                ? 5
+                                                : 4
+                                        }
                                         className="crud-table-empty"
                                     >
                                         La lista está vacía.
@@ -905,21 +932,28 @@ function ListaCompras() {
                                         >
 
                                             <td>
-
-                                                <input
-                                                    type="checkbox"
-                                                    checked={
-                                                        Boolean(
-                                                            item.comprado
-                                                        )
+                                                {puedeModificar ? (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            Boolean(
+                                                                item.comprado
+                                                            )
+                                                        }
+                                                        onChange={(e) =>
+                                                            cambiarComprado(
+                                                                item,
+                                                                e.target.checked
+                                                            )
+                                                        }
+                                                    />
+                                                ) : (<span>
+                                                    {
+                                                        item.comprado
+                                                            ? "✓"
+                                                            : "—"
                                                     }
-                                                    onChange={(e) =>
-                                                        cambiarComprado(
-                                                            item,
-                                                            e.target.checked
-                                                        )
-                                                    }
-                                                />
+                                                </span>)}
 
                                             </td>
 
@@ -946,27 +980,32 @@ function ListaCompras() {
 
 
                                             <td>
+                                                {puedeModificar ? (
+                                                    <input
+                                                        className="shopping-quantity"
+                                                        type="number"
+                                                        min="1"
+                                                        step="1"
+                                                        value={
+                                                            item.cantidad
+                                                        }
+                                                        onChange={(e) =>
+                                                            cambiarCantidadLocal(
+                                                                item.id,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        onBlur={() =>
+                                                            guardarCantidad(
+                                                                item
+                                                            )
+                                                        }
+                                                    />
+                                                ) : (
 
-                                                <input
-                                                    className="shopping-quantity"
-                                                    type="number"
-                                                    min="1"
-                                                    step="1"
-                                                    value={
-                                                        item.cantidad
-                                                    }
-                                                    onChange={(e) =>
-                                                        cambiarCantidadLocal(
-                                                            item.id,
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    onBlur={() =>
-                                                        guardarCantidad(
-                                                            item
-                                                        )
-                                                    }
-                                                />
+                                                    item.cantidad
+
+                                                )}
 
                                             </td>
 
@@ -983,19 +1022,20 @@ function ListaCompras() {
 
 
                                             <td>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        eliminarItem(
-                                                            item.id
-                                                        )
-                                                    }
-                                                >
-                                                    Eliminar
-                                                </button>
-
+                                                {puedeModificar && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            eliminarItem(
+                                                                item.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                )}
                                             </td>
+
 
                                         </tr>
 
@@ -1012,7 +1052,7 @@ function ListaCompras() {
 
             </section>
 
-
+{puedeModificar && (
             <section className="shopping-notes">
 
                 <div className="form-field">
@@ -1044,7 +1084,7 @@ function ListaCompras() {
                 </button>
 
             </section>
-
+)}{puedeModificar && (
 
             <div className="shopping-finish">
 
@@ -1061,7 +1101,7 @@ function ListaCompras() {
                 </button>
 
             </div>
-
+)}
 
             <section>
 
@@ -1150,7 +1190,7 @@ function ListaCompras() {
                                 listaHistorica.items
                             }
                             emptyMessage=
-                                "La lista no tiene ítems."
+                            "La lista no tiene ítems."
                         />
 
                     </div>

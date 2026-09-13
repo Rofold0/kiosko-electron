@@ -3,6 +3,10 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -79,6 +83,41 @@ const columnasDetalle = [
 
 
 function Compras() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeCrear =
+        puede(
+            "compras.crear"
+        );
+
+
+    const puedeVer =
+        puede(
+            "compras.ver"
+        );
+
+
+    const puedeRevertir =
+        puede(
+            "compras.revertir"
+        );
+
+
+    const puedeVerProveedores =
+        puede(
+            "proveedores.ver"
+        );
+
+
+    const puedeVerCaja =
+        puede(
+            "caja.ver"
+        );
 
     const [
         cajaActual,
@@ -264,81 +303,125 @@ function Compras() {
 
     useEffect(() => {
 
-        const iniciar =
-            async () => {
+    const iniciar =
+        async () => {
 
-                try {
+            try {
 
-                    const [
-                        proveedoresData,
-                        historialData,
-                        cajaData
-                    ] =
-                        await Promise.all([
-
-                            window
-                                .electronAPI
-                                .proveedores
-                                .listar(),
-
-                            window
-                                .electronAPI
-                                .compras
-                                .listar({
-                                    pagina: 1,
-                                    limite:
-                                        LIMITE_HISTORIAL
-                                }),
-                            window
-                                .electronAPI
-                                .caja
-                                .actual()
-
-                        ]);
+                const tareas = [];
 
 
-                    setProveedores(
-                        proveedoresData
-                    );
+                if (
+                    puedeCrear &&
+                    puedeVerProveedores
+                ) {
 
+                    tareas.push(
 
-                    setHistorial(
-                        historialData.items
-                    );
+                        window
+                            .electronAPI
+                            .proveedores
+                            .listar()
+                            .then(
+                                setProveedores
+                            )
 
-                    setPaginaHistorial(
-                        historialData.pagina
-                    );
-
-                    setTotalPaginas(
-                        historialData.totalPaginas
-                    );
-
-                    setCajaActual(
-                        cajaData
-                    );
-
-                    setRegistrarEnCaja(
-                        Boolean(
-                            cajaData
-                        )
-                    );
-
-
-                } catch (error) {
-
-                    await mostrarError(
-                        error
                     );
 
                 }
 
-            };
+
+                if (puedeVer) {
+
+                    tareas.push(
+
+                        window
+                            .electronAPI
+                            .compras
+                            .listar({
+                                pagina: 1,
+                                limite:
+                                    LIMITE_HISTORIAL
+                            })
+                            .then(
+                                (resultado) => {
+
+                                    setHistorial(
+                                        resultado.items
+                                    );
+
+                                    setPaginaHistorial(
+                                        resultado.pagina
+                                    );
+
+                                    setTotalPaginas(
+                                        resultado.totalPaginas
+                                    );
+
+                                }
+                            )
+
+                    );
+
+                }
 
 
-        iniciar();
+                if (
+                    puedeCrear &&
+                    puedeVerCaja
+                ) {
 
-    }, []);
+                    tareas.push(
+
+                        window
+                            .electronAPI
+                            .caja
+                            .actual()
+                            .then(
+                                (cajaData) => {
+
+                                    setCajaActual(
+                                        cajaData
+                                    );
+
+                                    setRegistrarEnCaja(
+                                        Boolean(
+                                            cajaData
+                                        )
+                                    );
+
+                                }
+                            )
+
+                    );
+
+                }
+
+
+                await Promise.all(
+                    tareas
+                );
+
+
+            } catch (error) {
+
+                await mostrarError(
+                    error
+                );
+
+            }
+
+        };
+
+
+    iniciar();
+
+}, [
+    puedeCrear,
+    puedeVer,
+    puedeVerProveedores,
+    puedeVerCaja
+]);
 
 
 
@@ -1018,322 +1101,322 @@ function Compras() {
                 title="Compras"
             />
 
+            {puedeCrear && (
+                <section>
 
-            <section>
-
-                <h2>
-                    Nueva compra
-                </h2>
+                    <h2>
+                        Nueva compra
+                    </h2>
 
 
-                <div className="purchase-header">
-
-                    <div className="form-field">
-
-                        <label>
-                            Pago
-                        </label>
-
-                        <label>
-
-                            <input
-                                type="checkbox"
-                                checked={
-                                    registrarEnCaja
-                                }
-                                disabled={
-                                    !cajaActual
-                                }
-                                onChange={(event) =>
-                                    setRegistrarEnCaja(
-                                        event.target.checked
-                                    )
-                                }
-                            />
-
-                            {" "}
-                            Registrar pago en caja
-
-                        </label>
-
-                    </div>
-
-                    <div className="form-field">
-
-                        <label>
-                            Proveedor
-                        </label>
-
-                        <select
-                            value={
-                                proveedorId
-                            }
-                            onChange={(e) =>
-                                cambiarProveedor(
-                                    e.target.value
-                                )
-                            }
-                            disabled={
-                                items.length > 0
-                            }
-                        >
-
-                            <option value="">
-                                Seleccionar proveedor
-                            </option>
-
-                            {proveedores.map(
-                                (proveedor) => (
-
-                                    <option
-                                        key={
-                                            proveedor.id
-                                        }
-                                        value={
-                                            proveedor.id
-                                        }
-                                    >
-                                        {
-                                            proveedor.nombre
-                                        }
-                                    </option>
-
-                                )
-                            )}
-
-                        </select>
-
-                    </div>
-
-                    {registrarEnCaja && (
+                    <div className="purchase-header">
 
                         <div className="form-field">
 
                             <label>
-                                Método de pago
+                                Pago
+                            </label>
+
+                            <label>
+
+                                <input
+                                    type="checkbox"
+                                    checked={
+                                        registrarEnCaja
+                                    }
+                                    disabled={
+                                        !cajaActual
+                                    }
+                                    onChange={(event) =>
+                                        setRegistrarEnCaja(
+                                            event.target.checked
+                                        )
+                                    }
+                                />
+
+                                {" "}
+                                Registrar pago en caja
+
+                            </label>
+
+                        </div>
+
+                        <div className="form-field">
+
+                            <label>
+                                Proveedor
                             </label>
 
                             <select
                                 value={
-                                    metodoPago
+                                    proveedorId
                                 }
-                                onChange={(event) =>
-                                    setMetodoPago(
-                                        event.target.value
+                                onChange={(e) =>
+                                    cambiarProveedor(
+                                        e.target.value
                                     )
+                                }
+                                disabled={
+                                    items.length > 0
                                 }
                             >
 
-                                <option value="EFECTIVO">
-                                    Efectivo
+                                <option value="">
+                                    Seleccionar proveedor
                                 </option>
 
-                                <option value="TRANSFERENCIA">
-                                    Transferencia
-                                </option>
+                                {proveedores.map(
+                                    (proveedor) => (
 
-                                <option value="DEBITO">
-                                    Débito
-                                </option>
+                                        <option
+                                            key={
+                                                proveedor.id
+                                            }
+                                            value={
+                                                proveedor.id
+                                            }
+                                        >
+                                            {
+                                                proveedor.nombre
+                                            }
+                                        </option>
 
-                                <option value="CREDITO">
-                                    Crédito
-                                </option>
-
-                                <option value="QR">
-                                    QR
-                                </option>
-
-                                <option value="OTRO">
-                                    Otro
-                                </option>
+                                    )
+                                )}
 
                             </select>
 
                         </div>
 
-                    )}
-
-                    {!cajaActual && (
-
-                        <small>
-                            No hay una caja abierta.
-                            La compra puede registrarse,
-                            pero no afectará caja.
-                        </small>
-
-                    )}
-
-
-                    <div className="form-field">
-
-                        <label>
-                            Fecha
-                        </label>
-
-                        <input
-                            type="datetime-local"
-                            value={fecha}
-                            onChange={(e) =>
-                                setFecha(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                    </div>
-
-                </div>
-
-
-                {proveedorId && (
-
-                    <>
-
-                        <form
-                            className="purchase-product-form"
-                            onSubmit={
-                                agregarProducto
-                            }
-                        >
+                        {registrarEnCaja && (
 
                             <div className="form-field">
 
                                 <label>
-                                    Producto
+                                    Método de pago
                                 </label>
 
                                 <select
                                     value={
-                                        productoId
+                                        metodoPago
                                     }
-                                    onChange={(e) =>
-                                        cambiarProducto(
-                                            e.target.value
+                                    onChange={(event) =>
+                                        setMetodoPago(
+                                            event.target.value
                                         )
                                     }
                                 >
 
-                                    <option value="">
-                                        Seleccionar producto
+                                    <option value="EFECTIVO">
+                                        Efectivo
                                     </option>
 
-                                    {
-                                        productosProveedor
-                                            .map(
-                                                (producto) => (
+                                    <option value="TRANSFERENCIA">
+                                        Transferencia
+                                    </option>
 
-                                                    <option
-                                                        key={
-                                                            producto.id
-                                                        }
-                                                        value={
-                                                            producto.producto_id
-                                                        }
-                                                    >
-                                                        {
-                                                            producto.producto_nombre
-                                                        }
-                                                    </option>
+                                    <option value="DEBITO">
+                                        Débito
+                                    </option>
 
-                                                )
-                                            )
-                                    }
+                                    <option value="CREDITO">
+                                        Crédito
+                                    </option>
+
+                                    <option value="QR">
+                                        QR
+                                    </option>
+
+                                    <option value="OTRO">
+                                        Otro
+                                    </option>
 
                                 </select>
 
                             </div>
 
+                        )}
 
-                            <div className="form-field">
+                        {!cajaActual && (
 
-                                <label>
-                                    Cantidad
-                                </label>
-
-                                <input
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    value={
-                                        cantidad
-                                    }
-                                    onChange={(e) =>
-                                        setCantidad(
-                                            e.target.value
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div className="form-field">
-
-                                <label>
-                                    Costo unitario
-                                </label>
-
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={
-                                        costo
-                                    }
-                                    onChange={(e) =>
-                                        setCosto(
-                                            e.target.value
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-
-                            <button type="submit">
-                                Agregar
-                            </button>
-
-                        </form>
-
-
-                        {pendientes.length > 0 && (
-
-                            <div className="purchase-list-import">
-
-                                <span>
-                                    {
-                                        pendientes.length
-                                    } faltante
-                                    {
-                                        pendientes.length !== 1
-                                            ? "s"
-                                            : ""
-                                    }
-                                    {" de este proveedor"}
-                                </span>
-
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        cargarDesdeLista
-                                    }
-                                >
-                                    Cargar desde lista
-                                </button>
-
-                            </div>
+                            <small>
+                                No hay una caja abierta.
+                                La compra puede registrarse,
+                                pero no afectará caja.
+                            </small>
 
                         )}
 
-                    </>
 
-                )}
+                        <div className="form-field">
 
-            </section>
+                            <label>
+                                Fecha
+                            </label>
 
+                            <input
+                                type="datetime-local"
+                                value={fecha}
+                                onChange={(e) =>
+                                    setFecha(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+                    </div>
+
+
+                    {proveedorId && (
+
+                        <>
+
+                            <form
+                                className="purchase-product-form"
+                                onSubmit={
+                                    agregarProducto
+                                }
+                            >
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Producto
+                                    </label>
+
+                                    <select
+                                        value={
+                                            productoId
+                                        }
+                                        onChange={(e) =>
+                                            cambiarProducto(
+                                                e.target.value
+                                            )
+                                        }
+                                    >
+
+                                        <option value="">
+                                            Seleccionar producto
+                                        </option>
+
+                                        {
+                                            productosProveedor
+                                                .map(
+                                                    (producto) => (
+
+                                                        <option
+                                                            key={
+                                                                producto.id
+                                                            }
+                                                            value={
+                                                                producto.producto_id
+                                                            }
+                                                        >
+                                                            {
+                                                                producto.producto_nombre
+                                                            }
+                                                        </option>
+
+                                                    )
+                                                )
+                                        }
+
+                                    </select>
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Cantidad
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={
+                                            cantidad
+                                        }
+                                        onChange={(e) =>
+                                            setCantidad(
+                                                e.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Costo unitario
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={
+                                            costo
+                                        }
+                                        onChange={(e) =>
+                                            setCosto(
+                                                e.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <button type="submit">
+                                    Agregar
+                                </button>
+
+                            </form>
+
+
+                            {pendientes.length > 0 && (
+
+                                <div className="purchase-list-import">
+
+                                    <span>
+                                        {
+                                            pendientes.length
+                                        } faltante
+                                        {
+                                            pendientes.length !== 1
+                                                ? "s"
+                                                : ""
+                                        }
+                                        {" de este proveedor"}
+                                    </span>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            cargarDesdeLista
+                                        }
+                                    >
+                                        Cargar desde lista
+                                    </button>
+
+                                </div>
+
+                            )}
+
+                        </>
+
+                    )}
+
+                </section>
+            )}
 
             <section>
 
@@ -1551,297 +1634,301 @@ function Compras() {
                     }
                 </button>
 
-                
-
-            </section>
-
-
-            <section className="purchase-history">
-
-                <h2>
-                    Historial de compras
-                </h2>
-
-
-                {historial.map(
-                    (compra) => (
-
-                        <button
-                            key={
-                                compra.id
-                            }
-                            type="button"
-                            onClick={() =>
-                                abrirCompra(
-                                    compra.id
-                                )
-                            }
-                        >
-
-                            <span>
-                                #
-                                {compra.id}
-                                {" · "}
-                                {
-                                    compra.proveedor_nombre ||
-                                    "Sin proveedor"
-                                }
-                            </span>
-
-
-                            <span>
-                                {
-                                    new Date(
-                                        compra.fecha
-                                    )
-                                        .toLocaleString(
-                                            "es-AR"
-                                        )
-                                }
-                            </span>
-
-
-
-                            <strong>
-                                {
-                                    moneda.format(
-                                        compra.total
-                                    )
-                                }
-                            </strong>
-
-                            <span>
-                                #{compra.id}
-                                {" · "}
-                                {compra.proveedor_nombre || "Sin proveedor"}
-                                {" · "}
-                                {
-                                    compra.estado === "REVERTIDA"
-                                        ? "REVERTIDA"
-                                        : "ACTIVA"
-                                }
-                            </span>
-                        </button>
-
-
-                    )
-                )}
-
-
-                <div className="pagination">
-
-                    <button
-                        type="button"
-                        disabled={
-                            paginaHistorial <= 1
-                        }
-                        onClick={() =>
-                            cargarHistorial(
-                                paginaHistorial - 1
-                            )
-                        }
-                    >
-                        ← Anterior
-                    </button>
-
-
-                    <span>
-                        Página{" "}
-                        {paginaHistorial}
-                        {" de "}
-                        {totalPaginas}
-                    </span>
-
-
-                    <button
-                        type="button"
-                        disabled={
-                            paginaHistorial >=
-                            totalPaginas
-                        }
-                        onClick={() =>
-                            cargarHistorial(
-                                paginaHistorial + 1
-                            )
-                        }
-                    >
-                        Siguiente →
-                    </button>
-
-                </div>
-
 
 
             </section>
 
-
-            {compraDetalle && (
-
-                <section className="purchase-detail">
+            {puedeVer && (
+                <section className="purchase-history">
 
                     <h2>
-                        Compra #{compraDetalle.id}
+                        Historial de compras
                     </h2>
 
 
-                    <p>
-                        Proveedor:{" "}
-                        <strong>
-                            {compraDetalle.proveedor_nombre || "Sin proveedor"}
-                        </strong>
-                    </p>
+                    {historial.map(
+                        (compra) => (
+
+                            <button
+                                key={
+                                    compra.id
+                                }
+                                type="button"
+                                onClick={() =>
+                                    abrirCompra(
+                                        compra.id
+                                    )
+                                }
+                            >
+
+                                <span>
+                                    #
+                                    {compra.id}
+                                    {" · "}
+                                    {
+                                        compra.proveedor_nombre ||
+                                        "Sin proveedor"
+                                    }
+                                </span>
 
 
-                    <p>
-                        Total:{" "}
-                        <strong>
-                            {moneda.format(
-                                compraDetalle.total
-                            )}
-                        </strong>
-                    </p>
-                    <p>
-                    Pago en caja:{" "}
-
-                    <strong>
-                        {
-                            compraDetalle.caja_id
-                                ? `Caja #${compraDetalle.caja_id}`
-                                : "No registrado"
-                        }
-                    </strong>
-                </p>
+                                <span>
+                                    {
+                                        new Date(
+                                            compra.fecha
+                                        )
+                                            .toLocaleString(
+                                                "es-AR"
+                                            )
+                                    }
+                                </span>
 
 
-                {compraDetalle.metodo_pago && (
-
-                    <p>
-                        Método:{" "}
-
-                        <strong>
-                            {
-                                compraDetalle.metodo_pago
-                            }
-                        </strong>
-                    </p>
-
-                )}
-                
-                    <p>
-                        Estado:{" "}
-                        <strong>
-                            {
-                                compraDetalle.estado === "REVERTIDA"
-                                    ? "Revertida"
-                                    : "Activa"
-                            }
-                        </strong>
-                    </p>
-
-
-                    {compraDetalle.estado === "REVERTIDA" && (
-
-                        <div className="purchase-reverted-info">
-
-                            <p>
-                                Revertida el{" "}
 
                                 <strong>
                                     {
-                                        compraDetalle.fecha_reversion
-                                            ? new Date(
-                                                compraDetalle.fecha_reversion
-                                            )
-                                                .toLocaleString(
-                                                    "es-AR"
-                                                )
-                                            : "—"
+                                        moneda.format(
+                                            compra.total
+                                        )
+                                    }
+                                </strong>
+
+                                <span>
+                                    #{compra.id}
+                                    {" · "}
+                                    {compra.proveedor_nombre || "Sin proveedor"}
+                                    {" · "}
+                                    {
+                                        compra.estado === "REVERTIDA"
+                                            ? "REVERTIDA"
+                                            : "ACTIVA"
+                                    }
+                                </span>
+                            </button>
+
+
+                        )
+                    )}
+
+
+                    <div className="pagination">
+
+                        <button
+                            type="button"
+                            disabled={
+                                paginaHistorial <= 1
+                            }
+                            onClick={() =>
+                                cargarHistorial(
+                                    paginaHistorial - 1
+                                )
+                            }
+                        >
+                            ← Anterior
+                        </button>
+
+
+                        <span>
+                            Página{" "}
+                            {paginaHistorial}
+                            {" de "}
+                            {totalPaginas}
+                        </span>
+
+
+                        <button
+                            type="button"
+                            disabled={
+                                paginaHistorial >=
+                                totalPaginas
+                            }
+                            onClick={() =>
+                                cargarHistorial(
+                                    paginaHistorial + 1
+                                )
+                            }
+                        >
+                            Siguiente →
+                        </button>
+
+                    </div>
+
+
+
+                </section>
+            )}
+
+            {puedeRevertir &&
+                compraDetalle.estado ===
+                "ACTIVA" && (
+
+                    <section className="purchase-detail">
+
+                        <h2>
+                            Compra #{compraDetalle.id}
+                        </h2>
+
+
+                        <p>
+                            Proveedor:{" "}
+                            <strong>
+                                {compraDetalle.proveedor_nombre || "Sin proveedor"}
+                            </strong>
+                        </p>
+
+
+                        <p>
+                            Total:{" "}
+                            <strong>
+                                {moneda.format(
+                                    compraDetalle.total
+                                )}
+                            </strong>
+                        </p>
+                        <p>
+                            Pago en caja:{" "}
+
+                            <strong>
+                                {
+                                    compraDetalle.caja_id
+                                        ? `Caja #${compraDetalle.caja_id}`
+                                        : "No registrado"
+                                }
+                            </strong>
+                        </p>
+
+
+                        {compraDetalle.metodo_pago && (
+
+                            <p>
+                                Método:{" "}
+
+                                <strong>
+                                    {
+                                        compraDetalle.metodo_pago
                                     }
                                 </strong>
                             </p>
 
+                        )}
 
-                            <p>
-                                Motivo:{" "}
+                        <p>
+                            Estado:{" "}
+                            <strong>
                                 {
-                                    compraDetalle.motivo_reversion ||
-                                    "—"
+                                    compraDetalle.estado === "REVERTIDA"
+                                        ? "Revertida"
+                                        : "Activa"
                                 }
-                            </p>
-
-                        </div>
-
-                    )}
+                            </strong>
+                        </p>
 
 
-                    <CrudTable
-                        columns={columnasDetalle}
-                        items={
-                            compraDetalle.items || []
-                        }
-                        emptyMessage="La compra no tiene productos."
-                    />
+                        {compraDetalle.estado === "REVERTIDA" && (
+
+                            <div className="purchase-reverted-info">
+
+                                <p>
+                                    Revertida el{" "}
+
+                                    <strong>
+                                        {
+                                            compraDetalle.fecha_reversion
+                                                ? new Date(
+                                                    compraDetalle.fecha_reversion
+                                                )
+                                                    .toLocaleString(
+                                                        "es-AR"
+                                                    )
+                                                : "—"
+                                        }
+                                    </strong>
+                                </p>
 
 
-                    {compraDetalle.estado === "ACTIVA" && (
-
-                        <div className="purchase-reversal">
-
-                            <h3>
-                                Revertir compra
-                            </h3>
-
-
-                            <div className="form-field">
-
-                                <label>
-                                    Motivo
-                                </label>
-
-                                <textarea
-                                    rows="3"
-                                    value={motivoReversion}
-                                    onChange={(e) =>
-                                        setMotivoReversion(
-                                            e.target.value
-                                        )
+                                <p>
+                                    Motivo:{" "}
+                                    {
+                                        compraDetalle.motivo_reversion ||
+                                        "—"
                                     }
-                                    placeholder="Ej: compra cargada dos veces"
-                                />
+                                </p>
 
                             </div>
 
-
-                            <button
-                                type="button"
-                                disabled={revirtiendo}
-                                onClick={
-                                    revertirCompraActual
-                                }
-                            >
-                                {
-                                    revirtiendo
-                                        ? "Revirtiendo..."
-                                        : "Revertir compra"
-                                }
-                            </button>
-
-                        </div>
-
-                    )}
+                        )}
 
 
-                    {avisoReversion && (
+                        <CrudTable
+                            columns={columnasDetalle}
+                            items={
+                                compraDetalle.items || []
+                            }
+                            emptyMessage="La compra no tiene productos."
+                        />
 
-                        <p className="purchase-reversal-message">
-                            {avisoReversion}
-                        </p>
 
-                    )}
+                        {puedeRevertir &&
+                            compraDetalle.estado ===
+                            "ACTIVA" && (
 
-                </section>
+                                <div className="purchase-reversal">
 
-            )}
+                                    <h3>
+                                        Revertir compra
+                                    </h3>
+
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Motivo
+                                        </label>
+
+                                        <textarea
+                                            rows="3"
+                                            value={motivoReversion}
+                                            onChange={(e) =>
+                                                setMotivoReversion(
+                                                    e.target.value
+                                                )
+                                            }
+                                            placeholder="Ej: compra cargada dos veces"
+                                        />
+
+                                    </div>
+
+
+                                    <button
+                                        type="button"
+                                        disabled={revirtiendo}
+                                        onClick={
+                                            revertirCompraActual
+                                        }
+                                    >
+                                        {
+                                            revirtiendo
+                                                ? "Revirtiendo..."
+                                                : "Revertir compra"
+                                        }
+                                    </button>
+
+                                </div>
+
+                            )}
+
+
+                        {avisoReversion && (
+
+                            <p className="purchase-reversal-message">
+                                {avisoReversion}
+                            </p>
+
+                        )}
+
+                    </section>
+
+                )}
 
         </div>
 

@@ -3,6 +3,10 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -150,6 +154,17 @@ function calcularDesdePrecio(
 
 
 function Precios() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeModificar =
+        puede(
+            "precios.modificar"
+        );
 
     // LISTADO
 
@@ -1252,21 +1267,25 @@ function Precios() {
                                         </div>
 
 
-                                        <button
-                                            type="button"
-                                            onClick={
-                                                usarUltimoCosto
-                                            }
-                                        >
-                                            Usar este costo
-                                        </button>
+                                        {puedeModificar && (
+
+                                            <button
+                                                type="button"
+                                                onClick={
+                                                    usarUltimoCosto
+                                                }
+                                            >
+                                                Usar este costo
+                                            </button>
+
+                                        )}
 
                                     </div>
 
                                 )
                             }
 
-
+                            {puedeModificar &&(
                             <div className="price-grid">
                                 {proveedoresProducto.length > 0 && (
 
@@ -1325,23 +1344,23 @@ function Precios() {
                                 )}
                                 <div className="form-field">
                                     <label>
-                                    Costo $
-                                </label>
+                                        Costo $
+                                    </label>
 
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={costo}
-                                    onChange={(event) =>
-                                        cambiarCosto(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-                                    </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={costo}
+                                        onChange={(event) =>
+                                            cambiarCosto(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+                                </div>
 
-                                
+
 
 
 
@@ -1416,6 +1435,7 @@ function Precios() {
                                 </div>
 
                             </div>
+                        )}
 
 
                             <div
@@ -1480,7 +1500,7 @@ function Precios() {
 
                             </div>
 
-
+                            {puedeModificar && (
                             <button
                                 type="button"
                                 disabled={
@@ -1496,6 +1516,7 @@ function Precios() {
                                         : "Guardar nuevo precio"
                                 }
                             </button>
+                            )}
 
                         </>
 

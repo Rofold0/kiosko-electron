@@ -2,6 +2,9 @@ import {
     useEffect,
     useState
 } from "react";
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
 import PageHeader from "../components/pageHeader.jsx";
@@ -54,6 +57,17 @@ function ordenarSubcategorias(lista) {
 }
 
 function Subcategorias() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeModificar =
+        puede(
+            "categorias.modificar"
+        );
 
     const [subcategorias, setSubcategorias] = useState([]);
 
@@ -122,13 +136,13 @@ function Subcategorias() {
     //LIMPIAR FORMULARIO
     const limpiarFormulario = () => {
 
-    setNombre("");
+        setNombre("");
 
-    setCategoriaId("");
+        setCategoriaId("");
 
-    setEditandoId(null);
+        setEditandoId(null);
 
-};
+    };
 
     // CREAR ACTUALIZAR
 
@@ -139,10 +153,10 @@ function Subcategorias() {
         if (!categoriaId) {
 
             await window.electronAPI
-    .dialogos
-    .error(
-        "Seleccione una categoría."
-    );
+                .dialogos
+                .error(
+                    "Seleccione una categoría."
+                );
 
             return;
         }
@@ -150,10 +164,10 @@ function Subcategorias() {
         if (!nombre.trim()) {
 
             await window.electronAPI
-    .dialogos
-    .error(
-        "Ingrese un nombre."
-    );
+                .dialogos
+                .error(
+                    "Ingrese un nombre."
+                );
 
             return;
         }
@@ -218,11 +232,11 @@ function Subcategorias() {
 
             console.error(error);
             await window.electronAPI
-        .dialogos
-        .error(
-            error.message
-        );
-            
+                .dialogos
+                .error(
+                    error.message
+                );
+
 
         }
 
@@ -234,195 +248,206 @@ function Subcategorias() {
 
 
     const editarSubcategoria =
-    (subcategoria) => {
+        (subcategoria) => {
 
-        setEditandoId(
-            subcategoria.id
-        );
+            setEditandoId(
+                subcategoria.id
+            );
 
-        setNombre(
-            subcategoria.nombre
-        );
+            setNombre(
+                subcategoria.nombre
+            );
 
-        setCategoriaId(
-            String(
-                subcategoria.categoria_id
-            )
-        );
+            setCategoriaId(
+                String(
+                    subcategoria.categoria_id
+                )
+            );
 
-    };
+        };
 
 
     // ELIMINAR
 
     const eliminarSubcategoria =
-    async (id) => {
+        async (id) => {
 
-        const confirmar =
-            await window.electronAPI
-                .dialogos
-                .confirmar(
-                    "¿Está seguro de eliminar esta subcategoría?"
-                );
-
-
-        if (!confirmar) {
-            return;
-        }
+            const confirmar =
+                await window.electronAPI
+                    .dialogos
+                    .confirmar(
+                        "¿Está seguro de eliminar esta subcategoría?"
+                    );
 
 
-        try {
-
-            await window.electronAPI
-                .subcategorias
-                .eliminar(id);
-
-
-            setSubcategorias(
-                (actuales) =>
-                    actuales.filter(
-                        (subcategoria) =>
-                            subcategoria.id !== id
-                    )
-            );
-
-
-            if (editandoId === id) {
-
-                limpiarFormulario();
-
+            if (!confirmar) {
+                return;
             }
 
 
-        } catch (error) {
+            try {
 
-            console.error(error);
+                await window.electronAPI
+                    .subcategorias
+                    .eliminar(id);
 
-            await window.electronAPI
-                .dialogos
-                .error(
-                    error.message
+
+                setSubcategorias(
+                    (actuales) =>
+                        actuales.filter(
+                            (subcategoria) =>
+                                subcategoria.id !== id
+                        )
                 );
 
-        }
 
-    };
+                if (editandoId === id) {
+
+                    limpiarFormulario();
+
+                }
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                await window.electronAPI
+                    .dialogos
+                    .error(
+                        error.message
+                    );
+
+            }
+
+        };
 
     return (
 
-    <div className="page">
+        <div className="page">
 
-        <PageHeader title="Subcategorías" />
+            <PageHeader title="Subcategorías" />
+            {puedeModificar && (
 
-        <form
-            className="
+                <form
+                    className="
                 crud-form
-                crud-form--multiple
-            "
-            onSubmit={
-                guardarSubcategoria
-            }
-        >
-
-            <div className="form-field">
-
-                <label
-                    htmlFor=
-                        "subcategoria-categoria"
+                crud-form--multiple"
+                    onSubmit={
+                        guardarSubcategoria
+                    }
                 >
-                    Categoría
-                </label>
 
-                <select
-    
-    id="subcategoria-categoria"
-    value={categoriaId}
-    onChange={(e) =>
-        setCategoriaId(e.target.value)
-    }
->
+                    <div className="form-field">
 
-                    <option value="">
-                        Seleccionar categoría
-                    </option>
+                        <label
+                            htmlFor=
+                            "subcategoria-categoria"
+                        >
+                            Categoría
+                        </label>
 
-                    {categorias.map(
-                        (categoria) => (
+                        <select
 
-                            <option
-                                key={
-                                    categoria.id
-                                }
-                                value={
-                                    categoria.id
-                                }
-                            >
-                                {
-                                    categoria.nombre
-                                }
+                            id="subcategoria-categoria"
+                            value={categoriaId}
+                            onChange={(e) =>
+                                setCategoriaId(e.target.value)
+                            }
+                        >
+
+                            <option value="">
+                                Seleccionar categoría
                             </option>
 
-                        )
-                    )}
+                            {categorias.map(
+                                (categoria) => (
 
-                </select>
+                                    <option
+                                        key={
+                                            categoria.id
+                                        }
+                                        value={
+                                            categoria.id
+                                        }
+                                    >
+                                        {
+                                            categoria.nombre
+                                        }
+                                    </option>
 
-            </div>
+                                )
+                            )}
 
+                        </select>
 
-            <div className="form-field">
-
-                <label
-                    htmlFor=
-                        "subcategoria-nombre"
-                >
-                    Subcategoría
-                </label>
-
-                <input
-    
-    id="subcategoria-nombre"
-    type="text"
-    placeholder="Nombre de la subcategoría"
-    value={nombre}
-    onChange={(e) =>
-        setNombre(e.target.value)
-    }
-/>
-
-            </div>
+                    </div>
 
 
-            <FormActions
-                editando={
-                    Boolean(editandoId)
+                    <div className="form-field">
+
+                        <label
+                            htmlFor=
+                            "subcategoria-nombre"
+                        >
+                            Subcategoría
+                        </label>
+
+                        <input
+
+                            id="subcategoria-nombre"
+                            type="text"
+                            placeholder="Nombre de la subcategoría"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(e.target.value)
+                            }
+                        />
+
+                    </div>
+
+
+                    <FormActions
+                        editando={
+                            Boolean(editandoId)
+                        }
+                        onCancel={
+                            limpiarFormulario
+                        }
+                    />
+
+                </form>
+            )}
+
+
+            <CrudTable
+                columns={
+                    columnasSubcategorias
                 }
-                onCancel={
-                    limpiarFormulario
+
+                items={
+                    subcategorias
                 }
+
+                onEdit={
+                    puedeModificar
+                        ? editarSubcategoria
+                        : null
+                }
+
+                onDelete={
+                    puedeModificar
+                        ? eliminarSubcategoria
+                        : null
+                }
+
+                emptyMessage=
+                "No hay subcategorías cargadas."
             />
 
-        </form>
+        </div>
 
-
-        <CrudTable
-            columns={
-                columnasSubcategorias
-            }
-            items={subcategorias}
-            onEdit={
-                editarSubcategoria
-            }
-            onDelete={
-                eliminarSubcategoria
-            }
-            emptyMessage=
-                "No hay subcategorías cargadas."
-        />
-
-    </div>
-
-);  
+    );
 }
 
 export default Subcategorias;

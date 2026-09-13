@@ -3,6 +3,11 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -18,6 +23,35 @@ const moneda =
 
 
 function Caja() {
+
+    const {
+    puede
+} =
+    useAuth();
+
+
+const puedeAbrir =
+    puede(
+        "caja.abrir"
+    );
+
+
+const puedeCerrar =
+    puede(
+        "caja.cerrar"
+    );
+
+
+const puedeMovimiento =
+    puede(
+        "caja.movimiento"
+    );
+
+
+const puedeRevertir =
+    puede(
+        "caja.revertir"
+    );
 
     const [
         caja,
@@ -521,7 +555,7 @@ function Caja() {
 
 
             {!caja ? (
-
+                puedeAbrir ? (
                 <section>
 
                     <h2>
@@ -581,7 +615,11 @@ function Caja() {
 
                 </section>
 
-            ) : (
+            ) :(
+                 <p>
+            No hay una caja abierta.
+        </p>
+            )): (
 
                 <>
 
@@ -713,7 +751,7 @@ function Caja() {
 
                     </section>
 
-
+{puedeMovimiento && (
                     <section>
 
                         <h2>
@@ -848,7 +886,7 @@ function Caja() {
                         </button>
 
                     </section>
-
+)}
 
                     <section>
 
@@ -926,7 +964,7 @@ function Caja() {
 
                                                 <td>
 
-                                                    {
+                                                    {puedeRevertir &&
                                                         (
                                                             item.tipo ===
                                                             "INGRESO_MANUAL" ||
@@ -962,7 +1000,7 @@ function Caja() {
 
                         </div>
 
-                        {movimientoReversion && (
+                        {puedeRevertir && movimientoReversion && (
 
                             <div className="cash-reversal">
 
@@ -1063,7 +1101,7 @@ function Caja() {
 
                     </section>
 
-
+                {puedeCerrar && (
                     <section>
 
                         <h2>
@@ -1134,6 +1172,7 @@ function Caja() {
                         </button>
 
                     </section>
+                )}
 
                 </>
 

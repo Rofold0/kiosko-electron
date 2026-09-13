@@ -2,6 +2,9 @@ import {
     useEffect,
     useState
 } from "react";
+import {
+    useAuth
+} from "../auth/authContext.jsx";
 import CrudTable from "../components/crudTable.jsx";
 import FormActions from "../components/formActions.jsx";
 import PageHeader from "../components/pageHeader.jsx";
@@ -32,6 +35,17 @@ function ordenarCategorias(lista) {
 }
 
 function Categorias() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeModificar =
+        puede(
+            "categorias.modificar"
+        );
 
     const [categorias, setCategorias] = useState([]);
 
@@ -84,14 +98,14 @@ function Categorias() {
 
         if (!nombreLimpio) {
 
-    await window.electronAPI
-        .dialogos
-        .error(
-            "Ingrese un nombre."
-        );
+            await window.electronAPI
+                .dialogos
+                .error(
+                    "Ingrese un nombre."
+                );
 
-    return;
-}
+            return;
+        }
 
 
         try {
@@ -143,78 +157,6 @@ function Categorias() {
 
         } catch (error) {
 
-    console.error(error);
-
-    await window.electronAPI
-        .dialogos
-        .error(
-            error.message
-        );
-
-}
-
-    };
-
-
-
-    // EDITAR
-
-
-    const editarCategoria = (categoria) => {
-
-    setEditandoId(
-        categoria.id
-    );
-
-    setNombre(
-        categoria.nombre
-    );
-
-};
-
-
-    // ELIMINAR
-
-    const eliminarCategoria =
-    async (id) => {
-
-        const confirmar =
-            await window.electronAPI
-                .dialogos
-                .confirmar(
-                    "¿Está seguro de eliminar esta categoría?"
-                );
-
-
-        if (!confirmar) {
-            return;
-        }
-
-
-        try {
-
-            await window.electronAPI
-                .categorias
-                .eliminar(id);
-
-
-            setCategorias((actuales) =>
-                actuales.filter(
-                    (categoria) =>
-                        categoria.id !== id
-                )
-            );
-
-
-            if (editandoId === id) {
-
-                limpiarFormulario();
-
-            }
-
-
-        } catch (error) {
-
             console.error(error);
 
             await window.electronAPI
@@ -227,14 +169,86 @@ function Categorias() {
 
     };
 
+
+
+    // EDITAR
+
+
+    const editarCategoria = (categoria) => {
+
+        setEditandoId(
+            categoria.id
+        );
+
+        setNombre(
+            categoria.nombre
+        );
+
+    };
+
+
+    // ELIMINAR
+
+    const eliminarCategoria =
+        async (id) => {
+
+            const confirmar =
+                await window.electronAPI
+                    .dialogos
+                    .confirmar(
+                        "¿Está seguro de eliminar esta categoría?"
+                    );
+
+
+            if (!confirmar) {
+                return;
+            }
+
+
+            try {
+
+                await window.electronAPI
+                    .categorias
+                    .eliminar(id);
+
+
+                setCategorias((actuales) =>
+                    actuales.filter(
+                        (categoria) =>
+                            categoria.id !== id
+                    )
+                );
+
+
+                if (editandoId === id) {
+
+                    limpiarFormulario();
+
+                }
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                await window.electronAPI
+                    .dialogos
+                    .error(
+                        error.message
+                    );
+
+            }
+
+        };
+
     // CANCELAR EDICIÓN / LIMPIAR FORMULARIO
-   const limpiarFormulario = () => {
+    const limpiarFormulario = () => {
 
-    setNombre("");
+        setNombre("");
 
-    setEditandoId(null);
+        setEditandoId(null);
 
-};
+    };
 
 
     return (
@@ -242,54 +256,65 @@ function Categorias() {
         <div className="page">
 
             <PageHeader title="Categorías" />
+            {puedeModificar && (
+                <form
+                    className="crud-form"
+                    onSubmit={guardarCategoria}
+                >
 
-            <form
-                className="crud-form"
-                onSubmit={guardarCategoria}
-            >
+                    <div className="form-field">
 
-                <div className="form-field">
+                        <label htmlFor="categoria-nombre">
+                            Nombre
+                        </label>
 
-                    <label htmlFor="categoria-nombre">
-                        Nombre
-                    </label>
+                        <input
+                            id="categoria-nombre"
+                            type="text"
+                            placeholder="Nombre de la categoría"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(e.target.value)
+                            }
+                        />
 
-                    <input
-                        id="categoria-nombre"
-                        type="text"
-                        placeholder="Nombre de la categoría"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(e.target.value)
+                    </div>
+
+
+                    <FormActions
+                        editando={
+                            Boolean(editandoId)
+                        }
+                        onCancel={
+                            limpiarFormulario
                         }
                     />
 
-                </div>
-
-
-                <FormActions
-                    editando={
-                        Boolean(editandoId)
-                    }
-                    onCancel={
-                        limpiarFormulario
-                    }
-                />
-
-            </form>
+                </form>
+            )}
 
 
             <CrudTable
                 columns={
                     columnasCategorias
                 }
-                items={categorias}
+
+                items={
+                    categorias
+                }
+
                 onEdit={
-                    editarCategoria
+                    puedeModificar
+                        ? editarCategoria
+                        : null
                 }
+
                 onDelete={
-                    eliminarCategoria
+                    puedeModificar
+                        ? eliminarCategoria
+                        : null
                 }
+
                 emptyMessage=
                 "No hay categorías cargadas."
             />

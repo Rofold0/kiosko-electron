@@ -3,6 +3,10 @@ import {
     useState
 } from "react";
 
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import PageHeader
     from "../components/pageHeader.jsx";
 
@@ -40,6 +44,29 @@ function fechaLocalActual() {
 
 
 function Ventas() {
+
+    const {
+        puede
+    } =
+        useAuth();
+
+
+    const puedeCrear =
+        puede(
+            "ventas.crear"
+        );
+
+
+    const puedeVer =
+        puede(
+            "ventas.ver"
+        );
+
+
+    const puedeRevertir =
+        puede(
+            "ventas.revertir"
+        );
 
     // PRODUCTOS
 
@@ -210,17 +237,34 @@ function Ventas() {
 
                 try {
 
-                    await Promise.all([
+                    const tareas = [];
 
-                        cargarProductos(
-                            ""
-                        ),
 
-                        cargarHistorial(
-                            1
-                        )
+                    if (puedeCrear) {
 
-                    ]);
+                        tareas.push(
+                            cargarProductos(
+                                ""
+                            )
+                        );
+
+                    }
+
+
+                    if (puedeVer) {
+
+                        tareas.push(
+                            cargarHistorial(
+                                1
+                            )
+                        );
+
+                    }
+
+
+                    await Promise.all(
+                        tareas
+                    );
 
 
                 } catch (error) {
@@ -236,8 +280,10 @@ function Ventas() {
 
         iniciar();
 
-    }, []);
-
+    }, [
+        puedeCrear,
+        puedeVer
+    ]);
 
     const buscar =
         async (event) => {
@@ -590,7 +636,7 @@ function Ventas() {
             if (
                 !ventaDetalle ||
                 ventaDetalle.estado !==
-                    "ACTIVA" ||
+                "ACTIVA" ||
                 revirtiendo
             ) {
 
@@ -698,300 +744,321 @@ function Ventas() {
                 title="Ventas"
             />
 
+            {puedeCrear && (
+                <div className="sales-layout">
 
-            <div className="sales-layout">
+                    {/* PRODUCTOS */}
 
-                {/* PRODUCTOS */}
+                    <section>
 
-                <section>
+                        <h2>
+                            Productos
+                        </h2>
 
-                    <h2>
-                        Productos
-                    </h2>
 
+                        <form
+                            className="sales-search"
+                            onSubmit={buscar}
+                        >
 
-                    <form
-                        className="sales-search"
-                        onSubmit={buscar}
-                    >
-
-                        <input
-                            value={busqueda}
-                            onChange={(event) =>
-                                setBusqueda(
-                                    event.target.value
-                                )
-                            }
-                            placeholder="Nombre o código"
-                        />
-
-
-                        <button type="submit">
-                            Buscar
-                        </button>
-
-                    </form>
-
-
-                    <div className="sales-products">
-
-                        {resultados.map(
-                            (producto) => (
-
-                                <button
-                                    key={
-                                        producto.producto_id
-                                    }
-                                    type="button"
-                                    disabled={
-                                        producto.stock_actual <=
-                                        0
-                                    }
-                                    onClick={() =>
-                                        agregarProducto(
-                                            producto
-                                        )
-                                    }
-                                >
-
-                                    <span>
-
-                                        <strong>
-                                            {
-                                                producto.producto_nombre
-                                            }
-                                        </strong>
-
-                                        {
-                                            producto.producto_codigo
-                                                ? ` · ${producto.producto_codigo}`
-                                                : ""
-                                        }
-
-                                    </span>
-
-
-                                    <span>
-                                        Stock:{" "}
-                                        {
-                                            producto.stock_actual
-                                        }
-                                    </span>
-
-
-                                    <strong>
-                                        {
-                                            moneda.format(
-                                                producto.precio_venta
-                                            )
-                                        }
-                                    </strong>
-
-                                </button>
-
-                            )
-                        )}
-
-                    </div>
-
-                </section>
-
-
-                {/* CARRITO */}
-
-                <section>
-
-                    <h2>
-                        Venta actual
-                    </h2>
-
-
-                    <div className="sales-cart-wrapper">
-
-                        <table className="sales-cart">
-
-                            <thead>
-
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cant.</th>
-                                    <th>Precio</th>
-                                    <th>Subtotal</th>
-                                    <th></th>
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                                {items.length === 0 ? (
-
-                                    <tr>
-                                        <td colSpan="5">
-                                            No hay productos.
-                                        </td>
-                                    </tr>
-
-                                ) : (
-
-                                    items.map(
-                                        (item) => (
-
-                                            <tr
-                                                key={
-                                                    item.producto_id
-                                                }
-                                            >
-
-                                                <td>
-                                                    {
-                                                        item.producto_nombre
-                                                    }
-                                                </td>
-
-
-                                                <td>
-
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        max={
-                                                            item.stock_actual
-                                                        }
-                                                        step="1"
-                                                        value={
-                                                            item.cantidad
-                                                        }
-                                                        onChange={(event) =>
-                                                            cambiarCantidad(
-                                                                item.producto_id,
-                                                                event.target.value
-                                                            )
-                                                        }
-                                                    />
-
-                                                </td>
-
-
-                                                <td>
-                                                    {
-                                                        moneda.format(
-                                                            item.precio_unitario
-                                                        )
-                                                    }
-                                                </td>
-
-
-                                                <td>
-                                                    {
-                                                        moneda.format(
-                                                            item.precio_unitario *
-                                                            item.cantidad
-                                                        )
-                                                    }
-                                                </td>
-
-
-                                                <td>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            quitarProducto(
-                                                                item.producto_id
-                                                            )
-                                                        }
-                                                    >
-                                                        Quitar
-                                                    </button>
-
-                                                </td>
-
-                                            </tr>
-
-                                        )
-                                    )
-
-                                )}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-
-                    <div className="sales-summary">
-
-                        <span>
-                            Total
-                            <strong>
-                                {
-                                    moneda.format(
-                                        total
-                                    )
-                                }
-                            </strong>
-                        </span>
-
-
-                        <span>
-                            Ganancia estimada
-                            <strong>
-                                {
-                                    moneda.format(
-                                        ganancia
-                                    )
-                                }
-                            </strong>
-                        </span>
-
-                    </div>
-
-
-                    <div className="sales-fields">
-
-                        <div className="form-field">
-
-                            <label>
-                                Método de pago
-                            </label>
-
-                            <select
-                                value={
-                                    metodoPago
-                                }
+                            <input
+                                value={busqueda}
                                 onChange={(event) =>
-                                    setMetodoPago(
+                                    setBusqueda(
                                         event.target.value
                                     )
                                 }
-                            >
-                                <option value="EFECTIVO">
-                                    Efectivo
-                                </option>
+                                placeholder="Nombre o código"
+                            />
 
-                                <option value="TRANSFERENCIA">
-                                    Transferencia
-                                </option>
 
-                                <option value="DEBITO">
-                                    Débito
-                                </option>
+                            <button type="submit">
+                                Buscar
+                            </button>
 
-                                <option value="CREDITO">
-                                    Crédito
-                                </option>
+                        </form>
 
-                                <option value="QR">
-                                    QR
-                                </option>
 
-                                <option value="OTRO">
-                                    Otro
-                                </option>
-                            </select>
+                        <div className="sales-products">
+
+                            {resultados.map(
+                                (producto) => (
+
+                                    <button
+                                        key={
+                                            producto.producto_id
+                                        }
+                                        type="button"
+                                        disabled={
+                                            producto.stock_actual <=
+                                            0
+                                        }
+                                        onClick={() =>
+                                            agregarProducto(
+                                                producto
+                                            )
+                                        }
+                                    >
+
+                                        <span>
+
+                                            <strong>
+                                                {
+                                                    producto.producto_nombre
+                                                }
+                                            </strong>
+
+                                            {
+                                                producto.producto_codigo
+                                                    ? ` · ${producto.producto_codigo}`
+                                                    : ""
+                                            }
+
+                                        </span>
+
+
+                                        <span>
+                                            Stock:{" "}
+                                            {
+                                                producto.stock_actual
+                                            }
+                                        </span>
+
+
+                                        <strong>
+                                            {
+                                                moneda.format(
+                                                    producto.precio_venta
+                                                )
+                                            }
+                                        </strong>
+
+                                    </button>
+
+                                )
+                            )}
+
+                        </div>
+
+                    </section>
+
+
+                    {/* CARRITO */}
+
+                    <section>
+
+                        <h2>
+                            Venta actual
+                        </h2>
+
+
+                        <div className="sales-cart-wrapper">
+
+                            <table className="sales-cart">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cant.</th>
+                                        <th>Precio</th>
+                                        <th>Subtotal</th>
+                                        <th></th>
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {items.length === 0 ? (
+
+                                        <tr>
+                                            <td colSpan="5">
+                                                No hay productos.
+                                            </td>
+                                        </tr>
+
+                                    ) : (
+
+                                        items.map(
+                                            (item) => (
+
+                                                <tr
+                                                    key={
+                                                        item.producto_id
+                                                    }
+                                                >
+
+                                                    <td>
+                                                        {
+                                                            item.producto_nombre
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            max={
+                                                                item.stock_actual
+                                                            }
+                                                            step="1"
+                                                            value={
+                                                                item.cantidad
+                                                            }
+                                                            onChange={(event) =>
+                                                                cambiarCantidad(
+                                                                    item.producto_id,
+                                                                    event.target.value
+                                                                )
+                                                            }
+                                                        />
+
+                                                    </td>
+
+
+                                                    <td>
+                                                        {
+                                                            moneda.format(
+                                                                item.precio_unitario
+                                                            )
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+                                                        {
+                                                            moneda.format(
+                                                                item.precio_unitario *
+                                                                item.cantidad
+                                                            )
+                                                        }
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                quitarProducto(
+                                                                    item.producto_id
+                                                                )
+                                                            }
+                                                        >
+                                                            Quitar
+                                                        </button>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            )
+                                        )
+
+                                    )}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <div className="sales-summary">
+
+                            <span>
+                                Total
+                                <strong>
+                                    {
+                                        moneda.format(
+                                            total
+                                        )
+                                    }
+                                </strong>
+                            </span>
+
+
+                            <span>
+                                Ganancia estimada
+                                <strong>
+                                    {
+                                        moneda.format(
+                                            ganancia
+                                        )
+                                    }
+                                </strong>
+                            </span>
+
+                        </div>
+
+
+                        <div className="sales-fields">
+
+                            <div className="form-field">
+
+                                <label>
+                                    Método de pago
+                                </label>
+
+                                <select
+                                    value={
+                                        metodoPago
+                                    }
+                                    onChange={(event) =>
+                                        setMetodoPago(
+                                            event.target.value
+                                        )
+                                    }
+                                >
+                                    <option value="EFECTIVO">
+                                        Efectivo
+                                    </option>
+
+                                    <option value="TRANSFERENCIA">
+                                        Transferencia
+                                    </option>
+
+                                    <option value="DEBITO">
+                                        Débito
+                                    </option>
+
+                                    <option value="CREDITO">
+                                        Crédito
+                                    </option>
+
+                                    <option value="QR">
+                                        QR
+                                    </option>
+
+                                    <option value="OTRO">
+                                        Otro
+                                    </option>
+                                </select>
+
+                            </div>
+
+
+                            <div className="form-field">
+
+                                <label>
+                                    Fecha
+                                </label>
+
+                                <input
+                                    type="datetime-local"
+                                    value={fecha}
+                                    onChange={(event) =>
+                                        setFecha(
+                                            event.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
 
                         </div>
 
@@ -999,14 +1066,14 @@ function Ventas() {
                         <div className="form-field">
 
                             <label>
-                                Fecha
+                                Notas
                             </label>
 
-                            <input
-                                type="datetime-local"
-                                value={fecha}
+                            <textarea
+                                rows="3"
+                                value={notas}
                                 onChange={(event) =>
-                                    setFecha(
+                                    setNotas(
                                         event.target.value
                                     )
                                 }
@@ -1014,152 +1081,132 @@ function Ventas() {
 
                         </div>
 
-                    </div>
 
-
-                    <div className="form-field">
-
-                        <label>
-                            Notas
-                        </label>
-
-                        <textarea
-                            rows="3"
-                            value={notas}
-                            onChange={(event) =>
-                                setNotas(
-                                    event.target.value
-                                )
+                        <button
+                            type="button"
+                            disabled={
+                                items.length === 0 ||
+                                guardando
                             }
-                        />
+                            onClick={
+                                registrarVenta
+                            }
+                        >
+                            {
+                                guardando
+                                    ? "Registrando..."
+                                    : "Registrar venta"
+                            }
+                        </button>
 
-                    </div>
+                    </section>
 
-
-                    <button
-                        type="button"
-                        disabled={
-                            items.length === 0 ||
-                            guardando
-                        }
-                        onClick={
-                            registrarVenta
-                        }
-                    >
-                        {
-                            guardando
-                                ? "Registrando..."
-                                : "Registrar venta"
-                        }
-                    </button>
-
-                </section>
-
-            </div>
+                </div>
+            )}
 
 
             {/* HISTORIAL */}
+            {puedeVer && (
+                <section className="sales-history">
 
-            <section className="sales-history">
-
-                <h2>
-                    Historial de ventas
-                </h2>
+                    <h2>
+                        Historial de ventas
+                    </h2>
 
 
-                {historial.map(
-                    (venta) => (
+                    {historial.map(
+                        (venta) => (
+
+                            <button
+                                key={
+                                    venta.id
+                                }
+                                type="button"
+                                onClick={() =>
+                                    abrirVenta(
+                                        venta.id
+                                    )
+                                }
+                            >
+
+                                <span>
+                                    #{venta.id}
+                                    {" · "}
+                                    {venta.metodo_pago}
+                                    {" · "}
+                                    {venta.estado}
+                                </span>
+
+
+                                <span>
+                                    {
+                                        new Date(
+                                            venta.fecha
+                                        )
+                                            .toLocaleString(
+                                                "es-AR"
+                                            )
+                                    }
+                                </span>
+
+
+                                <strong>
+                                    {
+                                        moneda.format(
+                                            venta.total
+                                        )
+                                    }
+                                </strong>
+
+                            </button>
+
+                        )
+                    )}
+
+
+                    <div className="pagination">
 
                         <button
-                            key={
-                                venta.id
-                            }
                             type="button"
+                            disabled={
+                                pagina <= 1
+                            }
                             onClick={() =>
-                                abrirVenta(
-                                    venta.id
+                                cargarHistorial(
+                                    pagina - 1
                                 )
                             }
                         >
-
-                            <span>
-                                #{venta.id}
-                                {" · "}
-                                {venta.metodo_pago}
-                                {" · "}
-                                {venta.estado}
-                            </span>
-
-
-                            <span>
-                                {
-                                    new Date(
-                                        venta.fecha
-                                    )
-                                        .toLocaleString(
-                                            "es-AR"
-                                        )
-                                }
-                            </span>
-
-
-                            <strong>
-                                {
-                                    moneda.format(
-                                        venta.total
-                                    )
-                                }
-                            </strong>
-
+                            ← Anterior
                         </button>
 
-                    )
-                )}
+
+                        <span>
+                            Página {pagina}
+                            {" de "}
+                            {totalPaginas}
+                        </span>
 
 
-                <div className="pagination">
+                        <button
+                            type="button"
+                            disabled={
+                                pagina >=
+                                totalPaginas
+                            }
+                            onClick={() =>
+                                cargarHistorial(
+                                    pagina + 1
+                                )
+                            }
+                        >
+                            Siguiente →
+                        </button>
 
-                    <button
-                        type="button"
-                        disabled={
-                            pagina <= 1
-                        }
-                        onClick={() =>
-                            cargarHistorial(
-                                pagina - 1
-                            )
-                        }
-                    >
-                        ← Anterior
-                    </button>
+                    </div>
 
-
-                    <span>
-                        Página {pagina}
-                        {" de "}
-                        {totalPaginas}
-                    </span>
-
-
-                    <button
-                        type="button"
-                        disabled={
-                            pagina >=
-                            totalPaginas
-                        }
-                        onClick={() =>
-                            cargarHistorial(
-                                pagina + 1
-                            )
-                        }
-                    >
-                        Siguiente →
-                    </button>
-
-                </div>
-
-            </section>
-
+                </section>
+            )}
 
             {/* DETALLE */}
 
@@ -1295,77 +1342,78 @@ function Ventas() {
                     {ventaDetalle.estado ===
                         "REVERTIDA" && (
 
-                        <div className="sale-reverted">
+                            <div className="sale-reverted">
 
-                            <p>
-                                Revertida:{" "}
+                                <p>
+                                    Revertida:{" "}
 
-                                {
-                                    new Date(
-                                        ventaDetalle.fecha_reversion
-                                    )
-                                        .toLocaleString(
-                                            "es-AR"
+                                    {
+                                        new Date(
+                                            ventaDetalle.fecha_reversion
                                         )
-                                }
-                            </p>
+                                            .toLocaleString(
+                                                "es-AR"
+                                            )
+                                    }
+                                </p>
 
 
-                            <p>
-                                Motivo:{" "}
-                                {
-                                    ventaDetalle.motivo_reversion
-                                }
-                            </p>
+                                <p>
+                                    Motivo:{" "}
+                                    {
+                                        ventaDetalle.motivo_reversion
+                                    }
+                                </p>
 
-                        </div>
+                            </div>
 
-                    )}
+                        )}
 
 
-                    {ventaDetalle.estado ===
+                    {puedeRevertir &&
+                        ventaDetalle.estado ===
                         "ACTIVA" && (
 
-                        <div className="sale-reversal">
+                            <div className="sale-reversal">
 
-                            <h3>
-                                Revertir venta
-                            </h3>
-
-
-                            <textarea
-                                rows="3"
-                                value={
-                                    motivoReversion
-                                }
-                                onChange={(event) =>
-                                    setMotivoReversion(
-                                        event.target.value
-                                    )
-                                }
-                                placeholder="Ej: venta cargada dos veces"
-                            />
+                                <h3>
+                                    Revertir venta
+                                </h3>
 
 
-                            <button
-                                type="button"
-                                disabled={
-                                    revirtiendo
-                                }
-                                onClick={
-                                    revertirVenta
-                                }
-                            >
-                                {
-                                    revirtiendo
-                                        ? "Revirtiendo..."
-                                        : "Revertir venta"
-                                }
-                            </button>
+                                <textarea
+                                    rows="3"
+                                    value={
+                                        motivoReversion
+                                    }
+                                    onChange={(event) =>
+                                        setMotivoReversion(
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder="Ej: venta cargada dos veces"
+                                />
 
-                        </div>
 
-                    )}
+                                <button
+                                    type="button"
+                                    disabled={
+                                        revirtiendo
+                                    }
+                                    onClick={
+                                        revertirVenta
+                                    }
+                                >
+                                    {
+                                        revirtiendo
+                                            ? "Revirtiendo..."
+                                            : "Revertir venta"
+                                    }
+                                </button>
+
+                            </div>
+
+                        )}
 
                 </section>
 

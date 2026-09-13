@@ -3,6 +3,10 @@ import {
     useMemo,
     useState
 } from "react";
+import {
+    useAuth
+} from "../auth/authContext.jsx";
+
 import ReportExportDropdown
     from "../components/reportExportDropdown.jsx";
 import PageHeader
@@ -183,6 +187,17 @@ function porcentajeTexto(
 }
 
 function Reportes() {
+
+    const {
+    puede
+} =
+    useAuth();
+
+
+const puedeExportar =
+    puede(
+        "reportes.exportar"
+    );
 
     const inicial =
         useMemo(
@@ -513,7 +528,7 @@ function Reportes() {
                 </button>
 
             </form>
-
+                    {puedeExportar && (
             <div className="reports-export-row">
 
                 <ReportExportDropdown
@@ -542,7 +557,7 @@ function Reportes() {
                 />
 
             </div>
-
+                    )}
 
             <div className="report-print-meta">
 
