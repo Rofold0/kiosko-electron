@@ -179,7 +179,7 @@ function Caja() {
 
                         });
 
-
+                        
                 setMovimientos(
                     resultado.items
                 );
@@ -956,6 +956,19 @@ function Caja() {
                                                     }
                                                 </td>
                                                 <td>
+                                                    {
+                                                        item.monto != null
+
+                                                            ? moneda.format(
+                                                                Number(
+                                                                    item.monto
+                                                                )
+                                                            )
+
+                                                            : "—"
+                                                    }
+                                                </td>
+                                                <td>
 
                                                     {
                                                         item.tipo ===
@@ -973,8 +986,6 @@ function Caja() {
                                                     }
 
                                                 </td>
-
-
                                                 <td>
 
                                                     {
@@ -986,20 +997,17 @@ function Caja() {
                                                             null
 
                                                             ? moneda.format(
-                                                                item.vuelto
+                                                                Number(
+                                                                    item.vuelto
+                                                                )
+                                                                
                                                             )
 
                                                             : "—"
                                                     }
 
                                                 </td>
-                                                <td>
-                                                    {
-                                                        moneda.format(
-                                                            item.monto
-                                                        )
-                                                    }
-                                                </td>
+
 
                                                 <td>
 
