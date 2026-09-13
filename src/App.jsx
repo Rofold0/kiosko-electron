@@ -265,11 +265,50 @@ function AplicacionProtegida() {
 
         <Route
           path={ROUTES.mercaderia}
-          element={<Mercaderia />}
+          element={
+            <RutaProtegida
+              permisos={[
+                "productos.ver",
+                "productos.modificar",
+                "stock.ver",
+                "stock.ajustar",
+                "categorias.ver",
+                "categorias.modificar",
+                "lista_compras.ver",
+                "lista_compras.modificar"
+              ]}
+            >
+              <Mercaderia />
+            </RutaProtegida>
+          }
         />
+
+
         <Route
           path={ROUTES.gestion}
-          element={<Gestion />}
+          element={
+            <RutaProtegida
+              permisos={[
+                "proveedores.ver",
+                "proveedores.modificar",
+                "compras.ver",
+                "compras.crear",
+                "compras.revertir",
+                "precios.ver",
+                "precios.modificar",
+                "ventas.ver",
+                "ventas.crear",
+                "ventas.revertir",
+                "caja.ver",
+                "gastos.ver",
+                "gastos.crear",
+                "gastos.revertir",
+                "usuarios.ver"
+              ]}
+            >
+              <Gestion />
+            </RutaProtegida>
+          }
         />
 
         <Route

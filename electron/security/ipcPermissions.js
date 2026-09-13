@@ -163,7 +163,7 @@ export const IPC_PERMISSIONS =
             "compras.crear",
 
         "compras:pendientes-proveedor":
-            "compras.ver",
+            "compras.crear",
 
         "compras:listar":
             "compras.ver",

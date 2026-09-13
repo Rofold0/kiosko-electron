@@ -44,7 +44,10 @@ function Categorias() {
 
     const puedeModificar =
         puede(
-            "categorias.modificar"
+            "productos.modificar"
+        ) &&
+        puede(
+            "categorias.ver"
         );
 
     const [categorias, setCategorias] = useState([]);

@@ -569,17 +569,34 @@ function Ventas() {
                 );
 
 
-                await Promise.all([
+                const tareas = [];
 
-                    cargarProductos(
-                        busqueda.trim()
-                    ),
 
-                    cargarHistorial(
-                        1
-                    )
+                if (puedeCrear) {
 
-                ]);
+                    tareas.push(
+                        cargarProductos(
+                            busqueda.trim()
+                        )
+                    );
+
+                }
+
+
+                if (puedeVer) {
+
+                    tareas.push(
+                        cargarHistorial(
+                            1
+                        )
+                    );
+
+                }
+
+
+                await Promise.all(
+                    tareas
+                );
 
 
             } catch (error) {
@@ -707,17 +724,34 @@ function Ventas() {
                 );
 
 
-                await Promise.all([
+                const tareas = [];
 
-                    cargarProductos(
-                        busqueda.trim()
-                    ),
 
-                    cargarHistorial(
-                        1
-                    )
+                if (puedeCrear) {
 
-                ]);
+                    tareas.push(
+                        cargarProductos(
+                            busqueda.trim()
+                        )
+                    );
+
+                }
+
+
+                if (puedeVer) {
+
+                    tareas.push(
+                        cargarHistorial(
+                            1
+                        )
+                    );
+
+                }
+
+
+                await Promise.all(
+                    tareas
+                );
 
 
             } catch (error) {

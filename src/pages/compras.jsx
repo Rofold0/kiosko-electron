@@ -303,125 +303,66 @@ function Compras() {
 
     useEffect(() => {
 
-    const iniciar =
-        async () => {
+        const iniciar =
+            async () => {
 
-            try {
+                try {
 
-                const tareas = [];
+                    const tareas = [];
 
 
-                if (
-                    puedeCrear &&
-                    puedeVerProveedores
-                ) {
+                    if (
+                        puedeCrear &&
+                        puedeVerProveedores &&
+                        proveedorId
+                    ) {
 
-                    tareas.push(
-
-                        window
-                            .electronAPI
-                            .proveedores
-                            .listar()
-                            .then(
-                                setProveedores
+                        tareas.push(
+                            cargarProveedor(
+                                Number(
+                                    proveedorId
+                                )
                             )
+                        );
 
+                    }
+
+
+                    if (puedeVer) {
+
+                        tareas.push(
+                            cargarHistorial(
+                                1
+                            )
+                        );
+
+                    }
+
+
+                    await Promise.all(
+                        tareas
+                    );
+
+
+                } catch (error) {
+
+                    await mostrarError(
+                        error
                     );
 
                 }
 
-
-                if (puedeVer) {
-
-                    tareas.push(
-
-                        window
-                            .electronAPI
-                            .compras
-                            .listar({
-                                pagina: 1,
-                                limite:
-                                    LIMITE_HISTORIAL
-                            })
-                            .then(
-                                (resultado) => {
-
-                                    setHistorial(
-                                        resultado.items
-                                    );
-
-                                    setPaginaHistorial(
-                                        resultado.pagina
-                                    );
-
-                                    setTotalPaginas(
-                                        resultado.totalPaginas
-                                    );
-
-                                }
-                            )
-
-                    );
-
-                }
+            };
 
 
-                if (
-                    puedeCrear &&
-                    puedeVerCaja
-                ) {
+        iniciar();
 
-                    tareas.push(
-
-                        window
-                            .electronAPI
-                            .caja
-                            .actual()
-                            .then(
-                                (cajaData) => {
-
-                                    setCajaActual(
-                                        cajaData
-                                    );
-
-                                    setRegistrarEnCaja(
-                                        Boolean(
-                                            cajaData
-                                        )
-                                    );
-
-                                }
-                            )
-
-                    );
-
-                }
-
-
-                await Promise.all(
-                    tareas
-                );
-
-
-            } catch (error) {
-
-                await mostrarError(
-                    error
-                );
-
-            }
-
-        };
-
-
-    iniciar();
-
-}, [
-    puedeCrear,
-    puedeVer,
-    puedeVerProveedores,
-    puedeVerCaja
-]);
+    }, [
+        puedeCrear,
+        puedeVer,
+        puedeVerProveedores,
+        puedeVerCaja
+    ]);
 
 
 
