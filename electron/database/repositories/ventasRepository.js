@@ -118,11 +118,13 @@ const crearVentaStmt =
             fecha,
             total,
             metodo_pago,
+            efectivo_recibido,
+            vuelto,
             notas
         )
 
         VALUES (
-            ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?
         )
 
         RETURNING id
@@ -211,6 +213,8 @@ const listarVentasStmt =
             v.fecha,
             v.total,
             v.metodo_pago,
+            v.efectivo_recibido,
+            v.vuelto,
             v.notas,
             v.estado,
             v.fecha_reversion,
@@ -302,6 +306,8 @@ const ventaStmt =
             fecha,
             total,
             metodo_pago,
+            efectivo_recibido,
+            vuelto,
             notas,
             estado,
             fecha_reversion,
@@ -475,6 +481,7 @@ const registrarVentaTransaction =
     db.transaction(({
         fecha,
         metodoPago,
+        efectivoRecibido,
         notas,
         items
     }) => {
@@ -617,6 +624,77 @@ const registrarVentaTransaction =
                 )
             );
 
+        let recibido =
+            null;
+
+
+        let vuelto =
+            null;
+
+
+        if (
+            metodoPago ===
+            "EFECTIVO"
+        ) {
+
+            if (
+                efectivoRecibido === null ||
+                efectivoRecibido ===
+                undefined ||
+                efectivoRecibido ===
+                ""
+            ) {
+
+                throw new Error(
+                    "Debe indicar el efectivo recibido."
+                );
+
+            }
+
+
+            recibido =
+                redondear(
+                    efectivoRecibido
+                );
+
+
+            if (
+                !Number.isFinite(
+                    recibido
+                ) ||
+                recibido < 0
+            ) {
+
+                throw new Error(
+                    "El efectivo recibido es inválido."
+                );
+
+            }
+
+
+            if (
+                recibido <
+                total
+            ) {
+
+                throw new Error(
+                    `El efectivo recibido es menor al total de la venta. Faltan $${redondear(
+                        total -
+                        recibido
+                    ).toFixed(2)}.`
+                );
+
+            }
+
+
+            vuelto =
+                redondear(
+                    recibido -
+                    total
+                );
+
+        }
+
 
         const venta =
             crearVentaStmt.get(
@@ -626,6 +704,10 @@ const registrarVentaTransaction =
                 total,
 
                 metodoPago,
+
+                recibido,
+
+                vuelto,
 
                 notas
 
@@ -697,12 +779,25 @@ const registrarVentaTransaction =
 
         }
 
+        const conceptoCaja =
+    metodoPago ===
+        "EFECTIVO"
+        ? (
+            `Venta #${venta.id} · ` +
+            `EFECTIVO · ` +
+            `Recibido $${recibido.toFixed(2)} · ` +
+            `Vuelto $${vuelto.toFixed(2)}`
+        )
+        : (
+            `Venta #${venta.id} · ` +
+            metodoPago
+        );
 
         movimientoCajaStmt.run(
 
             "VENTA",
 
-            `Venta #${venta.id} · ${metodoPago}`,
+            conceptoCaja,
 
             total,
 

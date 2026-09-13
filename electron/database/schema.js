@@ -351,6 +351,10 @@ CREATE TABLE IF NOT EXISTS ventas (
     fecha            TEXT NOT NULL,
     total            REAL NOT NULL DEFAULT 0,
     metodo_pago      TEXT,
+    
+    efectivo_recibido  REAL,
+    vuelto             REAL,
+
     notas            TEXT,
 
     estado           TEXT NOT NULL DEFAULT 'ACTIVA',

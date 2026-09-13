@@ -1477,6 +1477,59 @@ const migrations = [
         }
 
     }
+},
+{
+    version: 14,
+
+    name: "ventas-efectivo-vuelto",
+
+    up(db) {
+
+        const columnas =
+            db.pragma(
+                "table_info(ventas)"
+            );
+
+
+        const existe =
+            (nombre) =>
+                columnas.some(
+                    (columna) =>
+                        columna.name ===
+                        nombre
+                );
+
+
+        if (
+            !existe(
+                "efectivo_recibido"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE ventas
+                ADD COLUMN
+                efectivo_recibido REAL;
+            `);
+
+        }
+
+
+        if (
+            !existe(
+                "vuelto"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE ventas
+                ADD COLUMN
+                vuelto REAL;
+            `);
+
+        }
+
+    }
 }
 ];
 

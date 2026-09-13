@@ -25,33 +25,33 @@ const moneda =
 function Caja() {
 
     const {
-    puede
-} =
-    useAuth();
+        puede
+    } =
+        useAuth();
 
 
-const puedeAbrir =
-    puede(
-        "caja.abrir"
-    );
+    const puedeAbrir =
+        puede(
+            "caja.abrir"
+        );
 
 
-const puedeCerrar =
-    puede(
-        "caja.cerrar"
-    );
+    const puedeCerrar =
+        puede(
+            "caja.cerrar"
+        );
 
 
-const puedeMovimiento =
-    puede(
-        "caja.movimiento"
-    );
+    const puedeMovimiento =
+        puede(
+            "caja.movimiento"
+        );
 
 
-const puedeRevertir =
-    puede(
-        "caja.revertir"
-    );
+    const puedeRevertir =
+        puede(
+            "caja.revertir"
+        );
 
     const [
         caja,
@@ -556,70 +556,70 @@ const puedeRevertir =
 
             {!caja ? (
                 puedeAbrir ? (
-                <section>
+                    <section>
 
-                    <h2>
-                        Abrir caja
-                    </h2>
-
-
-                    <div className="form-field">
-
-                        <label>
-                            Efectivo inicial
-                        </label>
-
-                        <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={
-                                saldoInicial
-                            }
-                            onChange={(event) =>
-                                setSaldoInicial(
-                                    event.target.value
-                                )
-                            }
-                        />
-
-                    </div>
+                        <h2>
+                            Abrir caja
+                        </h2>
 
 
-                    <div className="form-field">
+                        <div className="form-field">
 
-                        <label>
-                            Notas
-                        </label>
+                            <label>
+                                Efectivo inicial
+                            </label>
 
-                        <textarea
-                            value={
-                                notasApertura
-                            }
-                            onChange={(event) =>
-                                setNotasApertura(
-                                    event.target.value
-                                )
-                            }
-                        />
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={
+                                    saldoInicial
+                                }
+                                onChange={(event) =>
+                                    setSaldoInicial(
+                                        event.target.value
+                                    )
+                                }
+                            />
 
-                    </div>
+                        </div>
 
 
-                    <button
-                        type="button"
-                        onClick={abrir}
-                    >
-                        Abrir caja
-                    </button>
+                        <div className="form-field">
 
-                </section>
+                            <label>
+                                Notas
+                            </label>
 
-            ) :(
-                 <p>
-            No hay una caja abierta.
-        </p>
-            )): (
+                            <textarea
+                                value={
+                                    notasApertura
+                                }
+                                onChange={(event) =>
+                                    setNotasApertura(
+                                        event.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            onClick={abrir}
+                        >
+                            Abrir caja
+                        </button>
+
+                    </section>
+
+                ) : (
+                    <p>
+                        No hay una caja abierta.
+                    </p>
+                )) : (
 
                 <>
 
@@ -751,142 +751,142 @@ const puedeRevertir =
 
                     </section>
 
-{puedeMovimiento && (
-                    <section>
+                    {puedeMovimiento && (
+                        <section>
 
-                        <h2>
-                            Movimiento manual
-                        </h2>
+                            <h2>
+                                Movimiento manual
+                            </h2>
 
 
-                        <div className="cash-form-grid">
+                            <div className="cash-form-grid">
 
-                            <div className="form-field">
+                                <div className="form-field">
 
-                                <label>
-                                    Tipo
-                                </label>
+                                    <label>
+                                        Tipo
+                                    </label>
 
-                                <select
-                                    value={
-                                        tipoMovimiento
-                                    }
-                                    onChange={(event) =>
-                                        setTipoMovimiento(
-                                            event.target.value
-                                        )
-                                    }
-                                >
-                                    <option value="INGRESO">
-                                        Ingreso
-                                    </option>
+                                    <select
+                                        value={
+                                            tipoMovimiento
+                                        }
+                                        onChange={(event) =>
+                                            setTipoMovimiento(
+                                                event.target.value
+                                            )
+                                        }
+                                    >
+                                        <option value="INGRESO">
+                                            Ingreso
+                                        </option>
 
-                                    <option value="EGRESO">
-                                        Egreso
-                                    </option>
-                                </select>
+                                        <option value="EGRESO">
+                                            Egreso
+                                        </option>
+                                    </select>
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Método
+                                    </label>
+
+                                    <select
+                                        value={
+                                            metodoPago
+                                        }
+                                        onChange={(event) =>
+                                            setMetodoPago(
+                                                event.target.value
+                                            )
+                                        }
+                                    >
+                                        <option value="EFECTIVO">
+                                            Efectivo
+                                        </option>
+
+                                        <option value="TRANSFERENCIA">
+                                            Transferencia
+                                        </option>
+
+                                        <option value="DEBITO">
+                                            Débito
+                                        </option>
+
+                                        <option value="CREDITO">
+                                            Crédito
+                                        </option>
+
+                                        <option value="QR">
+                                            QR
+                                        </option>
+
+                                        <option value="OTRO">
+                                            Otro
+                                        </option>
+                                    </select>
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Monto
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={monto}
+                                        onChange={(event) =>
+                                            setMonto(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Concepto
+                                    </label>
+
+                                    <input
+                                        value={
+                                            concepto
+                                        }
+                                        onChange={(event) =>
+                                            setConcepto(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
 
                             </div>
 
 
-                            <div className="form-field">
+                            <button
+                                type="button"
+                                onClick={
+                                    agregarMovimiento
+                                }
+                            >
+                                Registrar movimiento
+                            </button>
 
-                                <label>
-                                    Método
-                                </label>
-
-                                <select
-                                    value={
-                                        metodoPago
-                                    }
-                                    onChange={(event) =>
-                                        setMetodoPago(
-                                            event.target.value
-                                        )
-                                    }
-                                >
-                                    <option value="EFECTIVO">
-                                        Efectivo
-                                    </option>
-
-                                    <option value="TRANSFERENCIA">
-                                        Transferencia
-                                    </option>
-
-                                    <option value="DEBITO">
-                                        Débito
-                                    </option>
-
-                                    <option value="CREDITO">
-                                        Crédito
-                                    </option>
-
-                                    <option value="QR">
-                                        QR
-                                    </option>
-
-                                    <option value="OTRO">
-                                        Otro
-                                    </option>
-                                </select>
-
-                            </div>
-
-
-                            <div className="form-field">
-
-                                <label>
-                                    Monto
-                                </label>
-
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={monto}
-                                    onChange={(event) =>
-                                        setMonto(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div className="form-field">
-
-                                <label>
-                                    Concepto
-                                </label>
-
-                                <input
-                                    value={
-                                        concepto
-                                    }
-                                    onChange={(event) =>
-                                        setConcepto(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            onClick={
-                                agregarMovimiento
-                            }
-                        >
-                            Registrar movimiento
-                        </button>
-
-                    </section>
-)}
+                        </section>
+                    )}
 
                     <section>
 
@@ -907,6 +907,8 @@ const puedeRevertir =
                                         <th>Concepto</th>
                                         <th>Método</th>
                                         <th>Monto</th>
+                                        <th>Recibido</th>
+                                        <th>Vuelto</th>
                                         <th></th>
                                     </tr>
 
@@ -953,7 +955,44 @@ const puedeRevertir =
                                                         "—"
                                                     }
                                                 </td>
+                                                <td>
 
+                                                    {
+                                                        item.tipo ===
+                                                            "VENTA" &&
+                                                            item.metodo_pago ===
+                                                            "EFECTIVO" &&
+                                                            item.efectivo_recibido !==
+                                                            null
+
+                                                            ? moneda.format(
+                                                                item.efectivo_recibido
+                                                            )
+
+                                                            : "—"
+                                                    }
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    {
+                                                        item.tipo ===
+                                                            "VENTA" &&
+                                                            item.metodo_pago ===
+                                                            "EFECTIVO" &&
+                                                            item.vuelto !==
+                                                            null
+
+                                                            ? moneda.format(
+                                                                item.vuelto
+                                                            )
+
+                                                            : "—"
+                                                    }
+
+                                                </td>
                                                 <td>
                                                     {
                                                         moneda.format(
@@ -1101,78 +1140,78 @@ const puedeRevertir =
 
                     </section>
 
-                {puedeCerrar && (
-                    <section>
+                    {puedeCerrar && (
+                        <section>
 
-                        <h2>
-                            Cerrar caja
-                        </h2>
-
-
-                        <p>
-                            Efectivo esperado:{" "}
-
-                            <strong>
-                                {
-                                    moneda.format(
-                                        caja.resumen
-                                            .efectivo_esperado_actual
-                                    )
-                                }
-                            </strong>
-                        </p>
+                            <h2>
+                                Cerrar caja
+                            </h2>
 
 
-                        <div className="form-field">
+                            <p>
+                                Efectivo esperado:{" "}
 
-                            <label>
-                                Efectivo contado
-                            </label>
-
-                            <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={
-                                    efectivoReal
-                                }
-                                onChange={(event) =>
-                                    setEfectivoReal(
-                                        event.target.value
-                                    )
-                                }
-                            />
-
-                        </div>
+                                <strong>
+                                    {
+                                        moneda.format(
+                                            caja.resumen
+                                                .efectivo_esperado_actual
+                                        )
+                                    }
+                                </strong>
+                            </p>
 
 
-                        {diferenciaActual !==
-                            null && (
+                            <div className="form-field">
 
-                                <p>
-                                    Diferencia:{" "}
+                                <label>
+                                    Efectivo contado
+                                </label>
 
-                                    <strong>
-                                        {
-                                            moneda.format(
-                                                diferenciaActual
-                                            )
-                                        }
-                                    </strong>
-                                </p>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={
+                                        efectivoReal
+                                    }
+                                    onChange={(event) =>
+                                        setEfectivoReal(
+                                            event.target.value
+                                        )
+                                    }
+                                />
 
-                            )}
+                            </div>
 
 
-                        <button
-                            type="button"
-                            onClick={cerrar}
-                        >
-                            Cerrar caja
-                        </button>
+                            {diferenciaActual !==
+                                null && (
 
-                    </section>
-                )}
+                                    <p>
+                                        Diferencia:{" "}
+
+                                        <strong>
+                                            {
+                                                moneda.format(
+                                                    diferenciaActual
+                                                )
+                                            }
+                                        </strong>
+                                    </p>
+
+                                )}
+
+
+                            <button
+                                type="button"
+                                onClick={cerrar}
+                            >
+                                Cerrar caja
+                            </button>
+
+                        </section>
+                    )}
 
                 </>
 

@@ -179,6 +179,55 @@ function validarItems(items) {
 
 }
 
+function validarEfectivoRecibido(
+    valor,
+    metodoPago
+) {
+
+    if (
+        metodoPago !==
+        "EFECTIVO"
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
+        valor === null ||
+        valor === undefined ||
+        valor === ""
+    ) {
+
+        throw new Error(
+            "Debe indicar el efectivo recibido."
+        );
+
+    }
+
+
+    const recibido =
+        Number(valor);
+
+
+    if (
+        !Number.isFinite(
+            recibido
+        ) ||
+        recibido < 0
+    ) {
+
+        throw new Error(
+            "El efectivo recibido es inválido."
+        );
+
+    }
+
+
+    return recibido;
+
+}
 
 export function registerVentasHandlers() {
 
@@ -219,6 +268,12 @@ export function registerVentasHandlers() {
             datos
         ) => {
 
+            const metodoPago =
+                validarMetodoPago(
+                    datos?.metodo_pago
+                );
+
+
             return registrarVenta({
 
                 fecha:
@@ -226,10 +281,13 @@ export function registerVentasHandlers() {
                         datos?.fecha
                     ),
 
-                metodoPago:
-                    validarMetodoPago(
+                metodoPago,
+
+                efectivoRecibido:
+                    validarEfectivoRecibido(
                         datos
-                            ?.metodo_pago
+                            ?.efectivo_recibido,
+                        metodoPago
                     ),
 
                 notas:

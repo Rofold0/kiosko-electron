@@ -104,6 +104,10 @@ function Ventas() {
     ] = useState(
         "EFECTIVO"
     );
+    const [
+        efectivoRecibido,
+        setEfectivoRecibido
+    ] = useState("");
 
     const [
         notas,
@@ -471,6 +475,60 @@ function Ventas() {
             0
         );
 
+    const efectivoNumero =
+        efectivoRecibido === ""
+            ? NaN
+            : Number(
+                efectivoRecibido
+            );
+
+
+    const pagoEfectivoValido =
+        metodoPago !== "EFECTIVO" ||
+        (
+            Number.isFinite(
+                efectivoNumero
+            ) &&
+            efectivoNumero >= total
+        );
+
+
+    const vuelto =
+        metodoPago === "EFECTIVO" &&
+            Number.isFinite(
+                efectivoNumero
+            )
+            ? Math.max(
+                0,
+                Math.round(
+                    (
+                        efectivoNumero -
+                        total +
+                        Number.EPSILON
+                    ) *
+                    100
+                ) / 100
+            )
+            : 0;
+
+
+    const faltante =
+        metodoPago === "EFECTIVO" &&
+            Number.isFinite(
+                efectivoNumero
+            )
+            ? Math.max(
+                0,
+                Math.round(
+                    (
+                        total -
+                        efectivoNumero +
+                        Number.EPSILON
+                    ) *
+                    100
+                ) / 100
+            )
+            : 0;
 
     const ganancia =
         items.reduce(
@@ -500,13 +558,48 @@ function Ventas() {
 
             }
 
+            if (
+                metodoPago ===
+                "EFECTIVO" &&
+                !pagoEfectivoValido
+            ) {
+
+                await window
+                    .electronAPI
+                    .dialogos
+                    .error(
+                        efectivoRecibido === ""
+                            ? "Ingrese el efectivo recibido."
+                            : `El efectivo recibido no alcanza. Faltan ${moneda.format(
+                                faltante
+                            )}.`
+                    );
+
+                return;
+
+            }
+
+            const detallePago =
+                metodoPago === "EFECTIVO"
+                    ? (
+                        `\nRecibido: ${moneda.format(
+                            efectivoNumero
+                        )}` +
+                        `\nVuelto: ${moneda.format(
+                            vuelto
+                        )}`
+                    )
+                    : "";
+
 
             const confirmar =
                 await window
                     .electronAPI
                     .dialogos
                     .confirmar(
-                        `¿Registrar venta por ${moneda.format(total)}?`
+                        `¿Registrar venta por ${moneda.format(
+                            total
+                        )}?${detallePago}`
                     );
 
 
@@ -530,6 +623,14 @@ function Ventas() {
 
                             metodo_pago:
                                 metodoPago,
+
+                            efectivo_recibido:
+                                metodoPago ===
+                                    "EFECTIVO"
+                                    ? Number(
+                                        efectivoRecibido
+                                    )
+                                    : null,
 
                             notas,
 
@@ -611,7 +712,7 @@ function Ventas() {
                 setGuardando(false);
 
             }
-
+            setEfectivoRecibido("");
         };
 
 
@@ -1031,7 +1132,72 @@ function Ventas() {
 
 
                         <div className="sales-fields">
+                            {metodoPago ===
+                                "EFECTIVO" && (
 
+                                    <div className="sales-cash-payment">
+
+                                        <div className="form-field">
+
+                                            <label>
+                                                Efectivo recibido
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={
+                                                    efectivoRecibido
+                                                }
+                                                onChange={(event) =>
+                                                    setEfectivoRecibido(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                placeholder={
+                                                    moneda.format(
+                                                        total
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+
+                                        <div className="sales-change-card">
+
+                                            <span>
+                                                Vuelto
+                                            </span>
+
+                                            <strong>
+                                                {
+                                                    moneda.format(
+                                                        vuelto
+                                                    )
+                                                }
+                                            </strong>
+
+
+                                            {faltante > 0 && (
+
+                                                <small>
+                                                    Faltan{" "}
+                                                    {
+                                                        moneda.format(
+                                                            faltante
+                                                        )
+                                                    }
+                                                </small>
+
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+                                )}
                             <div className="form-field">
 
                                 <label>
@@ -1042,11 +1208,29 @@ function Ventas() {
                                     value={
                                         metodoPago
                                     }
-                                    onChange={(event) =>
+                                    onChange={(event) => {
+
+                                        const metodo =
+                                            event.target.value;
+
+
                                         setMetodoPago(
-                                            event.target.value
-                                        )
-                                    }
+                                            metodo
+                                        );
+
+
+                                        if (
+                                            metodo !==
+                                            "EFECTIVO"
+                                        ) {
+
+                                            setEfectivoRecibido(
+                                                ""
+                                            );
+
+                                        }
+
+                                    }}
                                 >
                                     <option value="EFECTIVO">
                                         Efectivo
@@ -1120,7 +1304,8 @@ function Ventas() {
                             type="button"
                             disabled={
                                 items.length === 0 ||
-                                guardando
+                                guardando ||
+                                !pagoEfectivoValido
                             }
                             onClick={
                                 registrarVenta
@@ -1270,6 +1455,43 @@ function Ventas() {
                         }
                     </p>
 
+                    {ventaDetalle.metodo_pago ===
+                        "EFECTIVO" &&
+                        ventaDetalle
+                            .efectivo_recibido !==
+                        null && (
+
+                            <>
+                                <p>
+                                    Efectivo recibido:{" "}
+
+                                    <strong>
+                                        {
+                                            moneda.format(
+                                                ventaDetalle
+                                                    .efectivo_recibido
+                                            )
+                                        }
+                                    </strong>
+                                </p>
+
+
+                                <p>
+                                    Vuelto:{" "}
+
+                                    <strong>
+                                        {
+                                            moneda.format(
+                                                ventaDetalle
+                                                    .vuelto ||
+                                                0
+                                            )
+                                        }
+                                    </strong>
+                                </p>
+                            </>
+
+                        )}
 
                     <p>
                         Total:{" "}

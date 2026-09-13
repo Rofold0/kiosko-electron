@@ -140,3 +140,54 @@
     }
 
 }
+.sales-cash-payment {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 12px;
+
+    margin:
+        12px 0;
+}
+
+
+.sales-change-card {
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 4px;
+
+    padding: 12px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 8px;
+}
+
+
+.sales-change-card strong {
+    font-size: 1.4rem;
+}
+
+
+.sales-change-card small {
+    opacity: 0.75;
+}
+
+
+@media (
+    max-width: 600px
+) {
+
+    .sales-cash-payment {
+        grid-template-columns:
+            1fr;
+    }
+
+}

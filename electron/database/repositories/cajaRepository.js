@@ -214,6 +214,18 @@ const movimientoStmt =
         SELECT
             m.*,
 
+            CASE
+        WHEN m.tipo = 'VENTA'
+        THEN v.efectivo_recibido
+        ELSE NULL
+        END AS efectivo_recibido,
+
+            CASE
+        WHEN m.tipo = 'VENTA'
+        THEN v.vuelto
+        ELSE NULL
+        END AS vuelto,
+
             EXISTS(
                 SELECT 1
 
@@ -225,7 +237,9 @@ const movimientoStmt =
             ) AS revertido
 
         FROM movimientos_caja m
-
+        LEFT JOIN ventas v
+        ON v.id =
+        m.venta_id
         WHERE m.id = ?
     `);
 
