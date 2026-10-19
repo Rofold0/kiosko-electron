@@ -7,7 +7,8 @@ import {
     registrarVenta,
     listarVentas,
     obtenerVenta,
-    revertirVenta
+    revertirVenta,
+    cotizarVenta
 } from "../database/repositories/ventasRepository.js";
 
 import {
@@ -247,6 +248,10 @@ export function registerVentasHandlers() {
                 busqueda:
                     filtros.busqueda ||
                     "",
+                fecha:
+                validarFecha(
+                    filtros.fecha
+                ),
 
                 limite:
                     Math.min(
@@ -264,6 +269,30 @@ export function registerVentasHandlers() {
         }
     );
 
+    handleProtegido(
+    "ventas:cotizar",
+
+    (
+        _event,
+        datos
+    ) => {
+
+        return cotizarVenta({
+
+            fecha:
+                validarFecha(
+                    datos?.fecha
+                ),
+
+            items:
+                validarItems(
+                    datos?.items
+                )
+
+        });
+
+    }
+);
 
     
     handleProtegido(

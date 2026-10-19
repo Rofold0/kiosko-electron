@@ -5,13 +5,16 @@ import { ROUTES }
     from "../../shared/routes.js";
 
 
-function PageHeader({ title }) {
+function PageHeader({ title, mostrarAtras, mostrarDashboard }) {
 
     const navigate = useNavigate();
 
+    const volverAtras = () => {
 
-    const volverAlDashboard = () => {
-
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
         navigate(
             ROUTES.dashboard
         );
@@ -19,18 +22,46 @@ function PageHeader({ title }) {
     };
 
 
+    const volverAlDashboard = () => {
+
+        navigate(ROUTES.dashboard);
+    };
+
+
     return (
 
         <div className="page-header">
 
-            <button
-                type="button"
-                onClick={
-                    volverAlDashboard
-                }
-            >
-                ← Volver
-            </button>
+            <div className="page-header-actions">
+
+                {mostrarAtras && (
+
+                    <button
+                        type="button"
+                        onClick={
+                            volverAtras
+                        }
+                    >
+                        ← Atrás
+                    </button>
+
+                )}
+
+
+                {mostrarDashboard && (
+
+                    <button
+                        type="button"
+                        onClick={
+                            volverAlDashboard
+                        }
+                    >
+                        ⌂ Dashboard
+                    </button>
+
+                )}
+
+            </div>
 
 
             <h1>

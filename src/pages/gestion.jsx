@@ -84,6 +84,21 @@ function Gestion() {
                         />
                     )}
 
+                {puede(
+                    "ofertas.ver"
+                ) && (
+
+                        <DashboardCard
+                            title="Ofertas"
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.ofertas
+                                )
+                            }
+                        />
+
+                    )}
+
 
                 {puede(
                     "caja.ver"

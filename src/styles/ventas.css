@@ -191,3 +191,37 @@
     }
 
 }
+.sale-product-price,
+.sale-line-price {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.sale-old-price {
+    text-decoration:
+        line-through;
+
+    opacity: 0.55;
+}
+
+
+.sale-offer-label {
+    font-size: 0.75rem;
+
+    font-weight: 600;
+
+    opacity: 0.8;
+}
+
+
+.sales-summary {
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+}

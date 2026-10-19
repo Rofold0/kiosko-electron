@@ -1647,6 +1647,241 @@ const migrations = [
         `);
 
     }
+},
+{
+    version: 16,
+    name: "ofertas-y-descuentos-ventas",
+
+    up(db) {
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS ofertas (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                nombre          TEXT NOT NULL,
+
+                tipo            TEXT NOT NULL,
+
+                valor           REAL NOT NULL,
+
+                fecha_desde     TEXT NOT NULL,
+                fecha_hasta     TEXT NOT NULL,
+
+                activo          INTEGER NOT NULL DEFAULT 1,
+
+                creado_en       TEXT NOT NULL,
+                actualizado_en  TEXT NOT NULL,
+
+                CHECK (
+                    tipo IN (
+                        'PORCENTAJE',
+                        'PRECIO_FIJO'
+                    )
+                ),
+
+                CHECK (
+                    valor > 0
+                ),
+
+                CHECK (
+                    fecha_hasta >
+                    fecha_desde
+                )
+            );
+
+
+            CREATE TABLE IF NOT EXISTS ofertas_productos (
+                oferta_id   INTEGER NOT NULL,
+                producto_id INTEGER NOT NULL,
+
+                PRIMARY KEY (
+                    oferta_id,
+                    producto_id
+                ),
+
+                FOREIGN KEY (oferta_id)
+                    REFERENCES ofertas(id)
+                    ON DELETE CASCADE,
+
+                FOREIGN KEY (producto_id)
+                    REFERENCES productos(id)
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_ofertas_vigencia
+            ON ofertas (
+                activo,
+                fecha_desde,
+                fecha_hasta
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_ofertas_productos_producto
+            ON ofertas_productos (
+                producto_id,
+                oferta_id
+            );
+        `);
+
+
+        /*
+         * Snapshot de oferta en cada
+         * ítem vendido.
+         */
+
+        const columnas =
+            db.pragma(
+                "table_info(items_venta)"
+            );
+
+
+        const existe =
+            (nombre) =>
+                columnas.some(
+                    (columna) =>
+                        columna.name ===
+                        nombre
+                );
+
+
+        if (
+            !existe(
+                "oferta_id"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE items_venta
+                ADD COLUMN oferta_id INTEGER
+                REFERENCES ofertas(id);
+            `);
+
+        }
+
+
+        if (
+            !existe(
+                "oferta_nombre"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE items_venta
+                ADD COLUMN oferta_nombre TEXT;
+            `);
+
+        }
+
+
+        if (
+            !existe(
+                "precio_lista"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE items_venta
+                ADD COLUMN precio_lista REAL
+                NOT NULL DEFAULT 0;
+            `);
+
+        }
+
+
+        if (
+            !existe(
+                "descuento_unitario"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE items_venta
+                ADD COLUMN descuento_unitario REAL
+                NOT NULL DEFAULT 0;
+            `);
+
+        }
+
+
+        /*
+         * Ventas anteriores:
+         * precio_lista = precio que realmente
+         * tenían en ese momento.
+         */
+
+        db.exec(`
+            UPDATE items_venta
+
+            SET precio_lista =
+                precio_unitario
+
+            WHERE precio_lista = 0;
+        `);
+
+
+        /*
+         * Permisos.
+         */
+
+        const insertarPermiso =
+            db.prepare(`
+                INSERT OR IGNORE
+                INTO permisos (
+                    clave,
+                    descripcion
+                )
+
+                VALUES (?, ?)
+            `);
+
+
+        insertarPermiso.run(
+            "ofertas.ver",
+            "Ver ofertas"
+        );
+
+
+        insertarPermiso.run(
+            "ofertas.modificar",
+            "Crear y modificar ofertas"
+        );
+
+
+        /*
+         * Administrador y Encargado
+         * pueden administrar ofertas.
+         */
+
+        db.exec(`
+            INSERT OR IGNORE
+            INTO roles_permisos (
+                rol_id,
+                permiso_id
+            )
+
+            SELECT
+                r.id,
+                p.id
+
+            FROM roles r
+
+            CROSS JOIN permisos p
+
+            WHERE
+                r.clave IN (
+                    'ADMIN',
+                    'ENCARGADO'
+                )
+
+                AND p.clave IN (
+                    'ofertas.ver',
+                    'ofertas.modificar'
+                );
+        `);
+
+    }
 }
 ];
 

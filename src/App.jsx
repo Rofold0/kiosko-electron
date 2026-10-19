@@ -22,6 +22,7 @@ import Reportes from "./pages/reportes";
 import Mercaderia from "./pages/mercaderia";
 import Gestion from "./pages/gestion";
 import Auditoria from "./pages/auditoria.jsx";
+import Ofertas from "./pages/ofertas.jsx";
 
 
 function NavegacionElectron() {
@@ -102,7 +103,6 @@ function AplicacionProtegida() {
             </RutaProtegida>
           }
         />
-
 
         <Route
           path={ROUTES.subcategorias}
@@ -205,6 +205,16 @@ function AplicacionProtegida() {
           }
         />
 
+        <Route
+          path={ROUTES.ofertas}
+          element={
+            <RutaProtegida
+              permisos="ofertas.ver"
+            >
+              <Ofertas />
+            </RutaProtegida>
+          }
+        />
 
         <Route
           path={ROUTES.caja}
@@ -293,7 +303,9 @@ function AplicacionProtegida() {
                 "gastos.ver",
                 "gastos.crear",
                 "gastos.revertir",
-                "usuarios.ver"
+                "usuarios.ver",
+                "ofertas.ver",
+                "ofertas.modificar"
               ]}
             >
               <Gestion />

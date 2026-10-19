@@ -380,7 +380,44 @@ auditoria: {
         datos
       )
 
-  },
+  },ofertas: {
+
+    listar: () =>
+        ipcRenderer.invoke(
+            "ofertas:listar"
+        ),
+
+    obtener: (id) =>
+        ipcRenderer.invoke(
+            "ofertas:obtener",
+            id
+        ),
+
+    productos: (filtros) =>
+        ipcRenderer.invoke(
+            "ofertas:productos",
+            filtros
+        ),
+
+    crear: (datos) =>
+        ipcRenderer.invoke(
+            "ofertas:crear",
+            datos
+        ),
+
+    actualizar: (datos) =>
+        ipcRenderer.invoke(
+            "ofertas:actualizar",
+            datos
+        ),
+
+    cambiarActivo: (datos) =>
+        ipcRenderer.invoke(
+            "ofertas:cambiar-activo",
+            datos
+        )
+
+},
   ventas: {
 
     productos: (filtros) =>
@@ -394,6 +431,12 @@ auditoria: {
         "ventas:crear",
         datos
       ),
+      
+    cotizar: (datos) =>
+      ipcRenderer.invoke(
+        "ventas:cotizar",
+        datos
+    ),
 
     listar: (filtros) =>
       ipcRenderer.invoke(

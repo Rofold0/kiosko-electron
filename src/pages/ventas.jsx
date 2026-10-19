@@ -186,6 +186,8 @@ function Ventas() {
                         busqueda:
                             texto,
 
+                        fecha,
+
                         limite:
                             30
 
@@ -387,6 +389,21 @@ function Ventas() {
                             precio_unitario:
                                 producto.precio_venta,
 
+                            precio_lista:
+                                producto.precio_lista,
+
+                            precio_unitario:
+                                producto.precio_venta,
+
+                            descuento_unitario:
+                                producto.descuento_unitario,
+
+                            oferta_id:
+                                producto.oferta_id,
+
+                            oferta_nombre:
+                                producto.oferta_nombre,
+
                             stock_actual:
                                 producto.stock_actual,
 
@@ -462,6 +479,20 @@ function Ventas() {
 
         };
 
+    const descuentoTotal =
+        items.reduce(
+            (
+                acumulado,
+                item
+            ) =>
+                acumulado +
+                (
+                    item.descuento_unitario ||
+                    0
+                ) *
+                item.cantidad,
+            0
+        );
 
     const total =
         items.reduce(
@@ -870,6 +901,59 @@ function Ventas() {
 
         };
 
+    const recotizar =
+        async (
+            fechaNueva,
+            itemsActuales = items
+        ) => {
+
+            if (
+                itemsActuales.length ===
+                0
+            ) {
+
+                return;
+
+            }
+
+
+            const resultado =
+                await window
+                    .electronAPI
+                    .ventas
+                    .cotizar({
+
+                        fecha:
+                            fechaNueva,
+
+                        items:
+                            itemsActuales
+                                .map(
+                                    (item) => ({
+
+                                        producto_id:
+                                            item.producto_id,
+
+                                        precio_id:
+                                            item.precio_id,
+
+                                        cantidad:
+                                            item.cantidad
+
+                                    })
+                                )
+
+                    });
+
+
+            setItems(
+                resultado.items
+            );
+
+        };
+
+
+
 
     return (
 
@@ -961,10 +1045,41 @@ function Ventas() {
 
 
                                         <strong>
-                                            {
-                                                moneda.format(
-                                                    producto.precio_venta
-                                                )
+                                            {<div className="sale-product-price">
+
+                                                {producto.oferta_id && (
+
+                                                    <small className="sale-old-price">
+
+                                                        {
+                                                            moneda.format(
+                                                                producto.precio_lista
+                                                            )
+                                                        }
+
+                                                    </small>
+
+                                                )}
+
+
+                                                <strong>
+                                                    {
+                                                        moneda.format(
+                                                            producto.precio_venta
+                                                        )
+                                                    }
+                                                </strong>
+
+
+                                                {producto.oferta_nombre && (
+
+                                                    <small className="sale-offer-label">
+                                                        {producto.oferta_nombre}
+                                                    </small>
+
+                                                )}
+
+                                            </div>
                                             }
                                         </strong>
 
@@ -1057,9 +1172,47 @@ function Ventas() {
 
                                                     <td>
                                                         {
-                                                            moneda.format(
-                                                                item.precio_unitario
-                                                            )
+                                                            <div className="sale-line-price">
+
+                                                                {item.oferta_id && (
+
+                                                                    <small className="sale-old-price">
+
+                                                                        {
+                                                                            moneda.format(
+                                                                                item.precio_lista
+                                                                            )
+                                                                        }
+
+                                                                    </small>
+
+                                                                )}
+
+
+                                                                <strong>
+
+                                                                    {
+                                                                        moneda.format(
+                                                                            item.precio_unitario
+                                                                        )
+                                                                    }
+
+                                                                </strong>
+
+
+                                                                {item.oferta_nombre && (
+
+                                                                    <small className="sale-offer-label">
+
+                                                                        {
+                                                                            item.oferta_nombre
+                                                                        }
+
+                                                                    </small>
+
+                                                                )}
+
+                                                            </div>
                                                         }
                                                     </td>
 
@@ -1126,6 +1279,20 @@ function Ventas() {
                                         )
                                     }
                                 </strong>
+                            </span>
+
+                            <span>
+
+                                Descuentos
+
+                                <strong>
+                                    {
+                                        moneda.format(
+                                            descuentoTotal
+                                        )
+                                    }
+                                </strong>
+
                             </span>
 
                         </div>
@@ -1270,11 +1437,38 @@ function Ventas() {
                                         type="datetime-local"
                                         step="1"
                                         value={fecha}
-                                        onChange={(event) =>
+                                        onChange={async (event) => {
+
+                                            const nuevaFecha =
+                                                event.target.value;
+
+
                                             setFecha(
-                                                event.target.value
-                                            )
-                                        }
+                                                nuevaFecha
+                                            );
+
+
+                                            try {
+
+                                                await recotizar(
+                                                    nuevaFecha
+                                                );
+
+
+                                                await cargarProductos(
+                                                    busqueda.trim()
+                                                );
+
+
+                                            } catch (error) {
+
+                                                await mostrarError(
+                                                    error
+                                                );
+
+                                            }
+
+                                        }}
                                     />
                                     <button
                                         type="button"

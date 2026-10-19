@@ -1,0 +1,99 @@
+.offers-form {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
+
+    gap: 12px;
+}
+
+
+.offer-products {
+    grid-column:
+        1 / -1;
+}
+
+
+.offer-product-search {
+    display: grid;
+
+    grid-template-columns:
+        1fr auto;
+
+    gap: 8px;
+}
+
+
+.offer-product-results {
+    display: grid;
+
+    gap: 6px;
+
+    max-height: 320px;
+
+    overflow-y: auto;
+
+    margin-top: 12px;
+}
+
+
+.offer-product-results label {
+    display: grid;
+
+    grid-template-columns:
+        auto 1fr auto;
+
+    gap: 10px;
+
+    align-items: center;
+
+    padding: 8px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 6px;
+}
+
+
+.offer-selected {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    flex-wrap: wrap;
+
+    margin-top: 12px;
+}
+
+
+.offers-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.offers-table {
+    width: 100%;
+
+    min-width: 900px;
+
+    border-collapse: collapse;
+}
+
+
+.offers-table th,
+.offers-table td {
+    padding: 9px;
+
+    text-align: left;
+
+    border-bottom:
+        1px solid #ddd;
+}

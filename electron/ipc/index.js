@@ -44,6 +44,9 @@ import {
 import {
     registerAuditoriaHandlers
 } from "./auditoria.js";
+import {
+    registerOfertasHandlers
+} from "./ofertas.js";
 export function registerIpcHandlers() {
 
     registerUsuariosHandlers();
@@ -65,6 +68,8 @@ export function registerIpcHandlers() {
     registerComprasHandlers();
 
     registerPreciosHandlers();
+    
+    registerOfertasHandlers();
 
     registerVentasHandlers();
 

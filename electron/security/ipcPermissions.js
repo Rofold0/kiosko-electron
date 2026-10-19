@@ -191,12 +191,36 @@ export const IPC_PERMISSIONS =
         "precios:guardar":
             "precios.modificar",
 
+        /*
+         * OFERTAS
+         */
+
+        "ofertas:listar":
+            "ofertas.ver",
+
+        "ofertas:obtener":
+            "ofertas.ver",
+
+        "ofertas:productos":
+            "ofertas.ver",
+
+        "ofertas:crear":
+            "ofertas.modificar",
+
+        "ofertas:actualizar":
+            "ofertas.modificar",
+
+        "ofertas:cambiar-activo":
+            "ofertas.modificar",
 
         /*
          * VENTAS
          */
 
         "ventas:productos":
+            "ventas.crear",
+        
+        "ventas:cotizar":
             "ventas.crear",
 
         "ventas:crear":
@@ -294,7 +318,7 @@ export const IPC_PERMISSIONS =
 
         "reportes:imprimir":
             "reportes.exportar",
-            
+
         /*
          * AUDITORÍA
          */

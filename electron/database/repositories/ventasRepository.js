@@ -111,6 +111,35 @@ const productoVentaStmt =
             AND p.activo = 1
     `);
 
+const ofertasProductoStmt =
+    db.prepare(`
+        SELECT
+            o.id,
+            o.nombre,
+            o.tipo,
+            o.valor
+
+        FROM ofertas o
+
+        INNER JOIN ofertas_productos op
+            ON op.oferta_id =
+                o.id
+
+        WHERE
+            op.producto_id =
+                @productoId
+
+            AND o.activo = 1
+
+            AND o.fecha_desde <=
+                @fecha
+
+            AND o.fecha_hasta >
+                @fecha
+
+        ORDER BY
+            o.id DESC
+    `);
 
 const crearVentaStmt =
     db.prepare(`
@@ -137,16 +166,18 @@ const crearItemStmt =
             venta_id,
             producto_id,
             precio_id,
+            oferta_id,
+            oferta_nombre,
             cantidad,
             costo_unitario,
+            precio_lista,
+            descuento_unitario,
             precio_unitario,
             subtotal
         )
 
-        VALUES (
-            ?, ?, ?, ?, ?, ?, ?
-        )
-    `);
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `);
 
 
 const actualizarStockStmt =
@@ -327,6 +358,10 @@ const itemsVentaStmt =
             iv.precio_id,
             iv.cantidad,
             iv.costo_unitario,
+            iv.oferta_id,
+            iv.oferta_nombre,
+            iv.precio_lista,
+            iv.descuento_unitario,
             iv.precio_unitario,
             iv.subtotal,
 
@@ -408,6 +443,139 @@ function redondear(valor) {
 
 }
 
+function resolverPrecioOferta(
+    producto,
+    fecha
+) {
+
+    const precioLista =
+        redondear(
+            producto.precio_venta
+        );
+
+
+    const ofertas =
+        ofertasProductoStmt.all({
+
+            productoId:
+                producto.id ??
+                producto.producto_id,
+
+            fecha
+
+        });
+
+
+    let mejor = {
+
+        oferta_id:
+            null,
+
+        oferta_nombre:
+            null,
+
+        precio_lista:
+            precioLista,
+
+        descuento_unitario:
+            0,
+
+        precio_unitario:
+            precioLista
+
+    };
+
+
+    for (
+        const oferta
+        of ofertas
+    ) {
+
+        let precioOferta;
+
+
+        if (
+            oferta.tipo ===
+            "PORCENTAJE"
+        ) {
+
+            precioOferta =
+                redondear(
+
+                    precioLista *
+                    (
+                        1 -
+                        oferta.valor /
+                        100
+                    )
+
+                );
+
+
+        } else {
+
+            precioOferta =
+                redondear(
+                    Math.min(
+                        precioLista,
+                        oferta.valor
+                    )
+                );
+
+        }
+
+
+        precioOferta =
+            Math.max(
+                0,
+                precioOferta
+            );
+
+
+        /*
+         * Sólo consideramos una oferta
+         * si realmente mejora el precio.
+         */
+
+        if (
+            precioOferta >=
+            mejor.precio_unitario
+        ) {
+
+            continue;
+
+        }
+
+
+        mejor = {
+
+            oferta_id:
+                oferta.id,
+
+            oferta_nombre:
+                oferta.nombre,
+
+            precio_lista:
+                precioLista,
+
+            descuento_unitario:
+                redondear(
+                    precioLista -
+                    precioOferta
+                ),
+
+            precio_unitario:
+                precioOferta
+
+        };
+
+    }
+
+
+    return mejor;
+
+}
+
 
 function obtenerVentaCompleta(id) {
 
@@ -453,10 +621,9 @@ function obtenerVentaCompleta(id) {
 }
 
 
-export function buscarProductosVenta({
-    busqueda = "",
-    limite = 30
-}) {
+
+
+export function buscarProductosVenta({ busqueda = "", limite = 30, fecha }) {
 
     const texto =
         busqueda.trim();
@@ -472,7 +639,39 @@ export function buscarProductosVenta({
 
         limite
 
-    });
+    }).map(
+        (producto) => {
+
+            const precio =
+                resolverPrecioOferta(
+                    producto,
+                    fecha
+                );
+
+
+            return {
+
+                ...producto,
+
+                precio_lista:
+                    precio.precio_lista,
+
+                precio_venta:
+                    precio.precio_unitario,
+
+                descuento_unitario:
+                    precio.descuento_unitario,
+
+                oferta_id:
+                    precio.oferta_id,
+
+                oferta_nombre:
+                    precio.oferta_nombre
+
+            };
+
+        }
+    );
 
 }
 
@@ -591,105 +790,34 @@ const registrarVentaTransaction =
         }
 
 
-        const usados =
-            new Set();
-
-
         const normalizados =
-            items.map(
-                (item) => {
+            cotizarItems({
 
-                    if (
-                        usados.has(
-                            item.productoId
-                        )
-                    ) {
+                fecha,
 
-                        throw new Error(
-                            "Hay productos repetidos en la venta."
-                        );
+                items,
 
-                    }
+                validarPrecio:
+                    true
+
+            });
 
 
-                    usados.add(
-                        item.productoId
-                    );
+        const { total } = resumirCotizacion(normalizados);
 
 
-                    const producto =
-                        productoVentaStmt.get(
-                            item.productoId
-                        );
-
-
-                    if (!producto) {
-
-                        throw new Error(
-                            "Uno de los productos no existe o no tiene precio vigente."
-                        );
-
-                    }
-
-
-                    if (
-                        producto.precio_id !==
-                        item.precioId
-                    ) {
-
-                        throw new Error(
-                            `El precio de ${producto.nombre} cambió. Actualizá el carrito.`
-                        );
-
-                    }
-
-
-                    if (
-                        producto.stock_actual <
-                        item.cantidad
-                    ) {
-
-                        throw new Error(
-                            `No hay stock suficiente de ${producto.nombre}. Stock actual: ${producto.stock_actual}.`
-                        );
-
-                    }
-
-
-                    const subtotal =
-                        redondear(
-                            producto.precio_venta *
-                            item.cantidad
-                        );
-
-
-                    return {
-
-                        producto,
-
-                        cantidad:
-                            item.cantidad,
-
-                        subtotal
-
-                    };
-
-                }
-            );
-
-
-        const total =
-            redondear(
-                normalizados.reduce(
-                    (
-                        acumulado,
-                        item
-                    ) =>
-                        acumulado +
-                        item.subtotal,
-                    0
-                )
-            );
+        // const total =
+        //     redondear(
+        //         normalizados.reduce(
+        //             (
+        //                 acumulado,
+        //                 item
+        //             ) =>
+        //                 acumulado +
+        //                 item.subtotal,
+        //             0
+        //         )
+        //     );
 
         let recibido =
             null;
@@ -798,11 +926,19 @@ const registrarVentaTransaction =
 
                 producto.precio_id,
 
+                item.oferta_id,
+
+                item.oferta_nombre,
+
                 item.cantidad,
 
                 producto.costo,
 
-                producto.precio_venta,
+                item.precio_lista,
+
+                item.descuento_unitario,
+
+                item.precio_unitario,
 
                 item.subtotal
 

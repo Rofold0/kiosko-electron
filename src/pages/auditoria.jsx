@@ -263,6 +263,10 @@ function Auditoria() {
                             Ventas
                         </option>
 
+                        <option value="OFERTAS">
+                            Ofertas
+                        </option>
+
                         <option value="COMPRAS">
                             Compras
                         </option>

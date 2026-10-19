@@ -405,6 +405,58 @@ WHERE lista_item_id IS NOT NULL;
 -- ============================================================================
 -- VENTAS Y CAJA
 -- ============================================================================
+CREATE TABLE IF NOT EXISTS ofertas (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre          TEXT NOT NULL,
+    tipo            TEXT NOT NULL,
+    valor           REAL NOT NULL,
+    fecha_desde     TEXT NOT NULL,
+    fecha_hasta     TEXT NOT NULL,
+    activo          INTEGER NOT NULL DEFAULT 1,
+    creado_en       TEXT NOT NULL,
+    actualizado_en  TEXT NOT NULL,
+    CHECK (
+        tipo IN (
+            'PORCENTAJE',
+            'PRECIO_FIJO'
+        )
+    ),
+    CHECK (
+        valor > 0
+    ),
+    CHECK (
+        fecha_hasta >
+        fecha_desde
+    )
+);
+
+CREATE TABLE IF NOT EXISTS ofertas_productos (
+    oferta_id   INTEGER NOT NULL,
+    producto_id INTEGER NOT NULL,
+    PRIMARY KEY (
+        oferta_id,
+        producto_id
+    ),
+    FOREIGN KEY (oferta_id)
+        REFERENCES ofertas(id)
+        ON DELETE CASCADE,
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id)
+);
+CREATE INDEX IF NOT EXISTS
+idx_ofertas_vigencia
+ON ofertas (
+    activo,
+    fecha_desde,
+    fecha_hasta
+);
+
+CREATE INDEX IF NOT EXISTS
+idx_ofertas_productos_producto
+ON ofertas_productos (
+    producto_id,
+    oferta_id
+);
 
 CREATE TABLE IF NOT EXISTS ventas (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -428,10 +480,15 @@ CREATE TABLE IF NOT EXISTS items_venta (
     producto_id     INTEGER NOT NULL,
     precio_id       INTEGER,
 
-    cantidad        INTEGER NOT NULL,
-    costo_unitario  REAL NOT NULL DEFAULT 0,
-    precio_unitario REAL NOT NULL,
-    subtotal        REAL NOT NULL,
+    oferta_id           INTEGER,
+    oferta_nombre       TEXT,
+
+    cantidad            INTEGER NOT NULL,
+    costo_unitario      REAL NOT NULL DEFAULT 0,
+    precio_lista        REAL NOT NULL DEFAULT 0,
+    descuento_unitario  REAL NOT NULL DEFAULT 0,
+    precio_unitario     REAL NOT NULL,
+    subtotal            REAL NOT NULL,
 
     FOREIGN KEY (venta_id)
         REFERENCES ventas(id),
@@ -440,7 +497,10 @@ CREATE TABLE IF NOT EXISTS items_venta (
         REFERENCES productos(id),
 
     FOREIGN KEY (precio_id)
-        REFERENCES precios(id)
+        REFERENCES precios(id),
+
+    FOREIGN KEY (oferta_id)
+        REFERENCES ofertas(id)
 );
 
 CREATE TABLE IF NOT EXISTS categorias_gasto (
