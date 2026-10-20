@@ -97,3 +97,21 @@
     border-bottom:
         1px solid #ddd;
 }
+.offer-selected-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 6px 8px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+}
+
+
+.offer-selected-item input {
+    width: 70px;
+}

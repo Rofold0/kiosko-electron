@@ -19,7 +19,8 @@ import {
 const TIPOS =
     new Set([
         "PORCENTAJE",
-        "PRECIO_FIJO"
+        "PRECIO_FIJO",
+        "COMBO"
     ]);
 
 
@@ -128,7 +129,7 @@ function validarValor(
 
     if (
         tipo ===
-            "PORCENTAJE" &&
+        "PORCENTAJE" &&
         numero > 100
     ) {
 
@@ -198,6 +199,111 @@ function validarProductos(
     ];
 
 }
+function validarProductosCombo(
+    valores
+) {
+
+    if (
+        !Array.isArray(
+            valores
+        ) ||
+        valores.length === 0
+    ) {
+
+        throw new Error(
+            "Debe seleccionar productos para el combo."
+        );
+
+    }
+
+
+    const usados =
+        new Set();
+
+
+    const productos =
+        valores.map(
+            (item) => {
+
+                const productoId =
+                    validarId(
+                        item?.producto_id
+                    );
+
+
+                const cantidad =
+                    Number(
+                        item?.cantidad
+                    );
+
+
+                if (
+                    !Number.isInteger(
+                        cantidad
+                    ) ||
+                    cantidad <= 0
+                ) {
+
+                    throw new Error(
+                        "La cantidad de cada producto del combo debe ser mayor a cero."
+                    );
+
+                }
+
+
+                if (
+                    usados.has(
+                        productoId
+                    )
+                ) {
+
+                    throw new Error(
+                        "Un producto está repetido en el combo."
+                    );
+
+                }
+
+
+                usados.add(
+                    productoId
+                );
+
+
+                return {
+                    productoId,
+                    cantidad
+                };
+
+            }
+        );
+
+
+    const unidades =
+        productos.reduce(
+            (
+                total,
+                item
+            ) =>
+                total +
+                item.cantidad,
+            0
+        );
+
+
+    if (
+        unidades < 2
+    ) {
+
+        throw new Error(
+            "El combo debe incluir al menos 2 unidades."
+        );
+
+    }
+
+
+    return productos;
+
+}
 
 
 function validarDatos(
@@ -234,7 +340,7 @@ function validarDatos(
     }
 
 
-    return {
+    const resultado = {
 
         nombre:
             validarNombre(
@@ -250,14 +356,33 @@ function validarDatos(
             ),
 
         fechaDesde,
-        fechaHasta,
-
-        productoIds:
-            validarProductos(
-                datos?.producto_ids
-            )
+        fechaHasta
 
     };
+
+
+    if (
+        tipo ===
+        "COMBO"
+    ) {
+
+        resultado.productosCombo =
+            validarProductosCombo(
+                datos?.productos_combo
+            );
+
+
+    } else {
+
+        resultado.productoIds =
+            validarProductos(
+                datos?.producto_ids
+            );
+
+    }
+
+
+    return resultado;
 
 }
 
@@ -276,11 +401,37 @@ export function registerOfertasHandlers() {
 
         (
             _event,
-            id
-        ) =>
-            obtenerOferta(
-                validarId(id)
-            )
+            referencia
+        ) => {
+
+            const esObjeto =
+                referencia &&
+                typeof referencia ===
+                "object";
+
+
+            const id =
+                validarId(
+                    esObjeto
+                        ? referencia.id
+                        : referencia
+                );
+
+
+            const tipo =
+                esObjeto
+                    ? validarTipo(
+                        referencia.tipo
+                    )
+                    : null;
+
+
+            return obtenerOferta(
+                id,
+                tipo
+            );
+
+        }
     );
 
 
@@ -445,6 +596,10 @@ export function registerOfertasHandlers() {
                 validarId(
                     datos?.id
                 );
+            const tipo =
+                validarTipo(
+                    datos?.tipo
+                );
 
 
             const oferta =
@@ -452,12 +607,13 @@ export function registerOfertasHandlers() {
 
                     id,
 
+                    tipo,
+
                     activo:
                         datos?.activo ===
                         true
 
                 });
-
 
             auditar(
                 event,

@@ -269,14 +269,53 @@ function Ofertas() {
 
                     return [
                         ...actuales,
-                        producto
+
+                        {
+                            ...producto,
+
+                            cantidad:
+                                producto.cantidad ||
+                                1
+                        }
                     ];
+                    
 
                 }
             );
 
         };
 
+const cambiarCantidadCombo =
+                        (
+                            productoId,
+                            valor
+                        ) => {
+
+                            const cantidad =
+                                Math.max(
+                                    1,
+                                    Number(valor) ||
+                                    1
+                                );
+
+
+                            setSeleccionados(
+                                (actuales) =>
+                                    actuales.map(
+                                        (item) =>
+                                            item.id ===
+                                                productoId
+
+                                                ? {
+                                                    ...item,
+                                                    cantidad
+                                                }
+
+                                                : item
+                                    )
+                            );
+
+                        };
 
     const seleccionadosIds =
         useMemo(
@@ -321,16 +360,40 @@ function Ofertas() {
                         desde,
 
                     fecha_hasta:
-                        hasta,
-
-                    producto_ids:
-                        seleccionados
-                            .map(
-                                (item) =>
-                                    item.id
-                            )
+                        hasta
 
                 };
+
+
+                if (
+                    tipo ===
+                    "COMBO"
+                ) {
+
+                    datos.productos_combo =
+                        seleccionados.map(
+                            (item) => ({
+
+                                producto_id:
+                                    item.id,
+
+                                cantidad:
+                                    item.cantidad ||
+                                    1
+
+                            })
+                        );
+
+
+                } else {
+
+                    datos.producto_ids =
+                        seleccionados.map(
+                            (item) =>
+                                item.id
+                        );
+
+                }
 
 
                 if (editandoId) {
@@ -382,7 +445,7 @@ function Ofertas() {
 
 
     const editar =
-        async (id) => {
+        async (ofertaLista) => {
 
             try {
 
@@ -390,9 +453,15 @@ function Ofertas() {
                     await window
                         .electronAPI
                         .ofertas
-                        .obtener(
-                            id
-                        );
+                        .obtener({
+
+                            id:
+                                ofertaLista.id,
+
+                            tipo:
+                                ofertaLista.tipo
+
+                        });
 
 
                 setEditandoId(
@@ -461,7 +530,10 @@ function Ofertas() {
                         activo:
                             !Boolean(
                                 oferta.activo
-                            )
+                            ),
+
+                        tipo:
+                            oferta.tipo,
 
                     });
 
@@ -543,6 +615,10 @@ function Ofertas() {
                                     setTipo(
                                         event.target.value
                                     )
+                                } disabled={
+                                    Boolean(
+                                        editandoId
+                                    )
                                 }
                             >
 
@@ -553,7 +629,7 @@ function Ofertas() {
                                 <option value="PRECIO_FIJO">
                                     Precio de oferta
                                 </option>
-                                
+
                                 <option value="COMBO">
                                     Combo de productos
                                 </option>
@@ -570,8 +646,15 @@ function Ofertas() {
                                 {
                                     tipo ===
                                         "PORCENTAJE"
+
                                         ? "Descuento %"
-                                        : "Precio oferta"
+
+                                        : tipo ===
+                                            "COMBO"
+
+                                            ? "Precio del combo"
+
+                                            : "Precio oferta"
                                 }
 
                             </label>
@@ -727,41 +810,85 @@ function Ofertas() {
                             </div>
 
 
-                            {seleccionados.length >
-                                0 && (
+                            {seleccionados.length > 0 && (
 
-                                    <div className="offer-selected">
+                                <div className="offer-selected">
 
-                                        <strong>
-                                            Seleccionados:
-                                        </strong>
+                                    <strong>
+                                        Seleccionados:
+                                    </strong>
 
-                                        {seleccionados.map(
-                                            (producto) => (
+                                    {seleccionados.length > 0 && (
 
-                                                <button
-                                                    key={
-                                                        producto.id
-                                                    }
-                                                    type="button"
-                                                    onClick={() =>
-                                                        seleccionarProducto(
-                                                            producto
-                                                        )
-                                                    }
-                                                >
-                                                    {
-                                                        producto.nombre
-                                                    }
-                                                    {" ×"}
-                                                </button>
+                                        <div className="offer-selected">
 
-                                            )
-                                        )}
+                                            <strong>
+                                                Seleccionados:
+                                            </strong>
 
-                                    </div>
 
-                                )}
+                                            {seleccionados.map(
+                                                (producto) => (
+
+                                                    <div
+                                                        className="offer-selected-item"
+                                                        key={
+                                                            producto.id
+                                                        }
+                                                    >
+
+                                                        <span>
+                                                            {
+                                                                producto.nombre
+                                                            }
+                                                        </span>
+
+
+                                                        {tipo ===
+                                                            "COMBO" && (
+
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    step="1"
+                                                                    value={
+                                                                        producto.cantidad ||
+                                                                        1
+                                                                    }
+                                                                    onChange={(event) =>
+                                                                        cambiarCantidadCombo(
+                                                                            producto.id,
+                                                                            event.target.value
+                                                                        )
+                                                                    }
+                                                                />
+
+                                                            )}
+
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                seleccionarProducto(
+                                                                    producto
+                                                                )
+                                                            }
+                                                        >
+                                                            ×
+                                                        </button>
+
+                                                    </div>
+
+                                                )
+                                            )}
+
+                                        </div>
+
+                                    )}
+
+                                </div>
+
+                            )}
 
                         </div>
 
@@ -846,7 +973,7 @@ function Ofertas() {
 
                                     <tr
                                         key={
-                                            oferta.id
+                                            `${oferta.tipo}-${oferta.id}`
                                         }
                                     >
 
@@ -860,8 +987,15 @@ function Ofertas() {
                                             {
                                                 oferta.tipo ===
                                                     "PORCENTAJE"
+
                                                     ? "Porcentaje"
-                                                    : "Precio fijo"
+
+                                                    : oferta.tipo ===
+                                                        "COMBO"
+
+                                                        ? "Combo"
+
+                                                        : "Precio fijo"
                                             }
                                         </td>
 
@@ -925,7 +1059,7 @@ function Ofertas() {
                                                         type="button"
                                                         onClick={() =>
                                                             editar(
-                                                                oferta.id
+                                                                oferta
                                                             )
                                                         }
                                                     >

@@ -219,6 +219,171 @@ const insertarProductoStmt =
         VALUES (?, ?)
     `);
 
+const listarCombosStmt =
+    db.prepare(`
+        SELECT
+            c.id,
+            c.nombre,
+
+            'COMBO'
+                AS tipo,
+
+            c.precio_combo
+                AS valor,
+
+            c.fecha_desde,
+            c.fecha_hasta,
+
+            c.activo,
+
+            c.creado_en,
+            c.actualizado_en,
+
+            COUNT(
+                cp.producto_id
+            ) AS total_productos
+
+        FROM ofertas_combo c
+
+        LEFT JOIN ofertas_combo_productos cp
+            ON cp.combo_id =
+                c.id
+
+        GROUP BY
+            c.id
+    `);
+
+
+const comboStmt =
+    db.prepare(`
+        SELECT
+            id,
+            nombre,
+
+            'COMBO'
+                AS tipo,
+
+            precio_combo
+                AS valor,
+
+            fecha_desde,
+            fecha_hasta,
+
+            activo,
+
+            creado_en,
+            actualizado_en
+
+        FROM ofertas_combo
+
+        WHERE id = ?
+    `);
+
+
+const productosComboStmt =
+    db.prepare(`
+        SELECT
+            p.id,
+            p.nombre,
+            p.codigo,
+
+            pr.precio_venta,
+
+            cp.cantidad
+
+        FROM ofertas_combo_productos cp
+
+        INNER JOIN productos p
+            ON p.id =
+                cp.producto_id
+
+        LEFT JOIN precios pr
+            ON pr.producto_id =
+                p.id
+
+            AND pr.fecha_hasta
+                IS NULL
+
+        WHERE
+            cp.combo_id = ?
+
+        ORDER BY
+            p.nombre
+                COLLATE NOCASE
+    `);
+
+
+const crearComboStmt =
+    db.prepare(`
+        INSERT INTO ofertas_combo (
+            nombre,
+            precio_combo,
+            fecha_desde,
+            fecha_hasta,
+            activo,
+            creado_en,
+            actualizado_en
+        )
+
+        VALUES (
+            ?, ?, ?, ?,
+            1,
+            ?, ?
+        )
+
+        RETURNING id
+    `);
+
+
+const actualizarComboStmt =
+    db.prepare(`
+        UPDATE ofertas_combo
+
+        SET
+            nombre = ?,
+            precio_combo = ?,
+            fecha_desde = ?,
+            fecha_hasta = ?,
+            actualizado_en = ?
+
+        WHERE id = ?
+
+        RETURNING id
+    `);
+
+
+const cambiarActivoComboStmt =
+    db.prepare(`
+        UPDATE ofertas_combo
+
+        SET
+            activo = ?,
+            actualizado_en = ?
+
+        WHERE id = ?
+
+        RETURNING id
+    `);
+
+
+const eliminarProductosComboStmt =
+    db.prepare(`
+        DELETE FROM ofertas_combo_productos
+
+        WHERE combo_id = ?
+    `);
+
+
+const insertarProductoComboStmt =
+    db.prepare(`
+        INSERT INTO ofertas_combo_productos (
+            combo_id,
+            producto_id,
+            cantidad
+        )
+
+        VALUES (?, ?, ?)
+    `);
 
 function estadoVigencia(
     oferta
@@ -260,8 +425,49 @@ function estadoVigencia(
 
 
 export function obtenerOferta(
-    id
+    id,
+    tipo = null
 ) {
+
+    if (
+        tipo ===
+        "COMBO"
+    ) {
+
+        const combo =
+            comboStmt.get(
+                id
+            );
+
+
+        if (!combo) {
+
+            throw new Error(
+                "El combo no existe."
+            );
+
+        }
+
+
+        return {
+
+            ...combo,
+
+            estado_vigencia:
+                estadoVigencia(
+                    combo
+                ),
+
+            productos:
+                productosComboStmt
+                    .all(
+                        id
+                    )
+
+        };
+
+    }
+
 
     const oferta =
         ofertaStmt.get(
@@ -300,20 +506,72 @@ export function obtenerOferta(
 
 export function listarOfertas() {
 
-    return listarStmt
-        .all()
-        .map(
-            (oferta) => ({
+    const normales =
+        listarStmt
+            .all()
+            .map(
+                (oferta) => ({
 
-                ...oferta,
+                    ...oferta,
 
-                estado_vigencia:
-                    estadoVigencia(
-                        oferta
+                    estado_vigencia:
+                        estadoVigencia(
+                            oferta
+                        )
+
+                })
+            );
+
+
+    const combos =
+        listarCombosStmt
+            .all()
+            .map(
+                (oferta) => ({
+
+                    ...oferta,
+
+                    estado_vigencia:
+                        estadoVigencia(
+                            oferta
+                        )
+
+                })
+            );
+
+
+    return [
+        ...normales,
+        ...combos
+    ].sort(
+        (a, b) => {
+
+            if (
+                Number(a.activo) !==
+                Number(b.activo)
+            ) {
+
+                return (
+                    Number(b.activo) -
+                    Number(a.activo)
+                );
+
+            }
+
+
+            return (
+                String(
+                    b.fecha_desde
+                )
+                    .localeCompare(
+                        String(
+                            a.fecha_desde
+                        )
                     )
+            );
 
-            })
-        );
+        }
+    );
 
 }
 
@@ -392,6 +650,79 @@ function guardarProductos(
 
 }
 
+function validarProductosCombo(
+    productos
+) {
+
+    let unidadesTotales =
+        0;
+
+
+    for (
+        const item
+        of productos
+    ) {
+
+        if (
+            !productoActivoStmt.get(
+                item.productoId
+            )
+        ) {
+
+            throw new Error(
+                `El producto #${item.productoId} no existe o está desactivado.`
+            );
+
+        }
+
+
+        unidadesTotales +=
+            item.cantidad;
+
+    }
+
+
+    if (
+        unidadesTotales < 2
+    ) {
+
+        throw new Error(
+            "Un combo debe contener al menos 2 unidades de productos."
+        );
+
+    }
+
+}
+
+
+function guardarProductosCombo(
+    comboId,
+    productos
+) {
+
+    eliminarProductosComboStmt.run(
+        comboId
+    );
+
+
+    for (
+        const item
+        of productos
+    ) {
+
+        insertarProductoComboStmt.run(
+
+            comboId,
+
+            item.productoId,
+
+            item.cantidad
+
+        );
+
+    }
+
+}
 
 const crearTransaction =
     db.transaction(
@@ -436,10 +767,127 @@ const crearTransaction =
         }
     );
 
+const crearComboTransaction =
+    db.transaction(
+        (datos) => {
+
+            validarProductosCombo(
+                datos.productosCombo
+            );
+
+
+            const ahora =
+                new Date()
+                    .toISOString();
+
+
+            const combo =
+                crearComboStmt.get(
+
+                    datos.nombre,
+                    datos.valor,
+
+                    datos.fechaDesde,
+                    datos.fechaHasta,
+
+                    ahora,
+                    ahora
+
+                );
+
+
+            guardarProductosCombo(
+                combo.id,
+                datos.productosCombo
+            );
+
+
+            return obtenerOferta(
+                combo.id,
+                "COMBO"
+            );
+
+        }
+    );
+
+
+const actualizarComboTransaction =
+    db.transaction(
+        (datos) => {
+
+            if (
+                !comboStmt.get(
+                    datos.id
+                )
+            ) {
+
+                throw new Error(
+                    "El combo no existe."
+                );
+
+            }
+
+
+            validarProductosCombo(
+                datos.productosCombo
+            );
+
+
+            const resultado =
+                actualizarComboStmt.get(
+
+                    datos.nombre,
+                    datos.valor,
+
+                    datos.fechaDesde,
+                    datos.fechaHasta,
+
+                    new Date()
+                        .toISOString(),
+
+                    datos.id
+
+                );
+
+
+            if (!resultado) {
+
+                throw new Error(
+                    "No se pudo actualizar el combo."
+                );
+
+            }
+
+
+            guardarProductosCombo(
+                datos.id,
+                datos.productosCombo
+            );
+
+
+            return obtenerOferta(
+                datos.id,
+                "COMBO"
+            );
+
+        }
+    );
 
 export function crearOferta(
     datos
 ) {
+
+    if (
+        datos.tipo ===
+        "COMBO"
+    ) {
+
+        return crearComboTransaction(
+            datos
+        );
+
+    }
+
 
     return crearTransaction(
         datos
@@ -515,6 +963,18 @@ export function actualizarOferta(
     datos
 ) {
 
+    if (
+        datos.tipo ===
+        "COMBO"
+    ) {
+
+        return actualizarComboTransaction(
+            datos
+        );
+
+    }
+
+
     return actualizarTransaction(
         datos
     );
@@ -524,8 +984,46 @@ export function actualizarOferta(
 
 export function cambiarActivoOferta({
     id,
-    activo
+    activo,
+    tipo
 }) {
+
+    if (
+        tipo ===
+        "COMBO"
+    ) {
+
+        const resultado =
+            cambiarActivoComboStmt.get(
+
+                activo
+                    ? 1
+                    : 0,
+
+                new Date()
+                    .toISOString(),
+
+                id
+
+            );
+
+
+        if (!resultado) {
+
+            throw new Error(
+                "El combo no existe."
+            );
+
+        }
+
+
+        return obtenerOferta(
+            id,
+            "COMBO"
+        );
+
+    }
+
 
     const resultado =
         cambiarActivoStmt.get(
