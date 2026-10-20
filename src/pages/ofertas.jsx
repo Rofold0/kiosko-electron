@@ -278,44 +278,44 @@ function Ofertas() {
                                 1
                         }
                     ];
-                    
+
 
                 }
             );
 
         };
 
-const cambiarCantidadCombo =
-                        (
-                            productoId,
-                            valor
-                        ) => {
+    const cambiarCantidadCombo =
+        (
+            productoId,
+            valor
+        ) => {
 
-                            const cantidad =
-                                Math.max(
-                                    1,
-                                    Number(valor) ||
-                                    1
-                                );
+            const cantidad =
+                Math.max(
+                    1,
+                    Number(valor) ||
+                    1
+                );
 
 
-                            setSeleccionados(
-                                (actuales) =>
-                                    actuales.map(
-                                        (item) =>
-                                            item.id ===
-                                                productoId
+            setSeleccionados(
+                (actuales) =>
+                    actuales.map(
+                        (item) =>
+                            item.id ===
+                                productoId
 
-                                                ? {
-                                                    ...item,
-                                                    cantidad
-                                                }
+                                ? {
+                                    ...item,
+                                    cantidad
+                                }
 
-                                                : item
-                                    )
-                            );
+                                : item
+                    )
+            );
 
-                        };
+        };
 
     const seleccionadosIds =
         useMemo(
@@ -818,72 +818,54 @@ const cambiarCantidadCombo =
                                         Seleccionados:
                                     </strong>
 
-                                    {seleccionados.length > 0 && (
 
-                                        <div className="offer-selected">
+                                    {seleccionados.map(
+                                        (producto) => (
 
-                                            <strong>
-                                                Seleccionados:
-                                            </strong>
+                                            <div
+                                                className="offer-selected-item"
+                                                key={producto.id}
+                                            >
+
+                                                <span>
+                                                    {producto.nombre}
+                                                </span>
 
 
-                                            {seleccionados.map(
-                                                (producto) => (
+                                                {tipo === "COMBO" && (
 
-                                                    <div
-                                                        className="offer-selected-item"
-                                                        key={
-                                                            producto.id
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        step="1"
+                                                        value={
+                                                            producto.cantidad || 1
                                                         }
-                                                    >
+                                                        onChange={(event) =>
+                                                            cambiarCantidadCombo(
+                                                                producto.id,
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    />
 
-                                                        <span>
-                                                            {
-                                                                producto.nombre
-                                                            }
-                                                        </span>
-
-
-                                                        {tipo ===
-                                                            "COMBO" && (
-
-                                                                <input
-                                                                    type="number"
-                                                                    min="1"
-                                                                    step="1"
-                                                                    value={
-                                                                        producto.cantidad ||
-                                                                        1
-                                                                    }
-                                                                    onChange={(event) =>
-                                                                        cambiarCantidadCombo(
-                                                                            producto.id,
-                                                                            event.target.value
-                                                                        )
-                                                                    }
-                                                                />
-
-                                                            )}
+                                                )}
 
 
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                seleccionarProducto(
-                                                                    producto
-                                                                )
-                                                            }
-                                                        >
-                                                            ×
-                                                        </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        seleccionarProducto(
+                                                            producto
+                                                        )
+                                                    }
+                                                >
+                                                    ×
+                                                </button>
 
-                                                    </div>
+                                            </div>
 
-                                                )
-                                            )}
-
-                                        </div>
-
+                                        )
                                     )}
 
                                 </div>
