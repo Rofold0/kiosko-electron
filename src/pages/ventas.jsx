@@ -13,6 +13,13 @@ import PageHeader
 
 const LIMITE_HISTORIAL = 25;
 
+const COTIZACION_VACIA = {
+    items: [],
+    combos: [],
+    total: 0,
+    descuento_total: 0,
+    ganancia: 0
+};
 
 const moneda =
     new Intl.NumberFormat(
@@ -88,6 +95,12 @@ function Ventas() {
         setItems
     ] = useState([]);
 
+    const [
+        cotizacion,
+        setCotizacion
+    ] = useState(
+        COTIZACION_VACIA
+    );
 
     // VENTA
 
@@ -174,7 +187,8 @@ function Ventas() {
 
     const cargarProductos =
         async (
-            texto = busqueda
+            texto = busqueda,
+            fechaConsulta = fecha
         ) => {
 
             const productos =
@@ -186,7 +200,8 @@ function Ventas() {
                         busqueda:
                             texto,
 
-                        fecha,
+                        fecha:
+                            fechaConsulta,
 
                         limite:
                             30
@@ -478,29 +493,14 @@ function Ventas() {
         };
 
     const descuentoTotal =
-        items.reduce(
-            (
-                acumulado,
-                item
-            ) =>
-                acumulado +
-                (
-                    item.descuento_unitario ||
-                    0
-                ) *
-                item.cantidad,
+        Number(
+            cotizacion.descuento_total ||
             0
         );
 
     const total =
-        items.reduce(
-            (
-                acumulado,
-                item
-            ) =>
-                acumulado +
-                item.precio_unitario *
-                item.cantidad,
+        Number(
+            cotizacion.total ||
             0
         );
 
@@ -560,17 +560,8 @@ function Ventas() {
             : 0;
 
     const ganancia =
-        items.reduce(
-            (
-                acumulado,
-                item
-            ) =>
-                acumulado +
-                (
-                    item.precio_unitario -
-                    item.costo_unitario
-                ) *
-                item.cantidad,
+        Number(
+            cotizacion.ganancia ||
             0
         );
 
@@ -901,7 +892,7 @@ function Ventas() {
 
     const recotizar =
         async (
-            fechaNueva,
+            fechaNueva = fecha,
             itemsActuales = items
         ) => {
 
@@ -909,6 +900,10 @@ function Ventas() {
                 itemsActuales.length ===
                 0
             ) {
+
+                setCotizacion(
+                    COTIZACION_VACIA
+                );
 
                 return;
 
@@ -944,11 +939,31 @@ function Ventas() {
                     });
 
 
-            setItems(
-                resultado.items
+            setCotizacion(
+                resultado
             );
 
         };
+    useEffect(() => {
+
+        if (!puedeCrear) {
+            return;
+        }
+
+
+        recotizar(
+            fecha,
+            items
+        )
+            .catch(
+                mostrarError
+            );
+
+    }, [
+        items,
+        fecha,
+        puedeCrear
+    ]);
 
 
 
@@ -1095,10 +1110,9 @@ function Ventas() {
 
                     <section>
 
-                        <h2>
-                            Venta actual
-                        </h2>
-
+                        <h3>
+                            Productos cargados
+                        </h3>
 
                         <div className="sales-cart-wrapper">
 
@@ -1109,8 +1123,6 @@ function Ventas() {
                                     <tr>
                                         <th>Producto</th>
                                         <th>Cant.</th>
-                                        <th>Precio</th>
-                                        <th>Subtotal</th>
                                         <th></th>
                                     </tr>
 
@@ -1122,7 +1134,7 @@ function Ventas() {
                                     {items.length === 0 ? (
 
                                         <tr>
-                                            <td colSpan="5">
+                                            <td colSpan="3">
                                                 No hay productos.
                                             </td>
                                         </tr>
@@ -1169,63 +1181,6 @@ function Ventas() {
 
 
                                                     <td>
-                                                        {
-                                                            <div className="sale-line-price">
-
-                                                                {item.oferta_id && (
-
-                                                                    <small className="sale-old-price">
-
-                                                                        {
-                                                                            moneda.format(
-                                                                                item.precio_lista
-                                                                            )
-                                                                        }
-
-                                                                    </small>
-
-                                                                )}
-
-
-                                                                <strong>
-
-                                                                    {
-                                                                        moneda.format(
-                                                                            item.precio_unitario
-                                                                        )
-                                                                    }
-
-                                                                </strong>
-
-
-                                                                {item.oferta_nombre && (
-
-                                                                    <small className="sale-offer-label">
-
-                                                                        {
-                                                                            item.oferta_nombre
-                                                                        }
-
-                                                                    </small>
-
-                                                                )}
-
-                                                            </div>
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            moneda.format(
-                                                                item.precio_unitario *
-                                                                item.cantidad
-                                                            )
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
 
                                                         <button
                                                             type="button"
@@ -1252,7 +1207,190 @@ function Ventas() {
                             </table>
 
                         </div>
+                        {items.length > 0 && (
 
+                            <>
+                                <h3>
+                                    Detalle de cobro
+                                </h3>
+
+
+                                <div className="sales-cart-wrapper">
+
+                                    <table className="sales-cart">
+
+                                        <thead>
+
+                                            <tr>
+                                                <th>Detalle</th>
+                                                <th>Cant.</th>
+                                                <th>Precio</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+
+                                        </thead>
+
+
+                                        <tbody>
+
+                                            {cotizacion.combos.map(
+                                                (combo) => (
+
+                                                    <tr
+                                                        key={
+                                                            `combo-${combo.combo_id}`
+                                                        }
+                                                        className="sale-combo-row"
+                                                    >
+
+                                                        <td>
+
+                                                            <strong>
+                                                                {
+                                                                    combo.combo_nombre
+                                                                }
+                                                            </strong>
+
+
+                                                            <small className="sale-combo-products">
+
+                                                                {
+                                                                    combo.productos
+                                                                        .map(
+                                                                            (producto) =>
+                                                                                `${producto.producto_nombre} × ${producto.cantidad}`
+                                                                        )
+                                                                        .join(
+                                                                            " + "
+                                                                        )
+                                                                }
+
+                                                            </small>
+
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                combo.cantidad
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    combo.precio_unitario
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            <strong>
+                                                                {
+                                                                    moneda.format(
+                                                                        combo.subtotal
+                                                                    )
+                                                                }
+                                                            </strong>
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )}
+
+
+                                            {cotizacion.items.map(
+                                                (item) => (
+
+                                                    <tr
+                                                        key={
+                                                            `producto-${item.producto_id}`
+                                                        }
+                                                    >
+
+                                                        <td>
+
+                                                            {
+                                                                item.producto_nombre
+                                                            }
+
+
+                                                            {item.oferta_nombre && (
+
+                                                                <small className="sale-offer-label">
+                                                                    {
+                                                                        item.oferta_nombre
+                                                                    }
+                                                                </small>
+
+                                                            )}
+
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                item.cantidad
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+
+                                                            <div className="sale-line-price">
+
+                                                                {item.oferta_id && (
+
+                                                                    <small className="sale-old-price">
+
+                                                                        {
+                                                                            moneda.format(
+                                                                                item.precio_lista
+                                                                            )
+                                                                        }
+
+                                                                    </small>
+
+                                                                )}
+
+
+                                                                <strong>
+                                                                    {
+                                                                        moneda.format(
+                                                                            item.precio_unitario
+                                                                        )
+                                                                    }
+                                                                </strong>
+
+                                                            </div>
+
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                moneda.format(
+                                                                    item.subtotal
+                                                                )
+                                                            }
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+                            </>
+
+                        )}
 
                         <div className="sales-summary">
 
@@ -1448,13 +1586,9 @@ function Ventas() {
 
                                             try {
 
-                                                await recotizar(
-                                                    nuevaFecha
-                                                );
-
-
                                                 await cargarProductos(
-                                                    busqueda.trim()
+                                                    busqueda.trim(),
+                                                    nuevaFecha
                                                 );
 
 
@@ -1470,11 +1604,34 @@ function Ventas() {
                                     />
                                     <button
                                         type="button"
-                                        onClick={() =>
+                                        onClick={async () => {
+
+                                            const ahora =
+                                                fechaLocalActual();
+
+
                                             setFecha(
-                                                fechaLocalActual()
-                                            )
-                                        }
+                                                ahora
+                                            );
+
+
+                                            try {
+
+                                                await cargarProductos(
+                                                    busqueda.trim(),
+                                                    ahora
+                                                );
+
+
+                                            } catch (error) {
+
+                                                await mostrarError(
+                                                    error
+                                                );
+
+                                            }
+
+                                        }}
                                     >
                                         Ahora
                                     </button>
@@ -1741,7 +1898,80 @@ function Ventas() {
 
 
                             <tbody>
+                                {ventaDetalle.combos?.map(
+                                    (combo) => (
 
+                                        <tr
+                                            key={
+                                                `combo-${combo.id}`
+                                            }
+                                            className="sale-combo-row"
+                                        >
+
+                                            <td>
+
+                                                <strong>
+                                                    {
+                                                        combo.combo_nombre
+                                                    }
+                                                </strong>
+
+
+                                                <small className="sale-combo-products">
+
+                                                    {
+                                                        combo.productos
+                                                            .map(
+                                                                (producto) =>
+                                                                    `${producto.producto_nombre} × ${producto.cantidad}`
+                                                            )
+                                                            .join(
+                                                                " + "
+                                                            )
+                                                    }
+
+                                                </small>
+
+                                            </td>
+
+
+                                            <td>
+                                                {
+                                                    combo.cantidad
+                                                }
+                                            </td>
+
+
+                                            <td>
+                                                {
+                                                    moneda.format(
+                                                        combo.costo_total
+                                                    )
+                                                }
+                                            </td>
+
+
+                                            <td>
+                                                {
+                                                    moneda.format(
+                                                        combo.precio_unitario
+                                                    )
+                                                }
+                                            </td>
+
+
+                                            <td>
+                                                {
+                                                    moneda.format(
+                                                        combo.ganancia
+                                                    )
+                                                }
+                                            </td>
+
+                                        </tr>
+
+                                    )
+                                )}
                                 {ventaDetalle.items.map(
                                     (item) => (
 

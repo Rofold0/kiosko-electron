@@ -225,3 +225,22 @@
             1fr
         );
 }
+.sale-combo-row strong {
+    display: block;
+}
+
+
+.sale-combo-products {
+    display: block;
+
+    margin-top: 4px;
+
+    font-size: 0.8rem;
+
+    opacity: 0.7;
+}
+
+
+.sale-combo-row td:first-child {
+    min-width: 220px;
+}
