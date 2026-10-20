@@ -5,7 +5,7 @@ import { ROUTES }
     from "../../shared/routes.js";
 
 
-function PageHeader({ title, mostrarAtras, mostrarDashboard }) {
+function PageHeader({ title, mostrarAtras=true, mostrarDashboard=true }) {
 
     const navigate = useNavigate();
 

@@ -622,7 +622,232 @@ function obtenerVentaCompleta(id) {
 
 
 
+function cotizarItems({
+    fecha,
+    items,
+    validarPrecio = false
+}) {
 
+    const usados =
+        new Set();
+
+
+    return items.map(
+        (item) => {
+
+            if (
+                usados.has(
+                    item.productoId
+                )
+            ) {
+
+                throw new Error(
+                    "Hay productos repetidos en la venta."
+                );
+
+            }
+
+
+            usados.add(
+                item.productoId
+            );
+
+
+            const producto =
+                productoVentaStmt.get(
+                    item.productoId
+                );
+
+
+            if (!producto) {
+
+                throw new Error(
+                    "Uno de los productos no existe o no tiene precio vigente."
+                );
+
+            }
+
+
+            if (
+                validarPrecio &&
+                item.precioId &&
+                producto.precio_id !==
+                    item.precioId
+            ) {
+
+                throw new Error(
+                    `El precio de ${producto.nombre} cambió. Actualizá el carrito.`
+                );
+
+            }
+
+
+            if (
+                producto.stock_actual <
+                item.cantidad
+            ) {
+
+                throw new Error(
+                    `No hay stock suficiente de ${producto.nombre}.`
+                );
+
+            }
+
+
+            const precio =
+                resolverPrecioOferta(
+                    producto,
+                    fecha
+                );
+
+
+            const subtotal =
+                redondear(
+
+                    precio.precio_unitario *
+                    item.cantidad
+
+                );
+
+
+            return {
+
+                producto,
+
+                producto_id:
+                    producto.id,
+
+                producto_nombre:
+                    producto.nombre,
+
+                producto_codigo:
+                    producto.codigo,
+
+                precio_id:
+                    producto.precio_id,
+
+                costo_unitario:
+                    producto.costo,
+
+                precio_lista:
+                    precio.precio_lista,
+
+                precio_unitario:
+                    precio.precio_unitario,
+
+                descuento_unitario:
+                    precio.descuento_unitario,
+
+                oferta_id:
+                    precio.oferta_id,
+
+                oferta_nombre:
+                    precio.oferta_nombre,
+
+                stock_actual:
+                    producto.stock_actual,
+
+                cantidad:
+                    item.cantidad,
+
+                subtotal
+
+            };
+
+        }
+    );
+
+}
+
+
+function resumirCotizacion(
+    items
+) {
+
+    const total =
+        redondear(
+            items.reduce(
+                (
+                    acumulado,
+                    item
+                ) =>
+                    acumulado +
+                    item.subtotal,
+                0
+            )
+        );
+
+
+    const descuentoTotal =
+        redondear(
+            items.reduce(
+                (
+                    acumulado,
+                    item
+                ) =>
+                    acumulado +
+                    (
+                        item.descuento_unitario *
+                        item.cantidad
+                    ),
+                0
+            )
+        );
+
+
+    const ganancia =
+        redondear(
+            items.reduce(
+                (
+                    acumulado,
+                    item
+                ) =>
+                    acumulado +
+                    (
+                        item.precio_unitario -
+                        item.costo_unitario
+                    ) *
+                    item.cantidad,
+                0
+            )
+        );
+
+
+    return {
+
+        items,
+
+        total,
+
+        descuento_total:
+            descuentoTotal,
+
+        ganancia
+
+    };
+
+}
+
+
+export function cotizarVenta({
+    fecha,
+    items
+}) {
+
+    const normalizados =
+        cotizarItems({
+
+            fecha,
+            items
+
+        });
+
+
+    return resumirCotizacion(
+        normalizados
+    );
+
+}
 export function buscarProductosVenta({ busqueda = "", limite = 30, fecha }) {
 
     const texto =
