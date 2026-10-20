@@ -403,7 +403,7 @@ WHERE lista_item_id IS NOT NULL;
 
 
 -- ============================================================================
--- VENTAS Y CAJA
+-- VENTAS | CAJA | OFERTAS 
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS ofertas (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -456,6 +456,116 @@ idx_ofertas_productos_producto
 ON ofertas_productos (
     producto_id,
     oferta_id
+);
+
+CREATE TABLE IF NOT EXISTS ofertas_combo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    nombre TEXT NOT NULL,
+
+    precio_combo REAL NOT NULL,
+
+    fecha_desde TEXT NOT NULL,
+    fecha_hasta TEXT NOT NULL,
+
+    activo INTEGER NOT NULL DEFAULT 1,
+
+    creado_en TEXT NOT NULL,
+    actualizado_en TEXT NOT NULL,
+
+    CHECK (
+        precio_combo > 0
+    ),
+
+    CHECK (
+        fecha_hasta >
+        fecha_desde
+    )
+);
+
+
+CREATE TABLE IF NOT EXISTS ofertas_combo_productos (
+    combo_id INTEGER NOT NULL,
+
+    producto_id INTEGER NOT NULL,
+
+    cantidad INTEGER NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (
+        combo_id,
+        producto_id
+    ),
+
+    FOREIGN KEY (combo_id)
+        REFERENCES ofertas_combo(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id),
+
+    CHECK (
+        cantidad > 0
+    )
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_ofertas_combo_vigencia
+ON ofertas_combo (
+    activo,
+    fecha_desde,
+    fecha_hasta
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_ofertas_combo_producto
+ON ofertas_combo_productos (
+    producto_id,
+    combo_id
+);
+
+CREATE TABLE IF NOT EXISTS combos_venta (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    venta_id INTEGER NOT NULL,
+
+    combo_id INTEGER,
+
+    combo_nombre TEXT NOT NULL,
+
+    cantidad INTEGER NOT NULL,
+
+    precio_unitario REAL NOT NULL,
+
+    subtotal REAL NOT NULL,
+
+    FOREIGN KEY (venta_id)
+        REFERENCES ventas(id),
+
+    FOREIGN KEY (combo_id)
+        REFERENCES ofertas_combo(id)
+);
+
+
+CREATE TABLE IF NOT EXISTS combos_venta_productos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    combo_venta_id INTEGER NOT NULL,
+
+    producto_id INTEGER NOT NULL,
+
+    producto_nombre TEXT NOT NULL,
+
+    cantidad INTEGER NOT NULL,
+
+    costo_unitario REAL NOT NULL,
+
+    FOREIGN KEY (combo_venta_id)
+        REFERENCES combos_venta(id),
+
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id)
 );
 
 CREATE TABLE IF NOT EXISTS ventas (

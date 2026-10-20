@@ -386,14 +386,12 @@ function Ventas() {
                             costo_unitario:
                                 producto.costo,
 
-                            precio_unitario:
-                                producto.precio_venta,
-
                             precio_lista:
                                 producto.precio_lista,
 
                             precio_unitario:
                                 producto.precio_venta,
+
 
                             descuento_unitario:
                                 producto.descuento_unitario,

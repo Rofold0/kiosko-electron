@@ -159,16 +159,16 @@ const migrations = [
         `);
 
         },
-        
+
     },
     {
-    version: 4,
+        version: 4,
 
-    name: "indices-proveedores",
+        name: "indices-proveedores",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE UNIQUE INDEX IF NOT EXISTS
             idx_proveedores_nombre_activo
             ON proveedores(
@@ -193,32 +193,32 @@ const migrations = [
             );
         `);
 
-    }
-},
-{
-    version: 5,
+        }
+    },
+    {
+        version: 5,
 
-    name: "compras-integracion-lista-indices",
+        name: "compras-integracion-lista-indices",
 
-    up(db) {
+        up(db) {
 
-        const columnas =
-            db.pragma(
-                "table_info(items_compra)"
-            );
-
-
-        const tieneListaItem =
-            columnas.some(
-                (columna) =>
-                    columna.name ===
-                    "lista_item_id"
-            );
+            const columnas =
+                db.pragma(
+                    "table_info(items_compra)"
+                );
 
 
-        if (!tieneListaItem) {
+            const tieneListaItem =
+                columnas.some(
+                    (columna) =>
+                        columna.name ===
+                        "lista_item_id"
+                );
 
-            db.exec(`
+
+            if (!tieneListaItem) {
+
+                db.exec(`
                 ALTER TABLE items_compra
 
                 ADD COLUMN lista_item_id
@@ -227,10 +227,10 @@ const migrations = [
                     ON DELETE SET NULL;
             `);
 
-        }
+            }
 
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_compras_fecha
             ON compras(
@@ -268,139 +268,139 @@ const migrations = [
             WHERE lista_item_id IS NOT NULL;
         `);
 
-    }
-},
-{
-    version: 6,
+        }
+    },
+    {
+        version: 6,
 
-    name: "reversion-compras",
+        name: "reversion-compras",
 
-    up(db) {
+        up(db) {
 
-        const columnasCompras =
-            db.pragma(
-                "table_info(compras)"
-            );
-
-
-        const tieneEstado =
-            columnasCompras.some(
-                (columna) =>
-                    columna.name === "estado"
-            );
-
-        const tieneFechaReversion =
-            columnasCompras.some(
-                (columna) =>
-                    columna.name ===
-                    "fecha_reversion"
-            );
-
-        const tieneMotivoReversion =
-            columnasCompras.some(
-                (columna) =>
-                    columna.name ===
-                    "motivo_reversion"
-            );
+            const columnasCompras =
+                db.pragma(
+                    "table_info(compras)"
+                );
 
 
-        if (!tieneEstado) {
+            const tieneEstado =
+                columnasCompras.some(
+                    (columna) =>
+                        columna.name === "estado"
+                );
 
-            db.exec(`
+            const tieneFechaReversion =
+                columnasCompras.some(
+                    (columna) =>
+                        columna.name ===
+                        "fecha_reversion"
+                );
+
+            const tieneMotivoReversion =
+                columnasCompras.some(
+                    (columna) =>
+                        columna.name ===
+                        "motivo_reversion"
+                );
+
+
+            if (!tieneEstado) {
+
+                db.exec(`
                 ALTER TABLE compras
                 ADD COLUMN estado TEXT
                 NOT NULL
                 DEFAULT 'ACTIVA';
             `);
 
-        }
+            }
 
 
-        if (!tieneFechaReversion) {
+            if (!tieneFechaReversion) {
 
-            db.exec(`
+                db.exec(`
                 ALTER TABLE compras
                 ADD COLUMN fecha_reversion TEXT;
             `);
 
-        }
+            }
 
 
-        if (!tieneMotivoReversion) {
+            if (!tieneMotivoReversion) {
 
-            db.exec(`
+                db.exec(`
                 ALTER TABLE compras
                 ADD COLUMN motivo_reversion TEXT;
             `);
 
-        }
+            }
 
 
-        const columnasItems =
-            db.pragma(
-                "table_info(items_compra)"
-            );
+            const columnasItems =
+                db.pragma(
+                    "table_info(items_compra)"
+                );
 
 
-        const agregarColumna =
-            (
-                nombre,
-                sql
-            ) => {
+            const agregarColumna =
+                (
+                    nombre,
+                    sql
+                ) => {
 
-                const existe =
-                    columnasItems.some(
-                        (columna) =>
-                            columna.name === nombre
-                    );
-
-
-                if (!existe) {
-                    db.exec(sql);
-                }
-
-            };
+                    const existe =
+                        columnasItems.some(
+                            (columna) =>
+                                columna.name === nombre
+                        );
 
 
-        agregarColumna(
-            "producto_proveedor_id",
-            `
+                    if (!existe) {
+                        db.exec(sql);
+                    }
+
+                };
+
+
+            agregarColumna(
+                "producto_proveedor_id",
+                `
                 ALTER TABLE items_compra
                 ADD COLUMN producto_proveedor_id
                 INTEGER
                 REFERENCES productos_proveedores(id);
             `
-        );
+            );
 
 
-        agregarColumna(
-            "costo_anterior_proveedor",
-            `
+            agregarColumna(
+                "costo_anterior_proveedor",
+                `
                 ALTER TABLE items_compra
                 ADD COLUMN costo_anterior_proveedor REAL;
             `
-        );
+            );
 
 
-        agregarColumna(
-            "lista_cantidad_anterior",
-            `
+            agregarColumna(
+                "lista_cantidad_anterior",
+                `
                 ALTER TABLE items_compra
                 ADD COLUMN lista_cantidad_anterior INTEGER;
             `
-        );
+            );
 
 
-        agregarColumna(
-            "lista_comprado_anterior",
-            `
+            agregarColumna(
+                "lista_comprado_anterior",
+                `
                 ALTER TABLE items_compra
                 ADD COLUMN lista_comprado_anterior INTEGER;
             `
-        );
+            );
 
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_compras_estado_fecha
             ON compras(
@@ -409,22 +409,22 @@ const migrations = [
             );
         `);
 
-    }
-},
-{
-    version: 7,
+        }
+    },
+    {
+        version: 7,
 
-    name: "precios-vigentes-indices",
+        name: "precios-vigentes-indices",
 
-    up(db) {
+        up(db) {
 
-        /*
-         * Por seguridad, si hubiese más de
-         * un precio vigente viejo para un
-         * producto, dejamos sólo el último.
-         */
+            /*
+             * Por seguridad, si hubiese más de
+             * un precio vigente viejo para un
+             * producto, dejamos sólo el último.
+             */
 
-        db.exec(`
+            db.exec(`
             UPDATE precios
 
             SET fecha_hasta =
@@ -451,7 +451,7 @@ const migrations = [
         `);
 
 
-        db.exec(`
+            db.exec(`
             CREATE UNIQUE INDEX IF NOT EXISTS
             idx_precios_producto_vigente
             ON precios(
@@ -469,112 +469,112 @@ const migrations = [
             );
         `);
 
-    }
-},
-{
-    version: 8,
+        }
+    },
+    {
+        version: 8,
 
-    name: "ventas-reversion-costos-indices",
+        name: "ventas-reversion-costos-indices",
 
-    up(db) {
+        up(db) {
 
-        const columnasVentas =
-            db.pragma(
-                "table_info(ventas)"
-            );
-
-
-        const agregarVenta =
-            (nombre, sql) => {
-
-                const existe =
-                    columnasVentas.some(
-                        (columna) =>
-                            columna.name === nombre
-                    );
+            const columnasVentas =
+                db.pragma(
+                    "table_info(ventas)"
+                );
 
 
-                if (!existe) {
-                    db.exec(sql);
-                }
+            const agregarVenta =
+                (nombre, sql) => {
 
-            };
+                    const existe =
+                        columnasVentas.some(
+                            (columna) =>
+                                columna.name === nombre
+                        );
 
 
-        agregarVenta(
-            "estado",
-            `
+                    if (!existe) {
+                        db.exec(sql);
+                    }
+
+                };
+
+
+            agregarVenta(
+                "estado",
+                `
                 ALTER TABLE ventas
                 ADD COLUMN estado TEXT
                 NOT NULL
                 DEFAULT 'ACTIVA';
             `
-        );
-
-
-        agregarVenta(
-            "fecha_reversion",
-            `
-                ALTER TABLE ventas
-                ADD COLUMN fecha_reversion TEXT;
-            `
-        );
-
-
-        agregarVenta(
-            "motivo_reversion",
-            `
-                ALTER TABLE ventas
-                ADD COLUMN motivo_reversion TEXT;
-            `
-        );
-
-
-        const columnasItems =
-            db.pragma(
-                "table_info(items_venta)"
             );
 
 
-        const agregarItem =
-            (nombre, sql) => {
-
-                const existe =
-                    columnasItems.some(
-                        (columna) =>
-                            columna.name === nombre
-                    );
-
-
-                if (!existe) {
-                    db.exec(sql);
-                }
-
-            };
-
-
-        agregarItem(
-            "precio_id",
+            agregarVenta(
+                "fecha_reversion",
+                `
+                ALTER TABLE ventas
+                ADD COLUMN fecha_reversion TEXT;
             `
+            );
+
+
+            agregarVenta(
+                "motivo_reversion",
+                `
+                ALTER TABLE ventas
+                ADD COLUMN motivo_reversion TEXT;
+            `
+            );
+
+
+            const columnasItems =
+                db.pragma(
+                    "table_info(items_venta)"
+                );
+
+
+            const agregarItem =
+                (nombre, sql) => {
+
+                    const existe =
+                        columnasItems.some(
+                            (columna) =>
+                                columna.name === nombre
+                        );
+
+
+                    if (!existe) {
+                        db.exec(sql);
+                    }
+
+                };
+
+
+            agregarItem(
+                "precio_id",
+                `
                 ALTER TABLE items_venta
                 ADD COLUMN precio_id INTEGER
                 REFERENCES precios(id);
             `
-        );
+            );
 
 
-        agregarItem(
-            "costo_unitario",
-            `
+            agregarItem(
+                "costo_unitario",
+                `
                 ALTER TABLE items_venta
                 ADD COLUMN costo_unitario REAL
                 NOT NULL
                 DEFAULT 0;
             `
-        );
+            );
 
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_ventas_fecha
             ON ventas(fecha DESC);
@@ -611,16 +611,16 @@ const migrations = [
             ON movimientos_caja(venta_id);
         `);
 
-    }
-},
-{
-    version: 9,
+        }
+    },
+    {
+        version: 9,
 
-    name: "sesiones-caja-metodos-movimientos",
+        name: "sesiones-caja-metodos-movimientos",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE TABLE IF NOT EXISTS cajas (
                 id                INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -641,71 +641,71 @@ const migrations = [
         `);
 
 
-        const columnas =
-            db.pragma(
-                "table_info(movimientos_caja)"
-            );
+            const columnas =
+                db.pragma(
+                    "table_info(movimientos_caja)"
+                );
 
 
-        const agregarColumna =
-            (
-                nombre,
-                sql
-            ) => {
+            const agregarColumna =
+                (
+                    nombre,
+                    sql
+                ) => {
 
-                const existe =
-                    columnas.some(
-                        (columna) =>
-                            columna.name ===
-                            nombre
-                    );
-
-
-                if (!existe) {
-                    db.exec(sql);
-                }
-
-            };
+                    const existe =
+                        columnas.some(
+                            (columna) =>
+                                columna.name ===
+                                nombre
+                        );
 
 
-        agregarColumna(
-            "caja_id",
-            `
+                    if (!existe) {
+                        db.exec(sql);
+                    }
+
+                };
+
+
+            agregarColumna(
+                "caja_id",
+                `
                 ALTER TABLE movimientos_caja
                 ADD COLUMN caja_id INTEGER
                 REFERENCES cajas(id);
             `
-        );
+            );
 
 
-        agregarColumna(
-            "metodo_pago",
-            `
+            agregarColumna(
+                "metodo_pago",
+                `
                 ALTER TABLE movimientos_caja
                 ADD COLUMN metodo_pago TEXT;
             `
-        );
+            );
 
 
-        agregarColumna(
-            "movimiento_origen_id",
-            `
+            agregarColumna(
+                "movimiento_origen_id",
+                `
                 ALTER TABLE movimientos_caja
                 ADD COLUMN movimiento_origen_id INTEGER
                 REFERENCES movimientos_caja(id);
             `
-        );
+            );
 
 
-        /*
-         * Recuperamos el método de pago
-         * de las ventas anteriores.
-         *
-         * Dejamos caja_id NULL porque
-         * no inventamos sesiones históricas.
-         */
+            /*
+             * Recuperamos el método de pago
+             * de las ventas anteriores.
+             *
+             * Dejamos caja_id NULL porque
+             * no inventamos sesiones históricas.
+             */
 
-        db.exec(`
+            db.exec(`
             UPDATE movimientos_caja
 
             SET metodo_pago = (
@@ -725,7 +725,7 @@ const migrations = [
         `);
 
 
-        db.exec(`
+            db.exec(`
             CREATE UNIQUE INDEX IF NOT EXISTS
             idx_cajas_unica_abierta
             ON cajas(estado)
@@ -762,16 +762,16 @@ const migrations = [
                 IS NOT NULL;
         `);
 
-    }
-},
-{
-    version: 10,
+        }
+    },
+    {
+        version: 10,
 
-    name: "gastos-categorias-caja-reversion",
+        name: "gastos-categorias-caja-reversion",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE TABLE IF NOT EXISTS categorias_gasto (
                 id     INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
@@ -788,26 +788,26 @@ const migrations = [
         `);
 
 
-        /*
-         * Categorías iniciales.
-         */
+            /*
+             * Categorías iniciales.
+             */
 
-        const categoriasIniciales = [
-            "Mercadería",
-            "Servicios",
-            "Alquiler",
-            "Transporte",
-            "Mantenimiento",
-            "Limpieza",
-            "Impuestos",
-            "Insumos",
-            "Retiro personal",
-            "Otro"
-        ];
+            const categoriasIniciales = [
+                "Mercadería",
+                "Servicios",
+                "Alquiler",
+                "Transporte",
+                "Mantenimiento",
+                "Limpieza",
+                "Impuestos",
+                "Insumos",
+                "Retiro personal",
+                "Otro"
+            ];
 
 
-        const insertarCategoria =
-            db.prepare(`
+            const insertarCategoria =
+                db.prepare(`
                 INSERT OR IGNORE
                 INTO categorias_gasto (
                     nombre,
@@ -818,24 +818,24 @@ const migrations = [
             `);
 
 
-        for (
-            const nombre
-            of categoriasIniciales
-        ) {
+            for (
+                const nombre
+                of categoriasIniciales
+            ) {
 
-            insertarCategoria.run(
-                nombre
-            );
+                insertarCategoria.run(
+                    nombre
+                );
 
-        }
+            }
 
 
-        /*
-         * Recuperamos categorías que
-         * pudieran existir en gastos viejos.
-         */
+            /*
+             * Recuperamos categorías que
+             * pudieran existir en gastos viejos.
+             */
 
-        db.exec(`
+            db.exec(`
             INSERT OR IGNORE
             INTO categorias_gasto (
                 nombre,
@@ -854,107 +854,107 @@ const migrations = [
         `);
 
 
-        const columnas =
-            db.pragma(
-                "table_info(gastos)"
-            );
+            const columnas =
+                db.pragma(
+                    "table_info(gastos)"
+                );
 
 
-        const agregarColumna =
-            (
-                nombre,
-                sql
-            ) => {
+            const agregarColumna =
+                (
+                    nombre,
+                    sql
+                ) => {
 
-                const existe =
-                    columnas.some(
-                        (columna) =>
-                            columna.name ===
-                            nombre
-                    );
-
-
-                if (!existe) {
-                    db.exec(sql);
-                }
-
-            };
+                    const existe =
+                        columnas.some(
+                            (columna) =>
+                                columna.name ===
+                                nombre
+                        );
 
 
-        agregarColumna(
-            "categoria_id",
-            `
+                    if (!existe) {
+                        db.exec(sql);
+                    }
+
+                };
+
+
+            agregarColumna(
+                "categoria_id",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN categoria_id INTEGER
                 REFERENCES categorias_gasto(id);
             `
-        );
+            );
 
 
-        agregarColumna(
-            "metodo_pago",
-            `
+            agregarColumna(
+                "metodo_pago",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN metodo_pago TEXT;
             `
-        );
+            );
 
 
-        agregarColumna(
-            "estado",
-            `
+            agregarColumna(
+                "estado",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN estado TEXT
                 NOT NULL
                 DEFAULT 'ACTIVO';
             `
-        );
+            );
 
 
-        agregarColumna(
-            "fecha_reversion",
-            `
+            agregarColumna(
+                "fecha_reversion",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN fecha_reversion TEXT;
             `
-        );
+            );
 
 
-        agregarColumna(
-            "motivo_reversion",
-            `
+            agregarColumna(
+                "motivo_reversion",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN motivo_reversion TEXT;
             `
-        );
+            );
 
 
-        agregarColumna(
-            "caja_id",
-            `
+            agregarColumna(
+                "caja_id",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN caja_id INTEGER
                 REFERENCES cajas(id);
             `
-        );
+            );
 
 
-        agregarColumna(
-            "caja_reversion_id",
-            `
+            agregarColumna(
+                "caja_reversion_id",
+                `
                 ALTER TABLE gastos
                 ADD COLUMN caja_reversion_id INTEGER
                 REFERENCES cajas(id);
             `
-        );
+            );
 
 
-        /*
-         * Vinculamos gastos históricos
-         * con su categoría.
-         */
+            /*
+             * Vinculamos gastos históricos
+             * con su categoría.
+             */
 
-        db.exec(`
+            db.exec(`
             UPDATE gastos
 
             SET categoria_id = (
@@ -974,13 +974,13 @@ const migrations = [
         `);
 
 
-        /*
-         * Si hubiese gastos antiguos sin
-         * método, no inventamos efectivo:
-         * usamos OTRO.
-         */
+            /*
+             * Si hubiese gastos antiguos sin
+             * método, no inventamos efectivo:
+             * usamos OTRO.
+             */
 
-        db.exec(`
+            db.exec(`
             UPDATE gastos
 
             SET metodo_pago = 'OTRO'
@@ -991,7 +991,7 @@ const migrations = [
         `);
 
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_gastos_fecha
             ON gastos(fecha DESC);
@@ -1023,93 +1023,93 @@ const migrations = [
             ON movimientos_caja(gasto_id);
         `);
 
-    }
-},
-{
-    version: 11,
+        }
+    },
+    {
+        version: 11,
 
-    name: "compras-integracion-caja",
+        name: "compras-integracion-caja",
 
-    up(db) {
+        up(db) {
 
-        const columnasCompras =
-            db.pragma(
-                "table_info(compras)"
-            );
-
-
-        const agregarCompra =
-            (nombre, sql) => {
-
-                const existe =
-                    columnasCompras.some(
-                        (columna) =>
-                            columna.name === nombre
-                    );
+            const columnasCompras =
+                db.pragma(
+                    "table_info(compras)"
+                );
 
 
-                if (!existe) {
-                    db.exec(sql);
-                }
+            const agregarCompra =
+                (nombre, sql) => {
 
-            };
+                    const existe =
+                        columnasCompras.some(
+                            (columna) =>
+                                columna.name === nombre
+                        );
 
 
-        agregarCompra(
-            "metodo_pago",
-            `
+                    if (!existe) {
+                        db.exec(sql);
+                    }
+
+                };
+
+
+            agregarCompra(
+                "metodo_pago",
+                `
                 ALTER TABLE compras
                 ADD COLUMN metodo_pago TEXT;
             `
-        );
+            );
 
 
-        agregarCompra(
-            "caja_id",
-            `
+            agregarCompra(
+                "caja_id",
+                `
                 ALTER TABLE compras
                 ADD COLUMN caja_id INTEGER
                 REFERENCES cajas(id);
             `
-        );
+            );
 
 
-        agregarCompra(
-            "caja_reversion_id",
-            `
+            agregarCompra(
+                "caja_reversion_id",
+                `
                 ALTER TABLE compras
                 ADD COLUMN caja_reversion_id INTEGER
                 REFERENCES cajas(id);
             `
-        );
-
-
-        const columnasCaja =
-            db.pragma(
-                "table_info(movimientos_caja)"
             );
 
 
-        const tieneCompraId =
-            columnasCaja.some(
-                (columna) =>
-                    columna.name ===
-                    "compra_id"
-            );
+            const columnasCaja =
+                db.pragma(
+                    "table_info(movimientos_caja)"
+                );
 
 
-        if (!tieneCompraId) {
+            const tieneCompraId =
+                columnasCaja.some(
+                    (columna) =>
+                        columna.name ===
+                        "compra_id"
+                );
 
-            db.exec(`
+
+            if (!tieneCompraId) {
+
+                db.exec(`
                 ALTER TABLE movimientos_caja
                 ADD COLUMN compra_id INTEGER
                 REFERENCES compras(id);
             `);
 
-        }
+            }
 
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_compras_caja
             ON compras(caja_id);
@@ -1120,16 +1120,16 @@ const migrations = [
             ON movimientos_caja(compra_id);
         `);
 
-    }
-},
-{
-    version: 12,
+        }
+    },
+    {
+        version: 12,
 
-    name: "reportes-indices",
+        name: "reportes-indices",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_compras_estado_fecha
             ON compras(
@@ -1145,16 +1145,16 @@ const migrations = [
             );
         `);
 
-    }
-},
-{
-    version: 13,
+        }
+    },
+    {
+        version: 13,
 
-    name: "usuarios-roles-permisos",
+        name: "usuarios-roles-permisos",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE TABLE IF NOT EXISTS roles (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 clave       TEXT NOT NULL UNIQUE,
@@ -1234,8 +1234,8 @@ const migrations = [
         `);
 
 
-        const insertarPermiso =
-            db.prepare(`
+            const insertarPermiso =
+                db.prepare(`
                 INSERT OR IGNORE
                 INTO permisos (
                     clave,
@@ -1245,73 +1245,73 @@ const migrations = [
             `);
 
 
-        const permisos = [
+            const permisos = [
 
-            ["categorias.ver", "Ver categorías"],
-            ["categorias.modificar", "Modificar categorías"],
+                ["categorias.ver", "Ver categorías"],
+                ["categorias.modificar", "Modificar categorías"],
 
-            ["productos.ver", "Ver productos"],
-            ["productos.modificar", "Modificar productos"],
+                ["productos.ver", "Ver productos"],
+                ["productos.modificar", "Modificar productos"],
 
-            ["stock.ver", "Ver stock"],
-            ["stock.ajustar", "Realizar ajustes de stock"],
+                ["stock.ver", "Ver stock"],
+                ["stock.ajustar", "Realizar ajustes de stock"],
 
-            ["lista_compras.ver", "Ver lista de compras"],
-            ["lista_compras.modificar", "Modificar lista de compras"],
+                ["lista_compras.ver", "Ver lista de compras"],
+                ["lista_compras.modificar", "Modificar lista de compras"],
 
-            ["proveedores.ver", "Ver proveedores"],
-            ["proveedores.modificar", "Modificar proveedores"],
+                ["proveedores.ver", "Ver proveedores"],
+                ["proveedores.modificar", "Modificar proveedores"],
 
-            ["compras.ver", "Ver compras"],
-            ["compras.crear", "Registrar compras"],
-            ["compras.revertir", "Revertir compras"],
+                ["compras.ver", "Ver compras"],
+                ["compras.crear", "Registrar compras"],
+                ["compras.revertir", "Revertir compras"],
 
-            ["precios.ver", "Ver precios"],
-            ["precios.modificar", "Modificar precios"],
+                ["precios.ver", "Ver precios"],
+                ["precios.modificar", "Modificar precios"],
 
-            ["ventas.ver", "Ver ventas"],
-            ["ventas.crear", "Registrar ventas"],
-            ["ventas.revertir", "Revertir ventas"],
+                ["ventas.ver", "Ver ventas"],
+                ["ventas.crear", "Registrar ventas"],
+                ["ventas.revertir", "Revertir ventas"],
 
-            ["caja.ver", "Ver caja"],
-            ["caja.abrir", "Abrir caja"],
-            ["caja.cerrar", "Cerrar caja"],
-            ["caja.movimiento", "Crear movimientos manuales"],
-            ["caja.revertir", "Revertir movimientos manuales"],
+                ["caja.ver", "Ver caja"],
+                ["caja.abrir", "Abrir caja"],
+                ["caja.cerrar", "Cerrar caja"],
+                ["caja.movimiento", "Crear movimientos manuales"],
+                ["caja.revertir", "Revertir movimientos manuales"],
 
-            ["gastos.ver", "Ver gastos"],
-            ["gastos.crear", "Registrar gastos"],
-            ["gastos.revertir", "Revertir gastos"],
+                ["gastos.ver", "Ver gastos"],
+                ["gastos.crear", "Registrar gastos"],
+                ["gastos.revertir", "Revertir gastos"],
 
-            ["reportes.ver", "Ver reportes"],
-            ["reportes.exportar", "Exportar reportes"],
+                ["reportes.ver", "Ver reportes"],
+                ["reportes.exportar", "Exportar reportes"],
 
-            ["usuarios.ver", "Ver usuarios"],
-            ["usuarios.crear", "Crear usuarios"],
-            ["usuarios.modificar", "Modificar usuarios"],
-            ["usuarios.desactivar", "Activar o desactivar usuarios"],
+                ["usuarios.ver", "Ver usuarios"],
+                ["usuarios.crear", "Crear usuarios"],
+                ["usuarios.modificar", "Modificar usuarios"],
+                ["usuarios.desactivar", "Activar o desactivar usuarios"],
 
-            ["roles.ver", "Ver roles"],
-            ["roles.modificar", "Modificar permisos de roles"]
+                ["roles.ver", "Ver roles"],
+                ["roles.modificar", "Modificar permisos de roles"]
 
-        ];
-
-
-        for (
-            const permiso
-            of permisos
-        ) {
-
-            insertarPermiso.run(
-                permiso[0],
-                permiso[1]
-            );
-
-        }
+            ];
 
 
-        const insertarRol =
-            db.prepare(`
+            for (
+                const permiso
+                of permisos
+            ) {
+
+                insertarPermiso.run(
+                    permiso[0],
+                    permiso[1]
+                );
+
+            }
+
+
+            const insertarRol =
+                db.prepare(`
                 INSERT OR IGNORE
                 INTO roles (
                     clave,
@@ -1324,44 +1324,44 @@ const migrations = [
             `);
 
 
-        insertarRol.run(
-            "ADMIN",
-            "Administrador",
-            "Acceso completo al sistema.",
-            1
-        );
+            insertarRol.run(
+                "ADMIN",
+                "Administrador",
+                "Acceso completo al sistema.",
+                1
+            );
 
 
-        insertarRol.run(
-            "ENCARGADO",
-            "Encargado",
-            "Gestión comercial sin administración de usuarios.",
-            1
-        );
+            insertarRol.run(
+                "ENCARGADO",
+                "Encargado",
+                "Gestión comercial sin administración de usuarios.",
+                1
+            );
 
 
-        insertarRol.run(
-            "CAJERO",
-            "Cajero",
-            "Ventas y operación básica de caja.",
-            1
-        );
+            insertarRol.run(
+                "CAJERO",
+                "Cajero",
+                "Ventas y operación básica de caja.",
+                1
+            );
 
 
-        insertarRol.run(
-            "CONSULTA",
-            "Consulta",
-            "Acceso de sólo consulta.",
-            1
-        );
+            insertarRol.run(
+                "CONSULTA",
+                "Consulta",
+                "Acceso de sólo consulta.",
+                1
+            );
 
 
-        /*
-         * Administrador:
-         * todos los permisos.
-         */
+            /*
+             * Administrador:
+             * todos los permisos.
+             */
 
-        db.exec(`
+            db.exec(`
             INSERT OR IGNORE
             INTO roles_permisos (
                 rol_id,
@@ -1379,12 +1379,12 @@ const migrations = [
         `);
 
 
-        /*
-         * Encargado:
-         * todo excepto usuarios y roles.
-         */
+            /*
+             * Encargado:
+             * todo excepto usuarios y roles.
+             */
 
-        db.exec(`
+            db.exec(`
             INSERT OR IGNORE
             INTO roles_permisos (
                 rol_id,
@@ -1409,23 +1409,23 @@ const migrations = [
         `);
 
 
-        /*
-         * Cajero.
-         */
+            /*
+             * Cajero.
+             */
 
-        const permisosCajero = [
-            "productos.ver",
-            "stock.ver",
-            "ventas.ver",
-            "ventas.crear",
-            "caja.ver",
-            "caja.abrir",
-            "caja.cerrar"
-        ];
+            const permisosCajero = [
+                "productos.ver",
+                "stock.ver",
+                "ventas.ver",
+                "ventas.crear",
+                "caja.ver",
+                "caja.abrir",
+                "caja.cerrar"
+            ];
 
 
-        const asignarPermiso =
-            db.prepare(`
+            const asignarPermiso =
+                db.prepare(`
                 INSERT OR IGNORE
                 INTO roles_permisos (
                     rol_id,
@@ -1444,101 +1444,101 @@ const migrations = [
             `);
 
 
-        for (
-            const permiso
-            of permisosCajero
-        ) {
+            for (
+                const permiso
+                of permisosCajero
+            ) {
 
-            asignarPermiso.run(
-                permiso,
-                "CAJERO"
-            );
+                asignarPermiso.run(
+                    permiso,
+                    "CAJERO"
+                );
+
+            }
+
+
+            const permisosConsulta = [
+                "productos.ver",
+                "stock.ver",
+                "reportes.ver"
+            ];
+
+
+            for (
+                const permiso
+                of permisosConsulta
+            ) {
+
+                asignarPermiso.run(
+                    permiso,
+                    "CONSULTA"
+                );
+
+            }
 
         }
+    },
+    {
+        version: 14,
 
+        name: "ventas-efectivo-vuelto",
 
-        const permisosConsulta = [
-            "productos.ver",
-            "stock.ver",
-            "reportes.ver"
-        ];
+        up(db) {
 
-
-        for (
-            const permiso
-            of permisosConsulta
-        ) {
-
-            asignarPermiso.run(
-                permiso,
-                "CONSULTA"
-            );
-
-        }
-
-    }
-},
-{
-    version: 14,
-
-    name: "ventas-efectivo-vuelto",
-
-    up(db) {
-
-        const columnas =
-            db.pragma(
-                "table_info(ventas)"
-            );
-
-
-        const existe =
-            (nombre) =>
-                columnas.some(
-                    (columna) =>
-                        columna.name ===
-                        nombre
+            const columnas =
+                db.pragma(
+                    "table_info(ventas)"
                 );
 
 
-        if (
-            !existe(
-                "efectivo_recibido"
-            )
-        ) {
+            const existe =
+                (nombre) =>
+                    columnas.some(
+                        (columna) =>
+                            columna.name ===
+                            nombre
+                    );
 
-            db.exec(`
+
+            if (
+                !existe(
+                    "efectivo_recibido"
+                )
+            ) {
+
+                db.exec(`
                 ALTER TABLE ventas
                 ADD COLUMN
                 efectivo_recibido REAL;
             `);
 
-        }
+            }
 
 
-        if (
-            !existe(
-                "vuelto"
-            )
-        ) {
+            if (
+                !existe(
+                    "vuelto"
+                )
+            ) {
 
-            db.exec(`
+                db.exec(`
                 ALTER TABLE ventas
                 ADD COLUMN
                 vuelto REAL;
             `);
 
+            }
+
         }
+    },
+    {
+        version: 15,
 
-    }
-},
-{
-    version: 15,
+        name: "auditoria",
 
-    name: "auditoria",
+        up(db) {
 
-    up(db) {
-
-        db.exec(`
+            db.exec(`
             CREATE TABLE IF NOT EXISTS auditoria (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -1597,11 +1597,11 @@ const migrations = [
         `);
 
 
-        /*
-         * Nuevo permiso.
-         */
+            /*
+             * Nuevo permiso.
+             */
 
-        db.prepare(`
+            db.prepare(`
             INSERT OR IGNORE
             INTO permisos (
                 clave,
@@ -1613,18 +1613,18 @@ const migrations = [
                 ?
             )
         `).run(
-            "auditoria.ver",
-            "Ver auditoría del sistema"
-        );
+                "auditoria.ver",
+                "Ver auditoría del sistema"
+            );
 
 
-        /*
-         * Como ADMIN fue creado antes,
-         * tenemos que asignarle explícitamente
-         * este nuevo permiso.
-         */
+            /*
+             * Como ADMIN fue creado antes,
+             * tenemos que asignarle explícitamente
+             * este nuevo permiso.
+             */
 
-        db.exec(`
+            db.exec(`
             INSERT OR IGNORE
             INTO roles_permisos (
                 rol_id,
@@ -1646,15 +1646,15 @@ const migrations = [
                     'ADMIN';
         `);
 
-    }
-},
-{
-    version: 16,
-    name: "ofertas-y-descuentos-ventas",
+        }
+    },
+    {
+        version: 16,
+        name: "ofertas-y-descuentos-ventas",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            db.exec(`
             CREATE TABLE IF NOT EXISTS ofertas (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -1726,92 +1726,92 @@ const migrations = [
         `);
 
 
-        /*
-         * Snapshot de oferta en cada
-         * ítem vendido.
-         */
+            /*
+             * Snapshot de oferta en cada
+             * ítem vendido.
+             */
 
-        const columnas =
-            db.pragma(
-                "table_info(items_venta)"
-            );
-
-
-        const existe =
-            (nombre) =>
-                columnas.some(
-                    (columna) =>
-                        columna.name ===
-                        nombre
+            const columnas =
+                db.pragma(
+                    "table_info(items_venta)"
                 );
 
 
-        if (
-            !existe(
-                "oferta_id"
-            )
-        ) {
+            const existe =
+                (nombre) =>
+                    columnas.some(
+                        (columna) =>
+                            columna.name ===
+                            nombre
+                    );
 
-            db.exec(`
+
+            if (
+                !existe(
+                    "oferta_id"
+                )
+            ) {
+
+                db.exec(`
                 ALTER TABLE items_venta
                 ADD COLUMN oferta_id INTEGER
                 REFERENCES ofertas(id);
             `);
 
-        }
+            }
 
 
-        if (
-            !existe(
-                "oferta_nombre"
-            )
-        ) {
+            if (
+                !existe(
+                    "oferta_nombre"
+                )
+            ) {
 
-            db.exec(`
+                db.exec(`
                 ALTER TABLE items_venta
                 ADD COLUMN oferta_nombre TEXT;
             `);
 
-        }
+            }
 
 
-        if (
-            !existe(
-                "precio_lista"
-            )
-        ) {
+            if (
+                !existe(
+                    "precio_lista"
+                )
+            ) {
 
-            db.exec(`
+                db.exec(`
                 ALTER TABLE items_venta
                 ADD COLUMN precio_lista REAL
                 NOT NULL DEFAULT 0;
             `);
 
-        }
+            }
 
 
-        if (
-            !existe(
-                "descuento_unitario"
-            )
-        ) {
+            if (
+                !existe(
+                    "descuento_unitario"
+                )
+            ) {
 
-            db.exec(`
+                db.exec(`
                 ALTER TABLE items_venta
                 ADD COLUMN descuento_unitario REAL
                 NOT NULL DEFAULT 0;
             `);
 
-        }
+            }
 
 
-        /*
-         * Ventas anteriores:
-         * precio_lista = precio que realmente
-         * tenían en ese momento.
-         */
+            /*
+             * Ventas anteriores:
+             * precio_lista = precio que realmente
+             * tenían en ese momento.
+             */
 
-        db.exec(`
+            db.exec(`
             UPDATE items_venta
 
             SET precio_lista =
@@ -1821,12 +1821,12 @@ const migrations = [
         `);
 
 
-        /*
-         * Permisos.
-         */
+            /*
+             * Permisos.
+             */
 
-        const insertarPermiso =
-            db.prepare(`
+            const insertarPermiso =
+                db.prepare(`
                 INSERT OR IGNORE
                 INTO permisos (
                     clave,
@@ -1837,24 +1837,24 @@ const migrations = [
             `);
 
 
-        insertarPermiso.run(
-            "ofertas.ver",
-            "Ver ofertas"
-        );
+            insertarPermiso.run(
+                "ofertas.ver",
+                "Ver ofertas"
+            );
 
 
-        insertarPermiso.run(
-            "ofertas.modificar",
-            "Crear y modificar ofertas"
-        );
+            insertarPermiso.run(
+                "ofertas.modificar",
+                "Crear y modificar ofertas"
+            );
 
 
-        /*
-         * Administrador y Encargado
-         * pueden administrar ofertas.
-         */
+            /*
+             * Administrador y Encargado
+             * pueden administrar ofertas.
+             */
 
-        db.exec(`
+            db.exec(`
             INSERT OR IGNORE
             INTO roles_permisos (
                 rol_id,
@@ -1881,8 +1881,128 @@ const migrations = [
                 );
         `);
 
-    }
-}
+        }
+    },
+    {
+        version: 17,
+
+        name: "ofertas-combo",
+
+        up(db) {
+
+            db.exec(`
+            CREATE TABLE IF NOT EXISTS ofertas_combo (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                nombre TEXT NOT NULL,
+
+                precio_combo REAL NOT NULL,
+
+                fecha_desde TEXT NOT NULL,
+                fecha_hasta TEXT NOT NULL,
+
+                activo INTEGER NOT NULL DEFAULT 1,
+
+                creado_en TEXT NOT NULL,
+                actualizado_en TEXT NOT NULL,
+
+                CHECK (
+                    precio_combo > 0
+                ),
+
+                CHECK (
+                    fecha_hasta >
+                    fecha_desde
+                )
+            );
+
+
+            CREATE TABLE IF NOT EXISTS ofertas_combo_productos (
+                combo_id INTEGER NOT NULL,
+
+                producto_id INTEGER NOT NULL,
+
+                cantidad INTEGER NOT NULL DEFAULT 1,
+
+                PRIMARY KEY (
+                    combo_id,
+                    producto_id
+                ),
+
+                FOREIGN KEY (combo_id)
+                    REFERENCES ofertas_combo(id)
+                    ON DELETE CASCADE,
+
+                FOREIGN KEY (producto_id)
+                    REFERENCES productos(id),
+
+                CHECK (
+                    cantidad > 0
+                )
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_ofertas_combo_vigencia
+            ON ofertas_combo (
+                activo,
+                fecha_desde,
+                fecha_hasta
+            );
+
+            CREATE TABLE IF NOT EXISTS combos_venta (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    venta_id INTEGER NOT NULL,
+
+    combo_id INTEGER,
+
+    combo_nombre TEXT NOT NULL,
+
+    cantidad INTEGER NOT NULL,
+
+    precio_unitario REAL NOT NULL,
+
+    subtotal REAL NOT NULL,
+
+    FOREIGN KEY (venta_id)
+        REFERENCES ventas(id),
+
+    FOREIGN KEY (combo_id)
+        REFERENCES ofertas_combo(id)
+);
+
+
+CREATE TABLE IF NOT EXISTS combos_venta_productos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    combo_venta_id INTEGER NOT NULL,
+
+    producto_id INTEGER NOT NULL,
+
+    producto_nombre TEXT NOT NULL,
+
+    cantidad INTEGER NOT NULL,
+
+    costo_unitario REAL NOT NULL,
+
+    FOREIGN KEY (combo_venta_id)
+        REFERENCES combos_venta(id),
+
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id)
+);
+
+            CREATE INDEX IF NOT EXISTS
+            idx_ofertas_combo_producto
+            ON ofertas_combo_productos (
+                producto_id,
+                combo_id
+            );
+        `);
+
+        }
+    },
 ];
 
 
@@ -1930,6 +2050,6 @@ export function runMigrations(db) {
         );
 
     }
-    
+
 
 }

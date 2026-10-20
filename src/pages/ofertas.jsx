@@ -553,6 +553,10 @@ function Ofertas() {
                                 <option value="PRECIO_FIJO">
                                     Precio de oferta
                                 </option>
+                                
+                                <option value="COMBO">
+                                    Combo de productos
+                                </option>
 
                             </select>
 
@@ -565,7 +569,7 @@ function Ofertas() {
 
                                 {
                                     tipo ===
-                                    "PORCENTAJE"
+                                        "PORCENTAJE"
                                         ? "Descuento %"
                                         : "Precio oferta"
                                 }
@@ -650,7 +654,7 @@ function Ofertas() {
                                         )
                                     }
                                     placeholder=
-                                        "Buscar producto"
+                                    "Buscar producto"
                                 />
 
                                 <button
@@ -726,38 +730,38 @@ function Ofertas() {
                             {seleccionados.length >
                                 0 && (
 
-                                <div className="offer-selected">
+                                    <div className="offer-selected">
 
-                                    <strong>
-                                        Seleccionados:
-                                    </strong>
+                                        <strong>
+                                            Seleccionados:
+                                        </strong>
 
-                                    {seleccionados.map(
-                                        (producto) => (
+                                        {seleccionados.map(
+                                            (producto) => (
 
-                                            <button
-                                                key={
-                                                    producto.id
-                                                }
-                                                type="button"
-                                                onClick={() =>
-                                                    seleccionarProducto(
-                                                        producto
-                                                    )
-                                                }
-                                            >
-                                                {
-                                                    producto.nombre
-                                                }
-                                                {" ×"}
-                                            </button>
+                                                <button
+                                                    key={
+                                                        producto.id
+                                                    }
+                                                    type="button"
+                                                    onClick={() =>
+                                                        seleccionarProducto(
+                                                            producto
+                                                        )
+                                                    }
+                                                >
+                                                    {
+                                                        producto.nombre
+                                                    }
+                                                    {" ×"}
+                                                </button>
 
-                                        )
-                                    )}
+                                            )
+                                        )}
 
-                                </div>
+                                    </div>
 
-                            )}
+                                )}
 
                         </div>
 
@@ -855,7 +859,7 @@ function Ofertas() {
                                         <td>
                                             {
                                                 oferta.tipo ===
-                                                "PORCENTAJE"
+                                                    "PORCENTAJE"
                                                     ? "Porcentaje"
                                                     : "Precio fijo"
                                             }
@@ -865,7 +869,7 @@ function Ofertas() {
 
                                             {
                                                 oferta.tipo ===
-                                                "PORCENTAJE"
+                                                    "PORCENTAJE"
 
                                                     ? `${oferta.valor}%`
 
