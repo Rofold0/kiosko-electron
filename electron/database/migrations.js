@@ -2003,6 +2003,37 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
 
         }
     },
+    {
+        version: 18,
+
+        name: "ofertas-combo-reglas-dinamicas",
+
+        up(db) {
+
+            db.exec(`
+            ALTER TABLE ofertas_combo
+            ADD COLUMN modo_precio TEXT
+                NOT NULL
+                DEFAULT 'FIJO'
+                CHECK (
+                    modo_precio IN (
+                        'FIJO',
+                        'DESCUENTO_PORCENTAJE',
+                        'PAGA_UNIDADES'
+                    )
+                );
+
+
+            ALTER TABLE ofertas_combo
+            ADD COLUMN valor_regla REAL
+                CHECK (
+                    valor_regla IS NULL
+                    OR valor_regla > 0
+                );
+        `);
+
+        }
+    },
 ];
 
 

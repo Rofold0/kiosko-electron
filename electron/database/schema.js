@@ -465,6 +465,11 @@ CREATE TABLE IF NOT EXISTS ofertas_combo (
 
     precio_combo REAL NOT NULL,
 
+    modo_precio TEXT NOT NULL
+        DEFAULT 'FIJO',
+
+    valor_regla REAL,
+
     fecha_desde TEXT NOT NULL,
     fecha_hasta TEXT NOT NULL,
 
@@ -477,6 +482,19 @@ CREATE TABLE IF NOT EXISTS ofertas_combo (
         precio_combo > 0
     ),
 
+    CHECK (
+        modo_precio IN (
+            'FIJO',
+            'DESCUENTO_PORCENTAJE',
+            'PAGA_UNIDADES'
+        )
+    ),
+
+     CHECK (
+        valor_regla IS NULL
+        OR valor_regla > 0
+    ),
+    
     CHECK (
         fecha_hasta >
         fecha_desde

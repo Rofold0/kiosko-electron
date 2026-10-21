@@ -1184,6 +1184,8 @@ function Ofertas() {
                                         <input
                                             type="number"
                                             step="0.01"
+                                            min="0"
+                                            max="99.99  "
                                             value={
                                                 descuentoPorcentaje
                                             }
@@ -1252,7 +1254,7 @@ function Ofertas() {
 
                                         <input
                                             type="number"
-                                            min="0"
+                                            min="0.1"
                                             step="0.01"
                                             value={
                                                 valor
