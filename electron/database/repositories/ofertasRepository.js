@@ -231,9 +231,8 @@ const listarCombosStmt =
 
             c.precio_combo
                 AS valor,
-                
+
             c.modo_precio,
-            c.alcance_descuento,
 
             c.valor_regla,
             c.alcance_descuento,
