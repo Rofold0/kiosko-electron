@@ -284,7 +284,7 @@ const comboStmt =
             creado_en,
             actualizado_en
 
-        FROM ofertas_combo
+        FROM ofertas_combo c
 
         WHERE id = ?
     `);
