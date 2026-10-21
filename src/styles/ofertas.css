@@ -115,3 +115,37 @@
 .offer-selected-item input {
     width: 70px;
 }
+.offer-price-editor {
+    grid-column: 1 / -1;
+}
+
+
+.offer-price-editor h3 {
+    margin-bottom: 12px;
+}
+
+
+.offer-price-summary {
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(120px, 1fr)
+        );
+}
+
+
+.offer-price-editor input[readonly] {
+    opacity: 0.75;
+}
+
+
+@media (
+    max-width: 650px
+) {
+
+    .offer-price-summary {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+}

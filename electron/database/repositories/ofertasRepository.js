@@ -63,7 +63,7 @@ const productosOfertaStmt =
             p.id,
             p.nombre,
             p.codigo,
-
+            pr.costo,
             pr.precio_venta
 
         FROM ofertas_productos op
@@ -94,6 +94,7 @@ const buscarProductosStmt =
             p.nombre,
             p.codigo,
 
+            pr.costo,
             pr.precio_venta
 
         FROM productos p
@@ -287,6 +288,7 @@ const productosComboStmt =
             p.nombre,
             p.codigo,
 
+            pr.costo,
             pr.precio_venta,
 
             cp.cantidad

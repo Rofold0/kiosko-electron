@@ -25,6 +25,53 @@ const moneda =
                 "ARS"
         }
     );
+function redondear(valor) {
+
+    return Math.round(
+        (
+            Number(valor) +
+            Number.EPSILON
+        ) * 100
+    ) / 100;
+
+}
+
+
+function numero(valor) {
+
+    const resultado =
+        Number(valor);
+
+
+    return Number.isFinite(
+        resultado
+    )
+        ? resultado
+        : 0;
+
+}
+
+
+function textoNumero(valor) {
+
+    if (
+        !Number.isFinite(
+            valor
+        )
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(
+        redondear(
+            valor
+        )
+    );
+
+}
 
 
 function fechaLocal(
@@ -120,6 +167,30 @@ function Ofertas() {
         setValor
     ] = useState("");
 
+    const [
+        gananciaPorcentaje,
+        setGananciaPorcentaje
+    ] = useState("");
+
+
+    const [
+        gananciaValor,
+        setGananciaValor
+    ] = useState("");
+
+
+    const [
+        descuentoPorcentaje,
+        setDescuentoPorcentaje
+    ] = useState("");
+
+
+    const [
+        modoCalculoCombo,
+        setModoCalculoCombo
+    ] = useState(
+        "precio"
+    );
 
     const [
         desde,
@@ -217,27 +288,27 @@ function Ofertas() {
     const limpiar =
         () => {
 
-            setEditandoId(
-                null
-            );
+            setEditandoId(null);
 
             setNombre("");
 
-            setTipo(
-                "PORCENTAJE"
-            );
+            setTipo("PORCENTAJE");
 
             setValor("");
 
-            setDesde(
-                fechaLocal()
-            );
+            setDesde(fechaLocal());
 
-            setHasta(
-                fechaLocal(24)
-            );
+            setHasta(fechaLocal(24));
 
             setSeleccionados([]);
+
+            setGananciaPorcentaje("");
+
+            setGananciaValor("");
+
+            setDescuentoPorcentaje("");
+
+            setModoCalculoCombo("precio");
 
         };
 
@@ -330,6 +401,336 @@ function Ofertas() {
             [seleccionados]
         );
 
+    const costoCombo =
+        useMemo(
+            () =>
+                redondear(
+                    seleccionados.reduce(
+                        (
+                            total,
+                            producto
+                        ) =>
+                            total +
+                            numero(
+                                producto.costo
+                            ) *
+                            (
+                                producto.cantidad ||
+                                1
+                            ),
+                        0
+                    )
+                ),
+            [seleccionados]
+        );
+
+
+    const precioNormalCombo =
+        useMemo(
+            () =>
+                redondear(
+                    seleccionados.reduce(
+                        (
+                            total,
+                            producto
+                        ) =>
+                            total +
+                            numero(
+                                producto.precio_venta
+                            ) *
+                            (
+                                producto.cantidad ||
+                                1
+                            ),
+                        0
+                    )
+                ),
+            [seleccionados]
+        );
+
+    const actualizarMetricasDesdePrecio =
+        (precio) => {
+
+            const precioNumero =
+                numero(
+                    precio
+                );
+
+
+            const ganancia =
+                redondear(
+                    precioNumero -
+                    costoCombo
+                );
+
+
+            const porcentajeGanancia =
+                costoCombo === 0
+                    ? null
+                    : redondear(
+                        ganancia /
+                        costoCombo *
+                        100
+                    );
+
+
+            const porcentajeDescuento =
+                precioNormalCombo === 0
+                    ? null
+                    : redondear(
+                        (
+                            precioNormalCombo -
+                            precioNumero
+                        ) /
+                        precioNormalCombo *
+                        100
+                    );
+
+
+            setGananciaValor(
+                textoNumero(
+                    ganancia
+                )
+            );
+
+
+            setGananciaPorcentaje(
+                porcentajeGanancia ===
+                    null
+                    ? ""
+                    : textoNumero(
+                        porcentajeGanancia
+                    )
+            );
+
+
+            setDescuentoPorcentaje(
+                porcentajeDescuento ===
+                    null
+                    ? ""
+                    : textoNumero(
+                        porcentajeDescuento
+                    )
+            );
+
+        };
+
+
+    const cambiarPrecioCombo =
+        (valorNuevo) => {
+
+            setModoCalculoCombo(
+                "precio"
+            );
+
+            setValor(
+                valorNuevo
+            );
+
+            actualizarMetricasDesdePrecio(
+                valorNuevo
+            );
+
+        };
+
+
+    const cambiarGananciaCombo =
+        (valorNuevo) => {
+
+            setModoCalculoCombo(
+                "ganancia"
+            );
+
+            setGananciaValor(
+                valorNuevo
+            );
+
+
+            const precio =
+                redondear(
+                    costoCombo +
+                    numero(
+                        valorNuevo
+                    )
+                );
+
+
+            setValor(
+                textoNumero(
+                    precio
+                )
+            );
+
+
+            const porcentaje =
+                costoCombo === 0
+                    ? null
+                    : redondear(
+                        numero(
+                            valorNuevo
+                        ) /
+                        costoCombo *
+                        100
+                    );
+
+
+            setGananciaPorcentaje(
+                porcentaje === null
+                    ? ""
+                    : textoNumero(
+                        porcentaje
+                    )
+            );
+
+
+            const descuento =
+                precioNormalCombo === 0
+                    ? null
+                    : redondear(
+                        (
+                            precioNormalCombo -
+                            precio
+                        ) /
+                        precioNormalCombo *
+                        100
+                    );
+
+
+            setDescuentoPorcentaje(
+                descuento === null
+                    ? ""
+                    : textoNumero(
+                        descuento
+                    )
+            );
+
+        };
+
+
+    const cambiarGananciaPorcentajeCombo =
+        (valorNuevo) => {
+
+            setModoCalculoCombo(
+                "porcentaje"
+            );
+
+            setGananciaPorcentaje(
+                valorNuevo
+            );
+
+
+            const ganancia =
+                redondear(
+                    costoCombo *
+                    numero(
+                        valorNuevo
+                    ) /
+                    100
+                );
+
+
+            const precio =
+                redondear(
+                    costoCombo +
+                    ganancia
+                );
+
+
+            setGananciaValor(
+                textoNumero(
+                    ganancia
+                )
+            );
+
+
+            setValor(
+                textoNumero(
+                    precio
+                )
+            );
+
+
+            const descuento =
+                precioNormalCombo === 0
+                    ? null
+                    : redondear(
+                        (
+                            precioNormalCombo -
+                            precio
+                        ) /
+                        precioNormalCombo *
+                        100
+                    );
+
+
+            setDescuentoPorcentaje(
+                descuento === null
+                    ? ""
+                    : textoNumero(
+                        descuento
+                    )
+            );
+
+        };
+
+
+    const cambiarDescuentoCombo =
+        (valorNuevo) => {
+
+            setModoCalculoCombo(
+                "descuento"
+            );
+
+            setDescuentoPorcentaje(
+                valorNuevo
+            );
+
+
+            const precio =
+                redondear(
+                    precioNormalCombo *
+                    (
+                        1 -
+                        numero(
+                            valorNuevo
+                        ) /
+                        100
+                    )
+                );
+
+
+            setValor(
+                textoNumero(
+                    precio
+                )
+            );
+
+
+            const ganancia =
+                redondear(
+                    precio -
+                    costoCombo
+                );
+
+
+            setGananciaValor(
+                textoNumero(
+                    ganancia
+                )
+            );
+
+
+            setGananciaPorcentaje(
+                costoCombo === 0
+                    ? ""
+                    : textoNumero(
+                        ganancia /
+                        costoCombo *
+                        100
+                    )
+            );
+
+        };
 
     const guardar =
         async (event) => {
@@ -482,6 +883,10 @@ function Ofertas() {
                     )
                 );
 
+                setModoCalculoCombo(
+                    "precio"
+                );
+
                 setDesde(
                     oferta.fecha_desde
                         .slice(
@@ -551,6 +956,63 @@ function Ofertas() {
 
         };
 
+    useEffect(() => {
+
+        if (
+            tipo !==
+            "COMBO" ||
+            seleccionados.length ===
+            0
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            modoCalculoCombo ===
+            "descuento"
+        ) {
+
+            cambiarDescuentoCombo(
+                descuentoPorcentaje
+            );
+
+
+        } else if (
+            modoCalculoCombo ===
+            "porcentaje"
+        ) {
+
+            cambiarGananciaPorcentajeCombo(
+                gananciaPorcentaje
+            );
+
+
+        } else if (
+            modoCalculoCombo ===
+            "ganancia"
+        ) {
+
+            cambiarGananciaCombo(
+                gananciaValor
+            );
+
+
+        } else {
+
+            actualizarMetricasDesdePrecio(
+                valor
+            );
+
+        }
+
+    }, [
+        costoCombo,
+        precioNormalCombo,
+        tipo
+    ]);
 
     return (
 
@@ -639,41 +1101,268 @@ function Ofertas() {
                         </div>
 
 
-                        <div className="form-field">
+                        {tipo !== "COMBO" ? (
 
-                            <label>
+                            <div className="form-field">
 
-                                {
-                                    tipo ===
-                                        "PORCENTAJE"
-
-                                        ? "Descuento %"
-
-                                        : tipo ===
-                                            "COMBO"
-
-                                            ? "Precio del combo"
-
+                                <label>
+                                    {
+                                        tipo ===
+                                            "PORCENTAJE"
+                                            ? "Descuento %"
                                             : "Precio oferta"
-                                }
+                                    }
+                                </label>
 
-                            </label>
+                                <input
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    value={
+                                        valor
+                                    }
+                                    onChange={(event) =>
+                                        setValor(
+                                            event.target.value
+                                        )
+                                    }
+                                />
 
-                            <input
-                                type="number"
-                                min="0.01"
-                                step="0.01"
-                                value={
-                                    valor
-                                }
-                                onChange={(event) =>
-                                    setValor(
-                                        event.target.value
-                                    )
-                                }
-                            />
+                            </div>
 
-                        </div>
+                        ) : (
+
+                            <div className="offer-price-editor">
+
+                                <h3>
+                                    Precio de la oferta
+                                </h3>
+
+
+                                <div className="price-grid">
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Costo total $
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            value={
+                                                costoCombo
+                                            }
+                                            readOnly
+                                        />
+
+                                    </div>
+
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Precio normal $
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            value={
+                                                precioNormalCombo
+                                            }
+                                            readOnly
+                                        />
+
+                                    </div>
+
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Descuento %
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                descuentoPorcentaje
+                                            }
+                                            onChange={(event) =>
+                                                cambiarDescuentoCombo(
+                                                    event.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Ganancia %
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                gananciaPorcentaje
+                                            }
+                                            onChange={(event) =>
+                                                cambiarGananciaPorcentajeCombo(
+                                                    event.target.value
+                                                )
+                                            }
+                                            disabled={
+                                                costoCombo === 0
+                                            }
+                                        />
+
+                                    </div>
+
+
+                                    <div className="form-field">
+
+                                        <label>
+                                            Ganancia neta $
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                gananciaValor
+                                            }
+                                            onChange={(event) =>
+                                                cambiarGananciaCombo(
+                                                    event.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+
+                                    <div className="form-field price-sale-field">
+
+                                        <label>
+                                            Precio oferta $
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={
+                                                valor
+                                            }
+                                            onChange={(event) =>
+                                                cambiarPrecioCombo(
+                                                    event.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    className={
+                                        numero(
+                                            gananciaValor
+                                        ) < 0
+
+                                            ? "price-summary price-summary--loss offer-price-summary"
+
+                                            : "price-summary offer-price-summary"
+                                    }
+                                >
+
+                                    <span>
+                                        Costo
+                                        <strong>
+                                            {
+                                                moneda.format(
+                                                    costoCombo
+                                                )
+                                            }
+                                        </strong>
+                                    </span>
+
+
+                                    <span>
+                                        Precio normal
+                                        <strong>
+                                            {
+                                                moneda.format(
+                                                    precioNormalCombo
+                                                )
+                                            }
+                                        </strong>
+                                    </span>
+
+
+                                    <span>
+                                        Ganancia neta
+                                        <strong>
+                                            {
+                                                moneda.format(
+                                                    numero(
+                                                        gananciaValor
+                                                    )
+                                                )
+                                            }
+                                        </strong>
+                                    </span>
+
+
+                                    <span>
+                                        Ganancia
+                                        <strong>
+                                            {
+                                                gananciaPorcentaje ===
+                                                    ""
+                                                    ? "—"
+                                                    : `${gananciaPorcentaje}%`
+                                            }
+                                        </strong>
+                                    </span>
+
+
+                                    <span>
+                                        Descuento
+                                        <strong>
+                                            {
+                                                descuentoPorcentaje ===
+                                                    ""
+                                                    ? "—"
+                                                    : `${descuentoPorcentaje}%`
+                                            }
+                                        </strong>
+                                    </span>
+
+
+                                    <span>
+                                        Oferta
+                                        <strong>
+                                            {
+                                                moneda.format(
+                                                    numero(
+                                                        valor
+                                                    )
+                                                )
+                                            }
+                                        </strong>
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        )}
 
 
                         <div className="form-field">
