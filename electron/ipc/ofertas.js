@@ -23,6 +23,20 @@ const TIPOS =
         "COMBO"
     ]);
 
+const MODOS_PRECIO_COMBO =
+    new Set([
+        "FIJO",
+        "DESCUENTO_PORCENTAJE",
+        "PAGA_UNIDADES"
+    ]);
+
+
+const ALCANCES_DESCUENTO =
+    new Set([
+        "TOTAL_COMBO",
+        "ULTIMA_UNIDAD"
+    ]);
+
 
 function validarId(
     valor
@@ -305,6 +319,206 @@ function validarProductosCombo(
 
 }
 
+function validarModoPrecioCombo(
+    valor
+) {
+
+    const modo =
+        String(
+            valor ||
+            "FIJO"
+        )
+            .trim()
+            .toUpperCase();
+
+
+    if (
+        !MODOS_PRECIO_COMBO.has(
+            modo
+        )
+    ) {
+
+        throw new Error(
+            "La modalidad del combo es inválida."
+        );
+
+    }
+
+
+    return modo;
+
+}
+
+
+function validarAlcanceDescuento(
+    valor
+) {
+
+    const alcance =
+        String(
+            valor ||
+            "TOTAL_COMBO"
+        )
+            .trim()
+            .toUpperCase();
+
+
+    if (
+        !ALCANCES_DESCUENTO.has(
+            alcance
+        )
+    ) {
+
+        throw new Error(
+            "El alcance del descuento es inválido."
+        );
+
+    }
+
+
+    return alcance;
+
+}
+
+
+function validarReglaCombo({
+    modoPrecio,
+    valorRegla,
+    alcanceDescuento,
+    productos
+}) {
+
+    if (
+        modoPrecio ===
+        "FIJO"
+    ) {
+
+        return {
+
+            valorRegla:
+                null,
+
+            alcanceDescuento:
+                "TOTAL_COMBO"
+
+        };
+
+    }
+
+
+    const valor =
+        Number(
+            valorRegla
+        );
+
+
+    if (
+        !Number.isFinite(
+            valor
+        ) ||
+        valor <= 0
+    ) {
+
+        throw new Error(
+            "El valor de la regla del combo es inválido."
+        );
+
+    }
+
+
+    if (
+        modoPrecio ===
+        "DESCUENTO_PORCENTAJE"
+    ) {
+
+        if (
+            valor >= 100
+        ) {
+
+            throw new Error(
+                "El descuento debe ser menor a 100%."
+            );
+
+        }
+
+
+        if (
+            alcanceDescuento ===
+            "ULTIMA_UNIDAD" &&
+            productos.length !== 1
+        ) {
+
+            throw new Error(
+                "El descuento en la última unidad sólo puede usarse con un único producto."
+            );
+
+        }
+
+
+        return {
+
+            valorRegla:
+                valor,
+
+            alcanceDescuento
+
+        };
+
+    }
+
+
+    if (
+        !Number.isInteger(
+            valor
+        )
+    ) {
+
+        throw new Error(
+            "Las unidades que se pagan deben ser un número entero."
+        );
+
+    }
+
+
+    if (
+        productos.length !== 1
+    ) {
+
+        throw new Error(
+            "Las promociones 2x1, 3x2, etc. sólo pueden utilizar un producto."
+        );
+
+    }
+
+
+    const unidadesLlevadas =
+        productos[0]
+            .cantidad;
+
+
+    if (
+        valor >=
+        unidadesLlevadas
+    ) {
+
+        throw new Error(
+            "Las unidades que se pagan deben ser menores a las unidades que se llevan."
+        );
+
+    }
+
+
+    return {
+
+        valorRegla:
+            valor,
+
+        alcanceDescuento:
+            "TOTAL_COMBO"
+
+    };
+
+}
 
 function validarDatos(
     datos
@@ -366,10 +580,51 @@ function validarDatos(
         "COMBO"
     ) {
 
-        resultado.productosCombo =
+        const productosCombo =
             validarProductosCombo(
                 datos?.productos_combo
             );
+
+
+        const modoPrecio =
+            validarModoPrecioCombo(
+                datos?.modo_precio
+            );
+
+
+        const alcanceDescuento =
+            validarAlcanceDescuento(
+                datos?.alcance_descuento
+            );
+
+
+        const regla =
+            validarReglaCombo({
+
+                modoPrecio,
+
+                valorRegla:
+                    datos?.valor_regla,
+
+                alcanceDescuento,
+
+                productos:
+                    productosCombo
+
+            });
+
+
+        resultado.productosCombo =
+            productosCombo;
+
+        resultado.modoPrecio =
+            modoPrecio;
+
+        resultado.valorRegla =
+            regla.valorRegla;
+
+        resultado.alcanceDescuento =
+            regla.alcanceDescuento;
 
 
     } else {

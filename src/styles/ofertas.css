@@ -149,3 +149,23 @@
     }
 
 }
+.offer-rule-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(200px, 1fr)
+        );
+
+    gap: 12px;
+
+    margin-bottom: 18px;
+
+    padding: 14px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 8px;
+}

@@ -184,6 +184,26 @@ function Ofertas() {
         setDescuentoPorcentaje
     ] = useState("");
 
+    const [
+        modoPrecioCombo,
+        setModoPrecioCombo
+    ] = useState(
+        "FIJO"
+    );
+
+
+    const [
+        valorReglaCombo,
+        setValorReglaCombo
+    ] = useState("");
+
+
+    const [
+        alcanceDescuento,
+        setAlcanceDescuento
+    ] = useState(
+        "TOTAL_COMBO"
+    );
 
     const [
         modoCalculoCombo,
@@ -309,6 +329,12 @@ function Ofertas() {
             setDescuentoPorcentaje("");
 
             setModoCalculoCombo("precio");
+
+            setModoPrecioCombo("FIJO");
+
+            setValorReglaCombo("");
+
+            setAlcanceDescuento("TOTAL_COMBO");
 
         };
 
@@ -732,6 +758,112 @@ function Ofertas() {
 
         };
 
+    const calcularPrecioReglaCombo =
+        () => {
+
+            if (
+                modoPrecioCombo ===
+                "FIJO"
+            ) {
+
+                return numero(
+                    valor
+                );
+
+            }
+
+
+            if (
+                modoPrecioCombo ===
+                "PAGA_UNIDADES"
+            ) {
+
+                if (
+                    seleccionados.length !==
+                    1
+                ) {
+
+                    return 0;
+
+                }
+
+
+                const producto =
+                    seleccionados[0];
+
+
+                return redondear(
+                    numero(
+                        producto.precio_venta
+                    ) *
+                    numero(
+                        valorReglaCombo
+                    )
+                );
+
+            }
+
+
+            const porcentaje =
+                numero(
+                    valorReglaCombo
+                );
+
+
+            if (
+                alcanceDescuento ===
+                "ULTIMA_UNIDAD"
+            ) {
+
+                if (
+                    seleccionados.length !==
+                    1
+                ) {
+
+                    return 0;
+
+                }
+
+
+                const producto =
+                    seleccionados[0];
+
+
+                const precioUnidad =
+                    numero(
+                        producto.precio_venta
+                    );
+
+
+                return redondear(
+
+                    precioNormalCombo -
+
+                    (
+                        precioUnidad *
+                        porcentaje /
+                        100
+                    )
+
+                );
+
+            }
+
+
+            return redondear(
+
+                precioNormalCombo *
+
+                (
+                    1 -
+                    porcentaje /
+                    100
+                )
+
+            );
+
+        };
+
     const guardar =
         async (event) => {
 
@@ -770,7 +902,28 @@ function Ofertas() {
                     tipo ===
                     "COMBO"
                 ) {
+                    datos.modo_precio =
+                        modoPrecioCombo;
 
+
+                    datos.valor_regla =
+                        modoPrecioCombo ===
+                            "FIJO"
+
+                            ? null
+
+                            : Number(
+                                valorReglaCombo
+                            );
+
+
+                    datos.alcance_descuento =
+                        modoPrecioCombo ===
+                            "DESCUENTO_PORCENTAJE"
+
+                            ? alcanceDescuento
+
+                            : "TOTAL_COMBO";
                     datos.productos_combo =
                         seleccionados.map(
                             (item) => ({
@@ -887,6 +1040,31 @@ function Ofertas() {
                     "precio"
                 );
 
+                setModoPrecioCombo(
+                    oferta.modo_precio ||
+                    "FIJO"
+                );
+
+
+                setValorReglaCombo(
+                    oferta.valor_regla ===
+                        null ||
+                        oferta.valor_regla ===
+                        undefined
+
+                        ? ""
+
+                        : String(
+                            oferta.valor_regla
+                        )
+                );
+
+
+                setAlcanceDescuento(
+                    oferta.alcance_descuento ||
+                    "TOTAL_COMBO"
+                );
+
                 setDesde(
                     oferta.fecha_desde
                         .slice(
@@ -957,10 +1135,11 @@ function Ofertas() {
         };
 
     useEffect(() => {
-
         if (
             tipo !==
             "COMBO" ||
+            modoPrecioCombo !==
+            "FIJO" ||
             seleccionados.length ===
             0
         ) {
@@ -1012,6 +1191,67 @@ function Ofertas() {
         costoCombo,
         precioNormalCombo,
         tipo
+    ]);
+
+    useEffect(() => {
+
+        if (
+            tipo !==
+            "COMBO" ||
+            modoPrecioCombo ===
+            "FIJO" ||
+            seleccionados.length ===
+            0
+        ) {
+
+            return;
+
+        }
+
+
+        const precio =
+            calcularPrecioReglaCombo();
+
+
+        setValor(
+            textoNumero(
+                precio
+            )
+        );
+
+
+        actualizarMetricasDesdePrecio(
+            precio
+        );
+
+    }, [
+        tipo,
+        modoPrecioCombo,
+        valorReglaCombo,
+        alcanceDescuento,
+        precioNormalCombo,
+        costoCombo,
+        seleccionados
+    ]);
+
+    useEffect(() => {
+
+        if (
+            alcanceDescuento ===
+            "ULTIMA_UNIDAD" &&
+            seleccionados.length !==
+            1
+        ) {
+
+            setAlcanceDescuento(
+                "TOTAL_COMBO"
+            );
+
+        }
+
+    }, [
+        seleccionados.length,
+        alcanceDescuento
     ]);
 
     return (
@@ -1133,7 +1373,159 @@ function Ofertas() {
                         ) : (
 
                             <div className="offer-price-editor">
+                                <div className="offer-rule-grid">
 
+                                    <div className="form-field">
+
+                                        <label>
+                                            Modalidad
+                                        </label>
+
+                                        <select
+                                            value={
+                                                modoPrecioCombo
+                                            }
+                                            onChange={(event) => {
+
+                                                const modo =
+                                                    event.target.value;
+
+
+                                                setModoPrecioCombo(
+                                                    modo
+                                                );
+
+                                                setValorReglaCombo("");
+
+
+                                                if (
+                                                    modo !==
+                                                    "DESCUENTO_PORCENTAJE"
+                                                ) {
+
+                                                    setAlcanceDescuento(
+                                                        "TOTAL_COMBO"
+                                                    );
+
+                                                }
+
+
+                                                if (
+                                                    modo ===
+                                                    "FIJO"
+                                                ) {
+
+                                                    setModoCalculoCombo(
+                                                        "precio"
+                                                    );
+
+                                                }
+
+                                            }}
+                                        >
+
+                                            <option value="FIJO">
+                                                Precio final fijo
+                                            </option>
+
+                                            <option value="DESCUENTO_PORCENTAJE">
+                                                Descuento porcentual
+                                            </option>
+
+                                            <option value="PAGA_UNIDADES">
+                                                Llevás X, pagás Y
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    {modoPrecioCombo ===
+                                        "DESCUENTO_PORCENTAJE" && (
+
+                                            <div className="form-field">
+
+                                                <label>
+                                                    Aplicar descuento
+                                                </label>
+
+                                                <select
+                                                    value={
+                                                        alcanceDescuento
+                                                    }
+                                                    onChange={(event) =>
+                                                        setAlcanceDescuento(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                >
+
+                                                    <option value="TOTAL_COMBO">
+                                                        Sobre toda la promoción
+                                                    </option>
+
+                                                    <option
+                                                        value="ULTIMA_UNIDAD"
+                                                        disabled={
+                                                            seleccionados.length !==
+                                                            1
+                                                        }
+                                                    >
+                                                        Solo sobre la última unidad
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+                                        )}
+
+
+                                    {modoPrecioCombo ===
+                                        "PAGA_UNIDADES" && (
+
+                                            <div className="form-field">
+
+                                                <label>
+                                                    Unidades que paga
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    step="1"
+                                                    max={
+                                                        seleccionados.length ===
+                                                            1
+
+                                                            ? Math.max(
+                                                                1,
+                                                                (
+                                                                    seleccionados[0]
+                                                                        .cantidad ||
+                                                                    1
+                                                                ) -
+                                                                1
+                                                            )
+
+                                                            : undefined
+                                                    }
+                                                    value={
+                                                        valorReglaCombo
+                                                    }
+                                                    onChange={(event) =>
+                                                        setValorReglaCombo(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                            </div>
+
+                                        )}
+
+                                </div>
                                 <h3>
                                     Precio de la oferta
                                 </h3>
@@ -1185,15 +1577,38 @@ function Ofertas() {
                                             type="number"
                                             step="0.01"
                                             min="0"
-                                            max="99.99  "
+                                            max="99.99"
                                             value={
-                                                descuentoPorcentaje
+                                                modoPrecioCombo ===
+                                                    "DESCUENTO_PORCENTAJE"
+
+                                                    ? valorReglaCombo
+
+                                                    : descuentoPorcentaje
                                             }
-                                            onChange={(event) =>
-                                                cambiarDescuentoCombo(
-                                                    event.target.value
-                                                )
+                                            readOnly={
+                                                modoPrecioCombo ===
+                                                "PAGA_UNIDADES"
                                             }
+                                            onChange={(event) => {
+
+                                                if (
+                                                    modoPrecioCombo ===
+                                                    "DESCUENTO_PORCENTAJE"
+                                                ) {
+
+                                                    setValorReglaCombo(
+                                                        event.target.value
+                                                    );
+
+                                                } else {
+
+                                                    cambiarDescuentoCombo(
+                                                        event.target.value
+                                                    );
+
+                                                }
+                                            }}
                                         />
 
                                     </div>
@@ -1210,6 +1625,10 @@ function Ofertas() {
                                             step="0.01"
                                             value={
                                                 gananciaPorcentaje
+                                            }
+                                            readOnly={
+                                                modoPrecioCombo !==
+                                                "FIJO"
                                             }
                                             onChange={(event) =>
                                                 cambiarGananciaPorcentajeCombo(
@@ -1236,6 +1655,10 @@ function Ofertas() {
                                             value={
                                                 gananciaValor
                                             }
+                                            readOnly={
+                                                modoPrecioCombo !==
+                                                "FIJO"
+                                            }
                                             onChange={(event) =>
                                                 cambiarGananciaCombo(
                                                     event.target.value
@@ -1254,10 +1677,14 @@ function Ofertas() {
 
                                         <input
                                             type="number"
-                                            min="0.1"
+                                            min="0.01"
                                             step="0.01"
                                             value={
                                                 valor
+                                            }
+                                            readOnly={
+                                                modoPrecioCombo !==
+                                                "FIJO"
                                             }
                                             onChange={(event) =>
                                                 cambiarPrecioCombo(

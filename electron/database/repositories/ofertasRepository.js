@@ -231,6 +231,12 @@ const listarCombosStmt =
 
             c.precio_combo
                 AS valor,
+                
+            c.modo_precio,
+            c.alcance_descuento,
+
+            c.valor_regla,
+            c.alcance_descuento,
 
             c.fecha_desde,
             c.fecha_hasta,
@@ -266,6 +272,10 @@ const comboStmt =
 
             precio_combo
                 AS valor,
+
+            c.modo_precio,
+            c.valor_regla,
+            c.alcance_descuento,
 
             fecha_desde,
             fecha_hasta,
@@ -320,15 +330,24 @@ const crearComboStmt =
         INSERT INTO ofertas_combo (
             nombre,
             precio_combo,
+
+            modo_precio,
+            valor_regla,
+            alcance_descuento,
+
             fecha_desde,
             fecha_hasta,
+
             activo,
+
             creado_en,
             actualizado_en
         )
 
         VALUES (
-            ?, ?, ?, ?,
+            ?, ?,
+            ?, ?, ?,
+            ?, ?,
             1,
             ?, ?
         )
@@ -344,8 +363,14 @@ const actualizarComboStmt =
         SET
             nombre = ?,
             precio_combo = ?,
+
+            modo_precio = ?,
+            valor_regla = ?,
+            alcance_descuento = ?,
+
             fecha_desde = ?,
             fecha_hasta = ?,
+
             actualizado_en = ?
 
         WHERE id = ?
@@ -789,6 +814,10 @@ const crearComboTransaction =
                     datos.nombre,
                     datos.valor,
 
+                    datos.modoPrecio,
+                    datos.valorRegla,
+                    datos.alcanceDescuento,
+
                     datos.fechaDesde,
                     datos.fechaHasta,
 
@@ -840,6 +869,10 @@ const actualizarComboTransaction =
 
                     datos.nombre,
                     datos.valor,
+
+                    datos.modoPrecio,
+                    datos.valorRegla,
+                    datos.alcanceDescuento,
 
                     datos.fechaDesde,
                     datos.fechaHasta,
