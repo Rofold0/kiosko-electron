@@ -470,6 +470,9 @@ CREATE TABLE IF NOT EXISTS ofertas_combo (
 
     valor_regla REAL,
 
+    alcance_descuento TEXT NOT NULL
+    DEFAULT 'TOTAL_COMBO',
+
     fecha_desde TEXT NOT NULL,
     fecha_hasta TEXT NOT NULL,
 
@@ -480,6 +483,13 @@ CREATE TABLE IF NOT EXISTS ofertas_combo (
 
     CHECK (
         precio_combo > 0
+    ),
+
+    CHECK (
+    alcance_descuento IN (
+        'TOTAL_COMBO',
+        'ULTIMA_UNIDAD'
+    )
     ),
 
     CHECK (
@@ -494,7 +504,7 @@ CREATE TABLE IF NOT EXISTS ofertas_combo (
         valor_regla IS NULL
         OR valor_regla > 0
     ),
-    
+
     CHECK (
         fecha_hasta >
         fecha_desde

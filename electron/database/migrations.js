@@ -2034,6 +2034,28 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
 
         }
     },
+    {
+    version: 19,
+
+    name: "alcance-descuento-combos",
+
+    up(db) {
+
+        db.exec(`
+            ALTER TABLE ofertas_combo
+            ADD COLUMN alcance_descuento TEXT
+                NOT NULL
+                DEFAULT 'TOTAL_COMBO'
+                CHECK (
+                    alcance_descuento IN (
+                        'TOTAL_COMBO',
+                        'ULTIMA_UNIDAD'
+                    )
+                );
+        `);
+
+    }
+},
 ];
 
 
