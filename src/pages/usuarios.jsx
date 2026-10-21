@@ -13,29 +13,39 @@ import {
 
 function Usuarios() {
     const {
-        puede
+        puede,
+        usuario:
+        usuarioSesion
     } =
         useAuth();
+
+
+    const esAdmin =
+        usuarioSesion
+            ?.rol_clave ===
+        "ADMIN";
+
+
     const puedeVerRoles =
-    puede(
-        "roles.ver"
-    );
+        puede(
+            "roles.ver"
+        );
 
 
-const puedeCrearUsuarios =
-    puede(
-        "usuarios.crear"
-    ) &&
-    puedeVerRoles;
+    const puedeCrearUsuarios =
+        puede(
+            "usuarios.crear"
+        ) &&
+        puedeVerRoles;
 
 
-const puedeModificarRoles =
-    puede(
-        "roles.modificar"
-    ) &&
-    puedeVerRoles;
+    const puedeModificarRoles =
+        puede(
+            "roles.modificar"
+        ) &&
+        puedeVerRoles;
 
-    
+
 
 
     const [
@@ -91,80 +101,96 @@ const puedeModificarRoles =
         setPermisosRol
     ] = useState([]);
 
+    const [
+        usuarioPassword,
+        setUsuarioPassword
+    ] = useState(null);
+
+
+    const [
+        nuevaPassword,
+        setNuevaPassword
+    ] = useState("");
+
+
+    const [
+        passwordAdministrador,
+        setPasswordAdministrador
+    ] = useState("");
 
     const cargar =
-    async () => {
+        async () => {
 
-        const usuariosPromise =
-            window
-                .electronAPI
-                .usuarios
-                .listar();
-
-
-        const rolesPromise =
-            puedeVerRoles
-                ? window
+            const usuariosPromise =
+                window
                     .electronAPI
                     .usuarios
-                    .roles()
-                : Promise.resolve(
-                    []
-                );
+                    .listar();
 
 
-        const permisosPromise =
-            puedeVerRoles
-                ? window
-                    .electronAPI
-                    .usuarios
-                    .permisos()
-                : Promise.resolve(
-                    []
-                );
+            const rolesPromise =
+                puedeVerRoles
+                    ? window
+                        .electronAPI
+                        .usuarios
+                        .roles()
+                    : Promise.resolve(
+                        []
+                    );
 
 
-        const [
-            usuariosData,
-            rolesData,
-            permisosData
-        ] =
-            await Promise.all([
-
-                usuariosPromise,
-                rolesPromise,
-                permisosPromise
-
-            ]);
+            const permisosPromise =
+                puedeVerRoles
+                    ? window
+                        .electronAPI
+                        .usuarios
+                        .permisos()
+                    : Promise.resolve(
+                        []
+                    );
 
 
-        setUsuarios(
-            usuariosData
-        );
+            const [
+                usuariosData,
+                rolesData,
+                permisosData
+            ] =
+                await Promise.all([
 
-        setRoles(
-            rolesData
-        );
+                    usuariosPromise,
+                    rolesPromise,
+                    permisosPromise
 
-        setPermisos(
-            permisosData
-        );
+                ]);
 
 
-        if (
-            rolesData.length > 0 &&
-            !rolId
-        ) {
-
-            setRolId(
-                String(
-                    rolesData[0].id
-                )
+            setUsuarios(
+                usuariosData
             );
 
-        }
+            setRoles(
+                rolesData
+            );
 
-    };
+            setPermisos(
+                permisosData
+            );
+
+
+            if (
+                rolesData.length > 0 &&
+                !rolId
+            ) {
+
+                setRolId(
+                    String(
+                        rolesData[0].id
+                    )
+                );
+
+            }
+
+        };
 
 
     useEffect(() => {
@@ -367,6 +393,62 @@ const puedeModificarRoles =
 
         };
 
+    const cambiarPassword =
+        async (event) => {
+
+            event.preventDefault();
+
+
+            if (!usuarioPassword) {
+
+                return;
+
+            }
+
+
+            try {
+
+                await window
+                    .electronAPI
+                    .usuarios
+                    .cambiarPassword({
+
+                        id:
+                            usuarioPassword.id,
+
+                        password:
+                            nuevaPassword,
+
+                        admin_password:
+                            passwordAdministrador
+
+                    });
+
+
+                setUsuarioPassword(
+                    null
+                );
+
+                setNuevaPassword("");
+
+                setPasswordAdministrador("");
+
+
+                await cargar();
+
+
+            } catch (error) {
+
+                await window
+                    .electronAPI
+                    .dialogos
+                    .error(
+                        error.message
+                    );
+
+            }
+
+        };
 
     return (
 
@@ -563,25 +645,47 @@ const puedeModificarRoles =
                                                 "usuarios.desactivar"
                                             ) && (
 
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        cambiarActivo(
-                                                            item
-                                                        )
-                                                    }
-                                                >
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            cambiarActivo(
+                                                                item
+                                                            )
+                                                        }
+                                                    >
 
-                                                    {
-                                                        item.activo
-                                                            ? "Desactivar"
-                                                            : "Activar"
-                                                    }
+                                                        {
+                                                            item.activo
+                                                                ? "Desactivar"
+                                                                : "Activar"
+                                                        }
 
-                                                </button>
+                                                    </button>
 
-                                            )}
+                                                )}
+                                            {esAdmin &&
+                                                puede(
+                                                    "usuarios.modificar"
+                                                ) && (
 
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+
+                                                            setUsuarioPassword(
+                                                                item
+                                                            );
+
+                                                            setNuevaPassword("");
+
+                                                            setPasswordAdministrador("");
+
+                                                        }}
+                                                    >
+                                                        Restablecer contraseña
+                                                    </button>
+
+                                                )}
                                         </td>
 
                                     </tr>
@@ -592,6 +696,113 @@ const puedeModificarRoles =
                         </tbody>
 
                     </table>
+                    {usuarioPassword && (
+
+                        <section className="users-password-reset">
+
+                            <h2>
+                                Cambiar contraseña
+                            </h2>
+
+
+                            <p>
+                                Usuario:{" "}
+                                <strong>
+                                    {
+                                        usuarioPassword.nombre
+                                    }
+                                </strong>
+                            </p>
+
+
+                            <form
+                                className="users-form"
+                                onSubmit={
+                                    cambiarPassword
+                                }
+                            >
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Nueva contraseña
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        autoComplete="off"
+                                        value={
+                                            nuevaPassword
+                                        }
+                                        onChange={(event) =>
+                                            setNuevaPassword(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                    <small>
+                                        Se muestra para que el
+                                        administrador pueda comunicarla
+                                        al usuario.
+                                    </small>
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        Tu contraseña de administrador
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        autoComplete="current-password"
+                                        value={
+                                            passwordAdministrador
+                                        }
+                                        onChange={(event) =>
+                                            setPasswordAdministrador(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+
+                                <div className="form-actions">
+
+                                    <button type="submit">
+                                        Cambiar contraseña
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+
+                                            setUsuarioPassword(
+                                                null
+                                            );
+
+                                            setNuevaPassword("");
+
+                                            setPasswordAdministrador("");
+
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </section>
+
+                    )}
 
                 </div>
 

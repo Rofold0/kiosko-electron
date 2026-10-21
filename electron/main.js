@@ -12,7 +12,7 @@ import {
 } from "./ipc/index.js";
 
 import {
-  createMenu
+  clearMenu
 } from "./menu/applicationMenu.js";
 
 
@@ -64,7 +64,7 @@ function createWindow() {
   }
 
 
-  createMenu(mainWindow);
+  clearMenu();
 
 
   mainWindow.on("closed", () => {

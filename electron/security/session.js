@@ -27,6 +27,9 @@ function sesionPublica(
 
         rol:
             sesion.rol,
+            
+        rol_clave:
+            sesion.rol_clave,
 
         permisos:
             [
@@ -59,6 +62,9 @@ export function establecerSesion(
 
         rol:
             usuario.rol_nombre,
+
+        rol_clave:
+            usuario.rol_clave,
 
         permisos:
             new Set(

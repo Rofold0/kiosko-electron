@@ -1,6 +1,12 @@
 import {
-    ipcMain
+    ipcMain,
+    BrowserWindow
 } from "electron";
+
+import {
+    createMenu,
+    clearMenu
+} from "../menu/applicationMenu.js";
 
 import {
     crearPassword,
@@ -13,7 +19,8 @@ import {
     cerrarSesion,
     exigirPermiso,
     invalidarUsuario,
-    invalidarRol
+    invalidarRol,
+    exigirSesion
 } from "../security/session.js";
 
 import {
@@ -152,6 +159,63 @@ function validarId(
 
 }
 
+async function verificarAdministrador(
+    event,
+    password
+) {
+
+    const sesion =
+        exigirSesion(
+            event
+        );
+
+
+    const administrador =
+        obtenerUsuarioLogin(
+            sesion.usuario
+        );
+
+
+    if (
+        !administrador ||
+        administrador.rol_clave !==
+        "ADMIN"
+    ) {
+
+        throw new Error(
+            "Esta operación requiere una cuenta Administrador."
+        );
+
+    }
+
+
+    const correcto =
+        await verificarPassword(
+
+            validarPassword(
+                password
+            ),
+
+            administrador.password_salt,
+
+            administrador.password_hash
+
+        );
+
+
+    if (!correcto) {
+
+        throw new Error(
+            "La contraseña del administrador es incorrecta."
+        );
+
+    }
+
+
+    return sesion;
+
+}
+
 
 async function crearUsuarioInterno({
     usuario,
@@ -225,6 +289,31 @@ async function crearUsuarioInterno({
 
 }
 
+function actualizarMenuSesion(
+    event,
+    sesion
+) {
+
+    const ventana =
+        BrowserWindow
+            .fromWebContents(
+                event.sender
+            );
+
+
+    if (!ventana) {
+
+        return;
+
+    }
+
+
+    createMenu(
+        ventana,
+        sesion
+    );
+
+}
 
 export function registerUsuariosHandlers() {
 
@@ -235,17 +324,41 @@ export function registerUsuariosHandlers() {
 
     ipcMain.handle(
         "auth:estado",
-        (event) => ({
 
-            requiere_configuracion:
-                !hayUsuarios(),
+        (event) => {
 
-            usuario:
+            const sesion =
                 obtenerSesion(
                     event
-                )
+                );
 
-        })
+
+            if (sesion) {
+
+                actualizarMenuSesion(
+                    event,
+                    sesion
+                );
+
+
+            } else {
+
+                clearMenu();
+
+            }
+
+
+            return {
+
+                requiere_configuracion:
+                    !hayUsuarios(),
+
+                usuario:
+                    sesion
+
+            };
+
+        }
     );
 
 
@@ -330,6 +443,11 @@ export function registerUsuariosHandlers() {
                         permisos
                     }
                 );
+
+            actualizarMenuSesion(
+                event,
+                sesion
+            );
 
 
             auditar(
@@ -438,6 +556,11 @@ export function registerUsuariosHandlers() {
                     }
                 );
 
+            actualizarMenuSesion(
+                event,
+                sesion
+            );
+
 
             auditar(
                 event,
@@ -501,6 +624,8 @@ export function registerUsuariosHandlers() {
             cerrarSesion(
                 event
             );
+
+            clearMenu();
 
 
             return true;
@@ -640,6 +765,11 @@ export function registerUsuariosHandlers() {
             event,
             datos
         ) => {
+            const id =
+                validarId(
+                    datos?.id
+                );
+
             const anterior =
                 obtenerUsuario(
                     id
@@ -658,22 +788,6 @@ export function registerUsuariosHandlers() {
                 "usuarios.modificar"
             );
 
-
-            const id =
-                validarId(
-                    datos?.id
-                );
-
-
-            if (
-                !obtenerUsuario(id)
-            ) {
-
-                throw new Error(
-                    "El usuario no existe."
-                );
-
-            }
 
 
             const rolId =
@@ -773,6 +887,10 @@ export function registerUsuariosHandlers() {
                 "usuarios.modificar"
             );
 
+            await verificarAdministrador(
+                event,
+                datos?.admin_password
+            );
 
             const id =
                 validarId(

@@ -162,7 +162,10 @@ function Dashboard() {
 
             {puede(
                 "stock.ver"
-            ) && (
+            ) &&
+                !cargandoAlertas &&
+                !errorAlertas &&
+                alertasStock.length > 0 && (
 
                     <section className="stock-alert-panel">
 
