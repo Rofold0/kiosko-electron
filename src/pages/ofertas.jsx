@@ -1254,6 +1254,64 @@ function Ofertas() {
         alcanceDescuento
     ]);
 
+    function descripcionValorOferta(
+        oferta
+    ) {
+
+        if (
+            oferta.tipo ===
+            "PORCENTAJE"
+        ) {
+
+            return `${oferta.valor}%`;
+
+        }
+
+
+        if (
+            oferta.tipo !==
+            "COMBO" ||
+            oferta.modo_precio ===
+            "FIJO"
+        ) {
+
+            return moneda.format(
+                oferta.valor
+            );
+
+        }
+
+
+        if (
+            oferta.modo_precio ===
+            "PAGA_UNIDADES"
+        ) {
+
+            return (
+                `Pagás ${oferta.valor_regla} unidad(es)`
+            );
+
+        }
+
+
+        if (
+            oferta.alcance_descuento ===
+            "ULTIMA_UNIDAD"
+        ) {
+
+            return (
+                `${oferta.valor_regla}% en última unidad`
+            );
+
+        }
+
+
+        return (
+            `${oferta.valor_regla}% OFF`
+        );
+
+    }
+
     return (
 
         <div className="page">
@@ -2145,6 +2203,13 @@ function Ofertas() {
                                         <td>
                                             {
                                                 oferta.estado_vigencia
+                                            }
+                                        </td>
+                                        <td>
+                                            {
+                                                descripcionValorOferta(
+                                                    oferta
+                                                )
                                             }
                                         </td>
 

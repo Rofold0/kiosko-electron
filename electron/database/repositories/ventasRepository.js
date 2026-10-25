@@ -1449,17 +1449,62 @@ function aplicarCombos(
 
         };
 
-    const firmaElecciones =
-        (elecciones) => {
+    const tieneIdsMenores =
+        (
+            candidata,
+            actual
+        ) => {
 
-            return [
-                ...elecciones
-            ]
-                .sort(
-                    (a, b) =>
-                        a - b
-                )
-                .join(",");
+            const a =
+                [
+                    ...candidata
+                ].sort(
+                    (x, y) =>
+                        x - y
+                );
+
+
+            const b =
+                [
+                    ...actual
+                ].sort(
+                    (x, y) =>
+                        x - y
+                );
+
+
+            const limite =
+                Math.min(
+                    a.length,
+                    b.length
+                );
+
+
+            for (
+                let i = 0;
+                i < limite;
+                i += 1
+            ) {
+
+                if (
+                    a[i] !==
+                    b[i]
+                ) {
+
+                    return (
+                        a[i] <
+                        b[i]
+                    );
+
+                }
+
+            }
+
+
+            return (
+                a.length <
+                b.length
+            );
 
         };
 
@@ -1540,13 +1585,9 @@ function aplicarCombos(
              * sea completamente determinista.
              */
 
-            return (
-                firmaElecciones(
-                    candidata.elecciones
-                ) <
-                firmaElecciones(
-                    actual.elecciones
-                )
+            return tieneIdsMenores(
+                candidata.elecciones,
+                actual.elecciones
             );
 
         };

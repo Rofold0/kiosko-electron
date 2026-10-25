@@ -58,10 +58,23 @@ function descripcionCombo(
         "PAGA_UNIDADES"
     ) {
 
+        const cantidadPromos =
+            Number(
+                combo.cantidad
+            ) || 1;
+
+
+        const unidadesTotales =
+            Number(
+                combo.productos
+                    ?.[0]
+                    ?.cantidad
+            ) || 0;
+
+
         const unidades =
-            combo.productos
-                ?.[0]
-                ?.cantidad;
+            unidadesTotales /
+            cantidadPromos;
 
 
         return (
@@ -704,20 +717,25 @@ function Ventas() {
                             notas,
 
                             items:
-                                items.map(
-                                    (item) => ({
-
-                                        producto_id:
-                                            item.producto_id,
-
-                                        precio_id:
-                                            item.precio_id,
-
-                                        cantidad:
-                                            item.cantidad
-
-                                    })
+                                (
+                                    cotizacion.carrito?.length
+                                        ? cotizacion.carrito
+                                        : items
                                 )
+                                    .map(
+                                        (item) => ({
+
+                                            producto_id:
+                                                item.producto_id,
+
+                                            precio_id:
+                                                item.precio_id,
+
+                                            cantidad:
+                                                item.cantidad
+
+                                        })
+                                    )
 
                         });
 
@@ -2000,7 +2018,10 @@ function Ventas() {
                                             <td>
                                                 {
                                                     moneda.format(
-                                                        combo.costo_total
+                                                        combo.cantidad > 0
+                                                            ? combo.costo_total /
+                                                            combo.cantidad
+                                                            : 0
                                                     )
                                                 }
                                             </td>

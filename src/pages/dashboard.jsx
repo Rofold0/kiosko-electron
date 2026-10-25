@@ -384,7 +384,9 @@ function Dashboard() {
                     puede("ventas.crear") ||
                     puede("caja.ver") ||
                     puede("gastos.ver") ||
-                    puede("usuarios.ver")
+                    puede("usuarios.ver")||
+                    puede("ofertas.ver") ||
+                    puede("auditoria.ver")
                 ) && (
 
                         <DashboardCard

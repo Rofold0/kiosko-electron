@@ -11,11 +11,12 @@ import {
 } from "../auth/authContext.jsx";
 
 
-function Usuarios() {
+async function Usuarios() {
     const {
         puede,
         usuario:
-        usuarioSesion
+        usuarioSesion,
+        logout
     } =
         useAuth();
 
@@ -449,6 +450,27 @@ function Usuarios() {
             }
 
         };
+
+    const esPropiaCuenta =
+        usuarioPassword.id ===
+        usuarioSesion?.id;
+
+
+    setUsuarioPassword(null);
+    setNuevaPassword("");
+    setPasswordAdministrador("");
+
+
+    if (esPropiaCuenta) {
+
+        await logout();
+
+        return;
+
+    }
+
+
+    await cargar();
 
     return (
 

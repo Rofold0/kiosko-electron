@@ -2009,7 +2009,60 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
         name: "ofertas-combo-reglas-dinamicas",
 
         up(db) {
+            const columnas =
+                db.pragma(
+                    "table_info(ofertas_combo)"
+                );
 
+
+            const nombres =
+                new Set(
+                    columnas.map(
+                        (columna) =>
+                            columna.name
+                    )
+                );
+
+
+            if (
+                !nombres.has(
+                    "modo_precio"
+                )
+            ) {
+
+                db.exec(`
+                ALTER TABLE ofertas_combo
+                ADD COLUMN modo_precio TEXT
+                    NOT NULL
+                    DEFAULT 'FIJO'
+                    CHECK (
+                        modo_precio IN (
+                            'FIJO',
+                            'DESCUENTO_PORCENTAJE',
+                            'PAGA_UNIDADES'
+                        )
+                    );
+            `);
+
+            }
+
+
+            if (
+                !nombres.has(
+                    "valor_regla"
+                )
+            ) {
+
+                db.exec(`
+                ALTER TABLE ofertas_combo
+                ADD COLUMN valor_regla REAL
+                    CHECK (
+                        valor_regla IS NULL
+                        OR valor_regla > 0
+                    );
+            `);
+
+            }
             db.exec(`
             ALTER TABLE ofertas_combo
             ADD COLUMN modo_precio TEXT
@@ -2035,13 +2088,44 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
         }
     },
     {
-    version: 19,
+        version: 19,
 
-    name: "alcance-descuento-combos",
+        name: "alcance-descuento-combos",
 
-    up(db) {
+        up(db) {
 
-        db.exec(`
+            const columnas =
+                db.pragma(
+                    "table_info(ofertas_combo)"
+                );
+
+
+            const existe =
+                columnas.some(
+                    (columna) =>
+                        columna.name ===
+                        "alcance_descuento"
+                );
+
+
+            if (!existe) {
+
+                db.exec(`
+                ALTER TABLE ofertas_combo
+                ADD COLUMN alcance_descuento TEXT
+                    NOT NULL
+                    DEFAULT 'TOTAL_COMBO'
+                    CHECK (
+                        alcance_descuento IN (
+                            'TOTAL_COMBO',
+                            'ULTIMA_UNIDAD'
+                        )
+                    );
+            `);
+
+            }
+
+            db.exec(`
             ALTER TABLE ofertas_combo
             ADD COLUMN alcance_descuento TEXT
                 NOT NULL
@@ -2054,8 +2138,8 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
                 );
         `);
 
-    }
-},
+        }
+    },
 ];
 
 
