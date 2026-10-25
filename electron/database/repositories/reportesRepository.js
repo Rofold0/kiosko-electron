@@ -1726,7 +1726,82 @@ export function obtenerDashboardReportes({
             ventas.facturacion ||
             0
         );
+    const facturacionCategorias =
+        redondear(
+            categorias.reduce(
+                (
+                    total,
+                    categoria
+                ) =>
+                    total +
+                    Number(
+                        categoria.facturacion ||
+                        0
+                    ),
+                0
+            )
+        );
 
+
+    const margenCategorias =
+        redondear(
+            categorias.reduce(
+                (
+                    total,
+                    categoria
+                ) =>
+                    total +
+                    Number(
+                        categoria.margen_bruto ||
+                        0
+                    ),
+                0
+            )
+        );
+
+
+    const diferenciaFacturacion =
+        redondear(
+            facturacion -
+            facturacionCategorias
+        );
+
+
+    const diferenciaMargen =
+        redondear(
+            Number(
+                items.margen_bruto ||
+                0
+            ) -
+            margenCategorias
+        );
+
+
+    if (
+        Math.abs(
+            diferenciaFacturacion
+        ) > 0.05 ||
+        Math.abs(
+            diferenciaMargen
+        ) > 0.05
+    ) {
+
+        console.warn(
+            "Reportes no concilian:",
+            {
+                facturacion,
+                facturacionCategorias,
+                diferenciaFacturacion,
+
+                margen:
+                    items.margen_bruto,
+
+                margenCategorias,
+                diferenciaMargen
+            }
+        );
+
+    }
 
     const metodosConPorcentaje =
         metodos.map(

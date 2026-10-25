@@ -788,12 +788,28 @@ function Reportes() {
                             </strong>
 
                             <small>
+
                                 {
-                                    resumen
-                                        .categoria_lider
-                                        ?.unidades ||
-                                    0
-                                } unidades
+                                    moneda.format(
+                                        resumen
+                                            .categoria_lider
+                                            ?.facturacion ||
+                                        0
+                                    )
+                                }
+
+                                {" · "}
+
+                                {
+                                    Number(
+                                        resumen
+                                            .categoria_lider
+                                            ?.participacion_facturacion ||
+                                        0
+                                    )
+                                        .toFixed(1)
+                                }%
+
                             </small>
 
                         </article>
@@ -1107,13 +1123,11 @@ function Reportes() {
                                 <thead>
 
                                     <tr>
-                                        <th>Categoría</th>
+                                        <th>Día</th>
                                         <th>Ventas</th>
                                         <th>Unidades</th>
                                         <th>Facturación</th>
-                                        <th>Participación</th>
-                                        <th>Margen</th>
-                                        <th>Margen %</th>
+                                        <th>Ticket promedio</th>
                                     </tr>
 
                                 </thead>
@@ -1129,23 +1143,31 @@ function Reportes() {
 
                                                     <tr
                                                         key={
-                                                            item.categoria_id
+                                                            item.dia
                                                         }
                                                     >
 
                                                         <td>
+
                                                             <strong>
-                                                                {item.categoria}
+                                                                {
+                                                                    diaTexto(
+                                                                        item.dia
+                                                                    )
+                                                                }
                                                             </strong>
+
                                                         </td>
+
 
                                                         <td>
                                                             {
                                                                 numero.format(
-                                                                    item.ventas
+                                                                    item.tickets
                                                                 )
                                                             }
                                                         </td>
+
 
                                                         <td>
                                                             {
@@ -1155,6 +1177,7 @@ function Reportes() {
                                                             }
                                                         </td>
 
+
                                                         <td>
                                                             {
                                                                 moneda.format(
@@ -1163,30 +1186,13 @@ function Reportes() {
                                                             }
                                                         </td>
 
-                                                        <td>
-                                                            {
-                                                                Number(
-                                                                    item.participacion_facturacion
-                                                                )
-                                                                    .toFixed(1)
-                                                            }%
-                                                        </td>
 
                                                         <td>
                                                             {
                                                                 moneda.format(
-                                                                    item.margen_bruto
+                                                                    item.ticket_promedio
                                                                 )
                                                             }
-                                                        </td>
-
-                                                        <td>
-                                                            {
-                                                                Number(
-                                                                    item.margen_porcentaje
-                                                                )
-                                                                    .toFixed(1)
-                                                            }%
                                                         </td>
 
                                                     </tr>
@@ -1223,8 +1229,10 @@ function Reportes() {
 
                                     <tr>
                                         <th>Categoría</th>
+                                        <th>Ventas</th>
                                         <th>Unidades</th>
                                         <th>Facturación</th>
+                                        <th>Participación</th>
                                         <th>Margen</th>
                                         <th>Margen %</th>
                                     </tr>
@@ -1247,10 +1255,24 @@ function Reportes() {
                                                     >
 
                                                         <td>
+
+                                                            <strong>
+                                                                {
+                                                                    item.categoria
+                                                                }
+                                                            </strong>
+
+                                                        </td>
+
+
+                                                        <td>
                                                             {
-                                                                item.categoria
+                                                                numero.format(
+                                                                    item.ventas
+                                                                )
                                                             }
                                                         </td>
+
 
                                                         <td>
                                                             {
@@ -1260,13 +1282,27 @@ function Reportes() {
                                                             }
                                                         </td>
 
+
+                                                        <td>
+                                                            <strong>
+                                                                {
+                                                                    moneda.format(
+                                                                        item.facturacion
+                                                                    )
+                                                                }
+                                                            </strong>
+                                                        </td>
+
+
                                                         <td>
                                                             {
-                                                                moneda.format(
-                                                                    item.facturacion
+                                                                Number(
+                                                                    item.participacion_facturacion
                                                                 )
-                                                            }
+                                                                    .toFixed(1)
+                                                            }%
                                                         </td>
+
 
                                                         <td>
                                                             {
@@ -1275,6 +1311,7 @@ function Reportes() {
                                                                 )
                                                             }
                                                         </td>
+
 
                                                         <td>
                                                             {
@@ -1298,7 +1335,6 @@ function Reportes() {
                         </div>
 
                     </section>
-
                     <section className="report-panel">
 
                         <h2>
