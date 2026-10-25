@@ -2383,41 +2383,6 @@ const registrarVentaTransaction =
         }
 
 
-        const stockAnterior =
-            producto.stock_actual;
-
-
-        const stockNuevo =
-            stockAnterior -
-            item.cantidad;
-
-
-        actualizarStockStmt.run(
-
-            stockNuevo,
-
-            producto.id
-
-        );
-
-        movimientoStockStmt.run(
-
-            producto.id,
-
-            "VENTA",
-
-            -item.cantidad,
-
-            stockAnterior,
-
-            stockNuevo,
-
-            `Venta #${venta.id}`,
-
-            fecha
-
-        );
-
 
 
         const conceptoCaja =
