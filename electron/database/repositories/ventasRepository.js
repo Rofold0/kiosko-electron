@@ -1369,7 +1369,18 @@ function aplicarCombos(
                             precio.precio_lista,
 
                         precio_calculado:
-                            precio.precio_combo
+                            precio.precio_combo,
+
+                        unidades_combo:
+                            combo.productos.reduce(
+                                (
+                                    total,
+                                    componente
+                                ) =>
+                                    total +
+                                    componente.cantidad,
+                                0
+                            )
 
                     };
 
@@ -1438,6 +1449,107 @@ function aplicarCombos(
 
         };
 
+    const firmaElecciones =
+        (elecciones) => {
+
+            return [
+                ...elecciones
+            ]
+                .sort(
+                    (a, b) =>
+                        a - b
+                )
+                .join(",");
+
+        };
+
+
+    const esMejorSolucion =
+        (
+            candidata,
+            actual
+        ) => {
+
+            if (
+                candidata.total <
+                actual.total
+            ) {
+
+                return true;
+
+            }
+
+
+            if (
+                candidata.total >
+                actual.total
+            ) {
+
+                return false;
+
+            }
+
+            if (
+                candidata.unidades_promocion >
+                actual.unidades_promocion
+            ) {
+
+                return true;
+
+            }
+
+
+            if (
+                candidata.unidades_promocion <
+                actual.unidades_promocion
+            ) {
+
+                return false;
+
+            }
+            /*
+             * Mismo precio:
+             * preferimos menos promociones.
+             */
+
+            if (
+                candidata.aplicaciones <
+                actual.aplicaciones
+            ) {
+
+                return true;
+
+            }
+
+
+            if (
+                candidata.aplicaciones >
+                actual.aplicaciones
+            ) {
+
+                return false;
+
+            }
+
+
+            /*
+             * Último desempate:
+             * IDs más bajos.
+             *
+             * Esto hace que el resultado
+             * sea completamente determinista.
+             */
+
+            return (
+                firmaElecciones(
+                    candidata.elecciones
+                ) <
+                firmaElecciones(
+                    actual.elecciones
+                )
+            );
+
+        };
 
     const resolver =
         (cantidades) => {
@@ -1459,6 +1571,14 @@ function aplicarCombos(
             }
 
 
+            /*
+             * Primera posibilidad:
+             * no aplicar ningún combo más.
+             *
+             * Las unidades restantes quedan
+             * con su mejor oferta individual.
+             */
+
             let mejor = {
 
                 total:
@@ -1466,8 +1586,14 @@ function aplicarCombos(
                         cantidades
                     ),
 
+                aplicaciones:
+                    0,
+                unidades_promocion:
+                    0,
+
                 elecciones:
                     []
+
             };
 
 
@@ -1511,6 +1637,14 @@ function aplicarCombos(
                     }
 
 
+                    /*
+                     * Estas unidades quedan
+                     * reservadas para ESTE combo.
+                     *
+                     * Ninguna otra promoción
+                     * podrá reutilizarlas.
+                     */
+
                     restantes[indice] -=
                         componente.cantidad;
 
@@ -1532,29 +1666,43 @@ function aplicarCombos(
                     );
 
 
-                const total =
-                    redondear(
-                        combo.precio_calculado +
-                        siguiente.total
-                    );
+                const candidata = {
+
+                    total:
+                        redondear(
+                            combo.precio_calculado +
+                            siguiente.total
+                        ),
+
+                    aplicaciones:
+                        1 +
+                        siguiente.aplicaciones,
+
+                    unidades_promocion:
+                        combo.unidades_combo +
+                        siguiente.unidades_promocion,
+
+                    elecciones: [
+
+                        combo.id,
+
+                        ...siguiente
+                            .elecciones
+
+                    ]
+
+                };
 
 
                 if (
-                    total <
-                    mejor.total
+                    esMejorSolucion(
+                        candidata,
+                        mejor
+                    )
                 ) {
 
-                    mejor = {
-
-                        total,
-
-                        elecciones: [
-                            combo.id,
-                            ...siguiente
-                                .elecciones
-                        ]
-
-                    };
+                    mejor =
+                        candidata;
 
                 }
 
