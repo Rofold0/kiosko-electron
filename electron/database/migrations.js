@@ -1981,10 +1981,12 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
     producto_id INTEGER NOT NULL,
 
     producto_nombre TEXT NOT NULL,
-
+categoria_id       INTEGER,
+    categoria_nombre   TEXT,
     cantidad INTEGER NOT NULL,
 
     costo_unitario REAL NOT NULL,
+    
 
     FOREIGN KEY (combo_venta_id)
         REFERENCES combos_venta(id),

@@ -385,6 +385,11 @@ const actualizarProductoTransaction =
         unidad
     }) => {
 
+        const ahora =
+            new Date()
+                .toISOString();
+
+
         const resultado =
             crearStmt.get(
 
@@ -400,26 +405,46 @@ const actualizarProductoTransaction =
             );
 
 
-        if (stockInicial > 0) {
+        const creado =
+            obtenerStmt.get(
+                resultado.id
+            );
+
+
+        insertarCategoriaHistorialStmt.run(
+
+            creado.id,
+
+            creado.categoria_id,
+
+            creado.categoria_nombre ||
+                "Sin categoría",
+
+            ahora
+
+        );
+
+
+        if (
+            stockInicial > 0
+        ) {
 
             registrarStockInicialStmt.run(
 
-                resultado.id,
+                creado.id,
 
                 stockInicial,
 
                 stockInicial,
 
-                new Date().toISOString()
+                ahora
 
             );
 
         }
 
 
-        return obtenerStmt.get(
-            resultado.id
-        );
+        return creado;
 
     });
 
@@ -547,39 +572,17 @@ export function crearProducto({
 
         return crearProductoTransaction({
 
-    nombre,
-    descripcion,
-    codigo,
-    categoriaId,
-    subcategoriaId,
-    stockInicial,
-    stockMinimo,
-    unidad
+     nombre,
+        descripcion,
+        codigo,
+        categoriaId,
+        subcategoriaId,
+        stockInicial,
+        stockMinimo,
+        unidad
 
 });
-const ahora =
-    new Date()
-        .toISOString();
 
-
-const creado =
-    obtenerStmt.get(
-        resultado.id
-    );
-
-
-insertarCategoriaHistorialStmt.run(
-
-    creado.id,
-
-    creado.categoria_id,
-
-    creado.categoria_nombre ||
-        "Sin categoría",
-
-    ahora
-
-);
 
     } catch (error) {
 

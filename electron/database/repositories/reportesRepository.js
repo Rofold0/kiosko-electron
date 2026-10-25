@@ -789,12 +789,12 @@ const categoriasTopStmt =
     db.prepare(`
         SELECT
             COALESCE(
-                c.id,
+                d.categoria_id,
                 0
             ) AS categoria_id,
 
             COALESCE(
-                c.nombre,
+                d.categoria_nombre,
                 'Sin categoría'
             ) AS categoria,
 
@@ -876,29 +876,11 @@ const categoriasTopStmt =
                 END,
                 2
             ) AS participacion_facturacion
-        SELECT
-    COALESCE(
-        d.categoria_id,
-        0
-    ) AS categoria_id,
 
-    COALESCE(
-        d.categoria_nombre,
-        'Sin categoría'
-    ) AS categoria,
         FROM ventas_detalle_productos d
 
-        INNER JOIN productos p
-            ON p.id =
-                d.producto_id
-
-        LEFT JOIN categorias c
-            ON c.id =
-                p.categoria_id
-
         WHERE
-            d.estado =
-                'ACTIVA'
+            d.estado = 'ACTIVA'
 
             AND d.fecha >=
                 @desde
@@ -907,8 +889,8 @@ const categoriasTopStmt =
                 @hasta
 
         GROUP BY
-    d.categoria_id,
-    d.categoria_nombre
+            d.categoria_id,
+            d.categoria_nombre
 
         ORDER BY
             facturacion DESC,

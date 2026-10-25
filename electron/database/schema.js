@@ -567,8 +567,7 @@ CREATE TABLE IF NOT EXISTS combos_venta (
     precio_unitario REAL NOT NULL,
 
     subtotal REAL NOT NULL,
-    categoria_id       INTEGER,
-    categoria_nombre   TEXT,
+    
 
     FOREIGN KEY (venta_id)
         REFERENCES ventas(id),
@@ -771,7 +770,7 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
     FOREIGN KEY (compra_id)
         REFERENCES compras(id)
 );
-    CREATE VIEW
+    CREATE VIEW IF NOT EXISTS
             ventas_detalle_productos
             AS
 
@@ -840,133 +839,147 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
 
             ),
 
-combo_base AS (
+            combo_base AS (
 
-    SELECT
-        *,
+                SELECT
+                    *,
 
-        precio_lista_unitario *
-        cantidad
-            AS valor_lista,
+                    precio_lista_unitario *
+                    cantidad
+                        AS valor_lista,
 
-        SUM(
-            precio_lista_unitario *
-            cantidad
-        ) OVER (
-            PARTITION BY
-                combo_venta_id
-        )
-            AS valor_lista_combo,
+                    SUM(
+                        precio_lista_unitario *
+                        cantidad
+                    ) OVER (
+                        PARTITION BY
+                            combo_venta_id
+                    )
+                        AS valor_lista_combo,
 
-        SUM(
-            cantidad
-        ) OVER (
-            PARTITION BY
-                combo_venta_id
-        )
-            AS unidades_combo
+                    SUM(
+                        cantidad
+                    ) OVER (
+                        PARTITION BY
+                            combo_venta_id
+                    )
+                        AS unidades_combo
 
-    FROM combo_componentes
+                FROM combo_componentes
 
-),
+            ),
 
-combo_asignado AS (
+            combo_asignado AS (
 
-    SELECT
-        *,
+                SELECT
+                    *,
 
-        CASE
+                    CASE
 
-            WHEN
-                valor_lista_combo > 0
+                        WHEN
+                            valor_lista_combo > 0
 
-            THEN
-                combo_subtotal *
-                valor_lista /
-                valor_lista_combo
+                        THEN
+                            combo_subtotal *
+                            valor_lista /
+                            valor_lista_combo
 
-            WHEN
-                unidades_combo > 0
+                        WHEN
+                            unidades_combo > 0
 
-            THEN
-                combo_subtotal *
-                cantidad /
-                unidades_combo
+                        THEN
+                            combo_subtotal *
+                            cantidad /
+                            unidades_combo
 
-            ELSE 0
+                        ELSE 0
 
-        END AS facturacion_asignada
+                    END
+                        AS facturacion_asignada
 
-    FROM combo_base
+                FROM combo_base
+            )
 
-)
+            SELECT
+                iv.venta_id,
+                v.fecha,
+                v.estado,
 
-SELECT
-    iv.venta_id,
+                iv.producto_id,
 
-    v.fecha,
-    v.estado,
+                iv.categoria_id,
 
-    iv.producto_id,
-    iv.cantidad,
+                COALESCE(
+                    iv.categoria_nombre,
+                    'Sin categoría'
+                )
+                    AS categoria_nombre,
 
-    iv.subtotal
-        AS facturacion,
+                iv.cantidad,
 
-    iv.costo_unitario *
-    iv.cantidad
-        AS costo_total,
+                iv.subtotal
+                    AS facturacion,
 
-    iv.subtotal -
-    (
-        iv.costo_unitario *
-        iv.cantidad
-    )
-        AS margen_bruto,
+                iv.costo_unitario *
+                iv.cantidad
+                    AS costo_total,
 
-    'ITEM'
-        AS origen,
+                iv.subtotal -
+                (
+                    iv.costo_unitario *
+                    iv.cantidad
+                )
+                    AS margen_bruto,
 
-    NULL
-        AS combo_venta_id
+                'ITEM'
+                    AS origen,
 
-FROM items_venta iv
+                NULL
+                    AS combo_venta_id
 
-INNER JOIN ventas v
-    ON v.id =
-        iv.venta_id
+            FROM items_venta iv
 
-UNION ALL
+            INNER JOIN ventas v
+                ON v.id =
+                    iv.venta_id
 
-SELECT
-    ca.venta_id,
 
-    ca.fecha,
-    ca.estado,
+            UNION ALL
 
-    ca.producto_id,
-    ca.cantidad,
 
-    ca.facturacion_asignada
-        AS facturacion,
+            SELECT
+                ca.venta_id,
+                ca.fecha,
+                ca.estado,
 
-    ca.costo_unitario *
-    ca.cantidad
-        AS costo_total,
+                ca.producto_id,
 
-    ca.facturacion_asignada -
-    (
-        ca.costo_unitario *
-        ca.cantidad
-    )
-        AS margen_bruto,
+                ca.categoria_id,
 
-    'COMBO'
-        AS origen,
+                COALESCE(
+                    ca.categoria_nombre,
+                    'Sin categoría'
+                )
+                    AS categoria_nombre,
 
-    ca.combo_venta_id
+                ca.cantidad,
 
-FROM combo_asignado ca;
+                ca.facturacion_asignada,
+
+                ca.costo_unitario *
+                ca.cantidad,
+
+                ca.facturacion_asignada -
+                (
+                    ca.costo_unitario *
+                    ca.cantidad
+                ),
+
+                'COMBO',
+
+                ca.combo_venta_id
+
+            FROM combo_asignado ca;
 
     `);
 

@@ -123,18 +123,18 @@ const productoVentaStmt =
                 AS precio_id,
 
             pr.costo,
-            pr.precio_venta
+            pr.precio_venta,
 
             COALESCE(
-    h.categoria_id,
-    p.categoria_id
-) AS categoria_id,
+                h.categoria_id,
+                p.categoria_id
+            ) AS categoria_id,
 
-COALESCE(
-    h.categoria_nombre,
-    c.nombre,
-    'Sin categoría'
-) AS categoria_nombre,
+            COALESCE(
+                h.categoria_nombre,
+                c.nombre,
+                'Sin categoría'
+            ) AS categoria_nombre
 
         FROM productos p
 
@@ -167,42 +167,43 @@ COALESCE(
 
             )
 
+        LEFT JOIN productos_categoria_historial h
+            ON h.id = (
+
+                SELECT
+                    hh.id
+
+                FROM productos_categoria_historial hh
+
+                WHERE
+                    hh.producto_id =
+                        p.id
+
+                    AND hh.fecha_desde <=
+                        @fecha
+
+                    AND (
+                        hh.fecha_hasta IS NULL
+                        OR hh.fecha_hasta >
+                            @fecha
+                    )
+
+                ORDER BY
+                    hh.fecha_desde DESC,
+                    hh.id DESC
+
+                LIMIT 1
+            )
+
+        LEFT JOIN categorias c
+            ON c.id =
+                p.categoria_id
+
         WHERE
             p.id =
                 @productoId
 
             AND p.activo = 1
-            LEFT JOIN productos_categoria_historial h
-    ON h.id = (
-
-        SELECT
-            hh.id
-
-        FROM productos_categoria_historial hh
-
-        WHERE
-            hh.producto_id =
-                p.id
-
-            AND hh.fecha_desde <=
-                @fecha
-
-            AND (
-                hh.fecha_hasta IS NULL
-                OR hh.fecha_hasta >
-                    @fecha
-            )
-
-        ORDER BY
-            hh.fecha_desde DESC,
-            hh.id DESC
-
-        LIMIT 1
-    )
-
-LEFT JOIN categorias c
-    ON c.id =
-        p.categoria_id
     `);
 
 const ofertasProductoStmt =
@@ -297,12 +298,12 @@ const crearItemStmt =
         INSERT INTO items_venta (
             venta_id,
             producto_id,
+            categoria_id,
+            categoria_nombre,
             precio_id,
             oferta_id,
             oferta_nombre,
             cantidad,
-            categoria_id,
-            categoria_nombre,
             costo_unitario,
             precio_lista,
             descuento_unitario,
@@ -310,8 +311,11 @@ const crearItemStmt =
             subtotal
         )
 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `);
+        VALUES (
+            ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?
+        )
+    `);
 
 const crearComboVentaStmt =
     db.prepare(`
@@ -342,9 +346,10 @@ const crearComboVentaProductoStmt =
             costo_unitario
         )
 
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (
+            ?, ?, ?, ?, ?, ?, ?
+        )
     `);
-
 
 const actualizarStockStmt =
     db.prepare(`
@@ -1472,26 +1477,25 @@ function aplicarCombos(
 
                     return {
 
-                        ...combo,
+                        producto_id:
+                            item.producto_id,
 
-                        precio_lista_calculado:
-                            precio.precio_lista,
+                        producto_nombre:
+                            item.producto_nombre,
 
-                        precio_calculado:
-                            precio.precio_combo,
-                            
+                        categoria_id:
+                            item.categoria_id,
 
-                        unidades_combo:
-                            combo.productos.reduce(
-                                (
-                                    total,
-                                    componente
-                                ) =>
-                                    total +
-                                    componente.cantidad,
-                                0
-                            ),
-                            
+                        categoria_nombre:
+                            item.categoria_nombre,
+
+                        cantidad,
+
+                        costo_unitario:
+                            item.costo_unitario,
+
+                        precio_lista:
+                            item.precio_lista
 
                     };
 
@@ -2567,33 +2571,33 @@ const registrarVentaTransaction =
         ) {
             crearItemStmt.run(
 
-    venta.id,
+                venta.id,
 
-    item.producto_id,
+                item.producto_id,
 
-    item.categoria_id,
+                item.categoria_id,
 
-    item.categoria_nombre,
+                item.categoria_nombre,
 
-    item.precio_id,
+                item.precio_id,
 
-    item.oferta_id,
+                item.oferta_id,
 
-    item.oferta_nombre,
+                item.oferta_nombre,
 
-    item.cantidad,
+                item.cantidad,
 
-    item.costo_unitario,
+                item.costo_unitario,
 
-    item.precio_lista,
+                item.precio_lista,
 
-    item.descuento_unitario,
+                item.descuento_unitario,
 
-    item.precio_unitario,
+                item.precio_unitario,
 
-    item.subtotal
+                item.subtotal
 
-);
+            );
         }
         for (
             const combo
@@ -2623,23 +2627,23 @@ const registrarVentaTransaction =
                 of combo.productos
             ) {
 
-               crearComboVentaProductoStmt.run(
+                crearComboVentaProductoStmt.run(
 
-    comboVenta.id,
+                    comboVenta.id,
 
-    producto.producto_id,
+                    producto.producto_id,
 
-    producto.producto_nombre,
+                    producto.producto_nombre,
 
-    producto.categoria_id,
+                    producto.categoria_id,
 
-    producto.categoria_nombre,
+                    producto.categoria_nombre,
 
-    producto.cantidad,
+                    producto.cantidad,
 
-    producto.costo_unitario
+                    producto.costo_unitario
 
-);
+                );
 
             }
 
