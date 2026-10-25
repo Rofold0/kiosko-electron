@@ -253,6 +253,126 @@ const eliminarStmt =
             ?
         )
     `);
+const cerrarCategoriaHistorialStmt =
+    db.prepare(`
+        UPDATE productos_categoria_historial
+
+        SET fecha_hasta = ?
+
+        WHERE
+            producto_id = ?
+            AND fecha_hasta IS NULL
+    `);
+
+
+const insertarCategoriaHistorialStmt =
+    db.prepare(`
+        INSERT INTO productos_categoria_historial (
+            producto_id,
+            categoria_id,
+            categoria_nombre,
+            fecha_desde,
+            fecha_hasta
+        )
+
+        VALUES (
+            ?, ?, ?, ?, NULL
+        )
+    `);
+const actualizarProductoTransaction =
+    db.transaction(({
+        id,
+        nombre,
+        descripcion,
+        codigo,
+        categoriaId,
+        subcategoriaId,
+        stockMinimo,
+        unidad
+    }) => {
+
+        const anterior =
+            obtenerStmt.get(
+                id
+            );
+
+
+        if (!anterior) {
+
+            throw new Error(
+                "El producto no existe."
+            );
+
+        }
+
+
+        const resultado =
+            actualizarStmt.get(
+
+                nombre,
+                descripcion,
+                codigo,
+                categoriaId,
+                subcategoriaId,
+                stockMinimo,
+                unidad,
+                id
+
+            );
+
+
+        if (!resultado) {
+
+            throw new Error(
+                "El producto no existe."
+            );
+
+        }
+
+
+        const actualizado =
+            obtenerStmt.get(
+                resultado.id
+            );
+
+
+        if (
+            anterior.categoria_id !==
+            actualizado.categoria_id
+        ) {
+
+            const ahora =
+                new Date()
+                    .toISOString();
+
+
+            cerrarCategoriaHistorialStmt.run(
+
+                ahora,
+                id
+
+            );
+
+
+            insertarCategoriaHistorialStmt.run(
+
+                id,
+
+                actualizado.categoria_id,
+
+                actualizado.categoria_nombre ||
+                    "Sin categoría",
+
+                ahora
+
+            );
+
+        }
+
+
+        return actualizado;
+
+    });
     const crearProductoTransaction =
     db.transaction(({
         nombre,
@@ -437,7 +557,29 @@ export function crearProducto({
     unidad
 
 });
+const ahora =
+    new Date()
+        .toISOString();
 
+
+const creado =
+    obtenerStmt.get(
+        resultado.id
+    );
+
+
+insertarCategoriaHistorialStmt.run(
+
+    creado.id,
+
+    creado.categoria_id,
+
+    creado.categoria_nombre ||
+        "Sin categoría",
+
+    ahora
+
+);
 
     } catch (error) {
 
@@ -480,33 +622,18 @@ export function actualizarProducto({
 
     try {
 
-        const resultado =
-            actualizarStmt.get(
+        return actualizarProductoTransaction({
 
-                nombre,
-                descripcion,
-                codigo,
-                categoriaId,
-                subcategoriaId,
-                stockMinimo,
-                unidad,
-                id
+    id,
+    nombre,
+    descripcion,
+    codigo,
+    categoriaId,
+    subcategoriaId,
+    stockMinimo,
+    unidad
 
-            );
-
-
-        if (!resultado) {
-
-            throw new Error(
-                "El producto no existe."
-            );
-
-        }
-
-
-        return obtenerStmt.get(
-            resultado.id
-        );
+});
 
 
     } catch (error) {

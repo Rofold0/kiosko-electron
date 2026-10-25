@@ -125,6 +125,17 @@ const productoVentaStmt =
             pr.costo,
             pr.precio_venta
 
+            COALESCE(
+    h.categoria_id,
+    p.categoria_id
+) AS categoria_id,
+
+COALESCE(
+    h.categoria_nombre,
+    c.nombre,
+    'Sin categoría'
+) AS categoria_nombre,
+
         FROM productos p
 
         INNER JOIN precios pr
@@ -161,6 +172,37 @@ const productoVentaStmt =
                 @productoId
 
             AND p.activo = 1
+            LEFT JOIN productos_categoria_historial h
+    ON h.id = (
+
+        SELECT
+            hh.id
+
+        FROM productos_categoria_historial hh
+
+        WHERE
+            hh.producto_id =
+                p.id
+
+            AND hh.fecha_desde <=
+                @fecha
+
+            AND (
+                hh.fecha_hasta IS NULL
+                OR hh.fecha_hasta >
+                    @fecha
+            )
+
+        ORDER BY
+            hh.fecha_desde DESC,
+            hh.id DESC
+
+        LIMIT 1
+    )
+
+LEFT JOIN categorias c
+    ON c.id =
+        p.categoria_id
     `);
 
 const ofertasProductoStmt =
@@ -259,6 +301,8 @@ const crearItemStmt =
             oferta_id,
             oferta_nombre,
             cantidad,
+            categoria_id,
+            categoria_nombre,
             costo_unitario,
             precio_lista,
             descuento_unitario,
@@ -292,6 +336,8 @@ const crearComboVentaProductoStmt =
             combo_venta_id,
             producto_id,
             producto_nombre,
+            categoria_id,
+            categoria_nombre,
             cantidad,
             costo_unitario
         )
@@ -1071,6 +1117,12 @@ function cotizarItems({
                 costo_unitario:
                     producto.costo,
 
+                categoria_id:
+                    producto.categoria_id,
+
+                categoria_nombre:
+                    producto.categoria_nombre,
+
                 precio_lista:
                     precio.precio_lista,
 
@@ -1427,6 +1479,7 @@ function aplicarCombos(
 
                         precio_calculado:
                             precio.precio_combo,
+                            
 
                         unidades_combo:
                             combo.productos.reduce(
@@ -1437,7 +1490,8 @@ function aplicarCombos(
                                     total +
                                     componente.cantidad,
                                 0
-                            )
+                            ),
+                            
 
                     };
 
@@ -2513,30 +2567,33 @@ const registrarVentaTransaction =
         ) {
             crearItemStmt.run(
 
-                venta.id,
+    venta.id,
 
-                item.producto_id,
+    item.producto_id,
 
-                item.precio_id,
+    item.categoria_id,
 
-                item.oferta_id,
+    item.categoria_nombre,
 
-                item.oferta_nombre,
+    item.precio_id,
 
-                item.cantidad,
+    item.oferta_id,
 
-                item.costo_unitario,
+    item.oferta_nombre,
 
-                item.precio_lista,
+    item.cantidad,
 
-                item.descuento_unitario,
+    item.costo_unitario,
 
-                item.precio_unitario,
+    item.precio_lista,
 
-                item.subtotal
+    item.descuento_unitario,
 
-            );
+    item.precio_unitario,
 
+    item.subtotal
+
+);
         }
         for (
             const combo
@@ -2566,26 +2623,30 @@ const registrarVentaTransaction =
                 of combo.productos
             ) {
 
-                crearComboVentaProductoStmt.run(
+               crearComboVentaProductoStmt.run(
 
-                    comboVenta.id,
+    comboVenta.id,
 
-                    producto.producto_id,
+    producto.producto_id,
 
-                    producto.producto_nombre,
+    producto.producto_nombre,
 
-                    producto.cantidad,
+    producto.categoria_id,
 
-                    producto.costo_unitario
+    producto.categoria_nombre,
 
-                );
+    producto.cantidad,
+
+    producto.costo_unitario
+
+);
 
             }
 
         }
         const fechaMovimientoStock =
-    new Date()
-        .toISOString();
+            new Date()
+                .toISOString();
         for (
             const item
             of normalizados

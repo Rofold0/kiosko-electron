@@ -567,6 +567,8 @@ CREATE TABLE IF NOT EXISTS combos_venta (
     precio_unitario REAL NOT NULL,
 
     subtotal REAL NOT NULL,
+    categoria_id       INTEGER,
+    categoria_nombre   TEXT,
 
     FOREIGN KEY (venta_id)
         REFERENCES ventas(id),
@@ -628,6 +630,9 @@ CREATE TABLE IF NOT EXISTS items_venta (
     precio_unitario     REAL NOT NULL,
     subtotal            REAL NOT NULL,
 
+    categoria_id       INTEGER,
+    categoria_nombre   TEXT,
+
     FOREIGN KEY (venta_id)
         REFERENCES ventas(id),
 
@@ -640,7 +645,41 @@ CREATE TABLE IF NOT EXISTS items_venta (
     FOREIGN KEY (oferta_id)
         REFERENCES ofertas(id)
 );
+CREATE TABLE IF NOT EXISTS
+productos_categoria_historial (
 
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    producto_id INTEGER NOT NULL,
+
+    categoria_id INTEGER,
+
+    categoria_nombre TEXT NOT NULL,
+
+    fecha_desde TEXT NOT NULL,
+
+    fecha_hasta TEXT,
+
+    FOREIGN KEY (producto_id)
+        REFERENCES productos(id)
+);
+
+
+CREATE INDEX IF NOT EXISTS
+idx_producto_categoria_historial_fecha
+ON productos_categoria_historial (
+    producto_id,
+    fecha_desde,
+    fecha_hasta
+);
+
+
+CREATE UNIQUE INDEX IF NOT EXISTS
+idx_producto_categoria_historial_actual
+ON productos_categoria_historial (
+    producto_id
+)
+WHERE fecha_hasta IS NULL;
 CREATE TABLE IF NOT EXISTS categorias_gasto (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
@@ -732,68 +771,74 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
     FOREIGN KEY (compra_id)
         REFERENCES compras(id)
 );
-CREATE VIEW IF NOT EXISTS
-ventas_detalle_productos
-AS
+    CREATE VIEW
+            ventas_detalle_productos
+            AS
 
-WITH combo_componentes AS (
+            WITH combo_componentes AS (
 
-    SELECT
-        cv.id
-            AS combo_venta_id,
-
-        cv.venta_id,
-
-        v.fecha,
-        v.estado,
-
-        cvp.producto_id,
-        cvp.cantidad,
-        cvp.costo_unitario,
-
-        cv.subtotal
-            AS combo_subtotal,
-
-        COALESCE(
-            (
                 SELECT
-                    ph.precio_venta
+                    cv.id
+                        AS combo_venta_id,
 
-                FROM precios ph
+                    cv.venta_id,
 
-                WHERE
-                    ph.producto_id =
-                        cvp.producto_id
+                    v.fecha,
+                    v.estado,
 
-                    AND ph.fecha_desde <=
-                        v.fecha
+                    cvp.producto_id,
 
-                    AND (
-                        ph.fecha_hasta IS NULL
-                        OR ph.fecha_hasta >
-                            v.fecha
+                    cvp.categoria_id,
+                    cvp.categoria_nombre,
+
+                    cvp.cantidad,
+                    cvp.costo_unitario,
+
+                    cv.subtotal
+                        AS combo_subtotal,
+
+                    COALESCE(
+                        (
+                            SELECT
+                                ph.precio_venta
+
+                            FROM precios ph
+
+                            WHERE
+                                ph.producto_id =
+                                    cvp.producto_id
+
+                                AND ph.fecha_desde <=
+                                    v.fecha
+
+                                AND (
+                                    ph.fecha_hasta IS NULL
+                                    OR
+                                    ph.fecha_hasta >
+                                        v.fecha
+                                )
+
+                            ORDER BY
+                                ph.fecha_desde DESC,
+                                ph.id DESC
+
+                            LIMIT 1
+                        ),
+                        0
                     )
+                        AS precio_lista_unitario
 
-                ORDER BY
-                    ph.fecha_desde DESC,
-                    ph.id DESC
+                FROM combos_venta cv
 
-                LIMIT 1
+                INNER JOIN ventas v
+                    ON v.id =
+                        cv.venta_id
+
+                INNER JOIN combos_venta_productos cvp
+                    ON cvp.combo_venta_id =
+                        cv.id
+
             ),
-            0
-        ) AS precio_lista_unitario
-
-    FROM combos_venta cv
-
-    INNER JOIN ventas v
-        ON v.id =
-            cv.venta_id
-
-    INNER JOIN combos_venta_productos cvp
-        ON cvp.combo_venta_id =
-            cv.id
-
-),
 
 combo_base AS (
 

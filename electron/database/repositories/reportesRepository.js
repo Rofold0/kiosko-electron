@@ -876,7 +876,16 @@ const categoriasTopStmt =
                 END,
                 2
             ) AS participacion_facturacion
+        SELECT
+    COALESCE(
+        d.categoria_id,
+        0
+    ) AS categoria_id,
 
+    COALESCE(
+        d.categoria_nombre,
+        'Sin categoría'
+    ) AS categoria,
         FROM ventas_detalle_productos d
 
         INNER JOIN productos p
@@ -898,8 +907,8 @@ const categoriasTopStmt =
                 @hasta
 
         GROUP BY
-            p.categoria_id,
-            c.nombre
+    d.categoria_id,
+    d.categoria_nombre
 
         ORDER BY
             facturacion DESC,

@@ -2326,6 +2326,482 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
 
     }
 },
+{
+    version: 21,
+
+    name: "categoria-historica-ventas",
+
+    up(db) {
+
+        const columnasItems =
+            new Set(
+                db.pragma(
+                    "table_info(items_venta)"
+                ).map(
+                    (columna) =>
+                        columna.name
+                )
+            );
+
+
+        if (
+            !columnasItems.has(
+                "categoria_id"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE items_venta
+                ADD COLUMN categoria_id INTEGER;
+            `);
+
+        }
+
+
+        if (
+            !columnasItems.has(
+                "categoria_nombre"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE items_venta
+                ADD COLUMN categoria_nombre TEXT;
+            `);
+
+        }
+
+
+        const columnasCombo =
+            new Set(
+                db.pragma(
+                    "table_info(combos_venta_productos)"
+                ).map(
+                    (columna) =>
+                        columna.name
+                )
+            );
+
+
+        if (
+            !columnasCombo.has(
+                "categoria_id"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE combos_venta_productos
+                ADD COLUMN categoria_id INTEGER;
+            `);
+
+        }
+
+
+        if (
+            !columnasCombo.has(
+                "categoria_nombre"
+            )
+        ) {
+
+            db.exec(`
+                ALTER TABLE combos_venta_productos
+                ADD COLUMN categoria_nombre TEXT;
+            `);
+
+        }
+
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS
+            productos_categoria_historial (
+
+                id INTEGER
+                    PRIMARY KEY AUTOINCREMENT,
+
+                producto_id INTEGER
+                    NOT NULL,
+
+                categoria_id INTEGER,
+
+                categoria_nombre TEXT
+                    NOT NULL,
+
+                fecha_desde TEXT
+                    NOT NULL,
+
+                fecha_hasta TEXT,
+
+                FOREIGN KEY (
+                    producto_id
+                )
+                    REFERENCES productos(id)
+            );
+
+
+            CREATE INDEX IF NOT EXISTS
+            idx_producto_categoria_historial_fecha
+            ON productos_categoria_historial (
+                producto_id,
+                fecha_desde,
+                fecha_hasta
+            );
+
+
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_producto_categoria_historial_actual
+            ON productos_categoria_historial (
+                producto_id
+            )
+            WHERE fecha_hasta IS NULL;
+
+
+            /*
+             * Historial anterior a esta migración:
+             * no podemos saber con certeza si
+             * un producto cambió de categoría.
+             *
+             * Usamos su categoría actual como
+             * mejor aproximación.
+             */
+
+            INSERT INTO productos_categoria_historial (
+                producto_id,
+                categoria_id,
+                categoria_nombre,
+                fecha_desde,
+                fecha_hasta
+            )
+
+            SELECT
+                p.id,
+                p.categoria_id,
+
+                COALESCE(
+                    c.nombre,
+                    'Sin categoría'
+                ),
+
+                '1970-01-01T00:00:00.000Z',
+
+                NULL
+
+            FROM productos p
+
+            LEFT JOIN categorias c
+                ON c.id =
+                    p.categoria_id
+
+            WHERE NOT EXISTS (
+
+                SELECT 1
+
+                FROM productos_categoria_historial h
+
+                WHERE
+                    h.producto_id =
+                        p.id
+
+                    AND h.fecha_hasta
+                        IS NULL
+            );
+
+
+            /*
+             * Snapshot de las ventas anteriores.
+             */
+
+            UPDATE items_venta
+
+            SET
+                categoria_id = (
+                    SELECT
+                        p.categoria_id
+
+                    FROM productos p
+
+                    WHERE
+                        p.id =
+                            items_venta.producto_id
+                ),
+
+                categoria_nombre =
+                    COALESCE(
+                        (
+                            SELECT
+                                c.nombre
+
+                            FROM productos p
+
+                            LEFT JOIN categorias c
+                                ON c.id =
+                                    p.categoria_id
+
+                            WHERE
+                                p.id =
+                                    items_venta.producto_id
+                        ),
+                        'Sin categoría'
+                    )
+
+            WHERE
+                categoria_nombre IS NULL;
+
+
+            UPDATE combos_venta_productos
+
+            SET
+                categoria_id = (
+                    SELECT
+                        p.categoria_id
+
+                    FROM productos p
+
+                    WHERE
+                        p.id =
+                            combos_venta_productos.producto_id
+                ),
+
+                categoria_nombre =
+                    COALESCE(
+                        (
+                            SELECT
+                                c.nombre
+
+                            FROM productos p
+
+                            LEFT JOIN categorias c
+                                ON c.id =
+                                    p.categoria_id
+
+                            WHERE
+                                p.id =
+                                    combos_venta_productos.producto_id
+                        ),
+                        'Sin categoría'
+                    )
+
+            WHERE
+                categoria_nombre IS NULL;
+
+
+            DROP VIEW IF EXISTS
+            ventas_detalle_productos;
+
+
+            CREATE VIEW
+            ventas_detalle_productos
+            AS
+
+            WITH combo_componentes AS (
+
+                SELECT
+                    cv.id
+                        AS combo_venta_id,
+
+                    cv.venta_id,
+
+                    v.fecha,
+                    v.estado,
+
+                    cvp.producto_id,
+
+                    cvp.categoria_id,
+                    cvp.categoria_nombre,
+
+                    cvp.cantidad,
+                    cvp.costo_unitario,
+
+                    cv.subtotal
+                        AS combo_subtotal,
+
+                    COALESCE(
+                        (
+                            SELECT
+                                ph.precio_venta
+
+                            FROM precios ph
+
+                            WHERE
+                                ph.producto_id =
+                                    cvp.producto_id
+
+                                AND ph.fecha_desde <=
+                                    v.fecha
+
+                                AND (
+                                    ph.fecha_hasta IS NULL
+                                    OR
+                                    ph.fecha_hasta >
+                                        v.fecha
+                                )
+
+                            ORDER BY
+                                ph.fecha_desde DESC,
+                                ph.id DESC
+
+                            LIMIT 1
+                        ),
+                        0
+                    )
+                        AS precio_lista_unitario
+
+                FROM combos_venta cv
+
+                INNER JOIN ventas v
+                    ON v.id =
+                        cv.venta_id
+
+                INNER JOIN combos_venta_productos cvp
+                    ON cvp.combo_venta_id =
+                        cv.id
+
+            ),
+
+            combo_base AS (
+
+                SELECT
+                    *,
+
+                    precio_lista_unitario *
+                    cantidad
+                        AS valor_lista,
+
+                    SUM(
+                        precio_lista_unitario *
+                        cantidad
+                    ) OVER (
+                        PARTITION BY
+                            combo_venta_id
+                    )
+                        AS valor_lista_combo,
+
+                    SUM(
+                        cantidad
+                    ) OVER (
+                        PARTITION BY
+                            combo_venta_id
+                    )
+                        AS unidades_combo
+
+                FROM combo_componentes
+
+            ),
+
+            combo_asignado AS (
+
+                SELECT
+                    *,
+
+                    CASE
+
+                        WHEN
+                            valor_lista_combo > 0
+
+                        THEN
+                            combo_subtotal *
+                            valor_lista /
+                            valor_lista_combo
+
+                        WHEN
+                            unidades_combo > 0
+
+                        THEN
+                            combo_subtotal *
+                            cantidad /
+                            unidades_combo
+
+                        ELSE 0
+
+                    END
+                        AS facturacion_asignada
+
+                FROM combo_base
+            )
+
+            SELECT
+                iv.venta_id,
+                v.fecha,
+                v.estado,
+
+                iv.producto_id,
+
+                iv.categoria_id,
+
+                COALESCE(
+                    iv.categoria_nombre,
+                    'Sin categoría'
+                )
+                    AS categoria_nombre,
+
+                iv.cantidad,
+
+                iv.subtotal
+                    AS facturacion,
+
+                iv.costo_unitario *
+                iv.cantidad
+                    AS costo_total,
+
+                iv.subtotal -
+                (
+                    iv.costo_unitario *
+                    iv.cantidad
+                )
+                    AS margen_bruto,
+
+                'ITEM'
+                    AS origen,
+
+                NULL
+                    AS combo_venta_id
+
+            FROM items_venta iv
+
+            INNER JOIN ventas v
+                ON v.id =
+                    iv.venta_id
+
+
+            UNION ALL
+
+
+            SELECT
+                ca.venta_id,
+                ca.fecha,
+                ca.estado,
+
+                ca.producto_id,
+
+                ca.categoria_id,
+
+                COALESCE(
+                    ca.categoria_nombre,
+                    'Sin categoría'
+                )
+                    AS categoria_nombre,
+
+                ca.cantidad,
+
+                ca.facturacion_asignada,
+
+                ca.costo_unitario *
+                ca.cantidad,
+
+                ca.facturacion_asignada -
+                (
+                    ca.costo_unitario *
+                    ca.cantidad
+                ),
+
+                'COMBO',
+
+                ca.combo_venta_id
+
+            FROM combo_asignado ca;
+        `);
+
+    }
+},
 ];
 
 

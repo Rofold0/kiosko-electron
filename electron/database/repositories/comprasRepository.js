@@ -570,6 +570,7 @@ const restaurarListaItemStmt =
         WHERE id = ?
     `);
 
+
 const revertirCompraTransaction =
     db.transaction(({
         compraId,

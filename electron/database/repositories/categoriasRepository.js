@@ -62,8 +62,98 @@ const tieneSubcategoriasStmt = db.prepare(`
 
     LIMIT 1
 `);
+const cerrarHistorialNombreCategoriaStmt =
+    db.prepare(`
+        UPDATE productos_categoria_historial
+
+        SET fecha_hasta =
+            @fecha
+
+        WHERE
+            categoria_id =
+                @categoriaId
+
+            AND fecha_hasta IS NULL
+    `);
 
 
+const abrirHistorialNombreCategoriaStmt =
+    db.prepare(`
+        INSERT INTO productos_categoria_historial (
+            producto_id,
+            categoria_id,
+            categoria_nombre,
+            fecha_desde,
+            fecha_hasta
+        )
+
+        SELECT
+            p.id,
+            @categoriaId,
+            @nombre,
+            @fecha,
+            NULL
+
+        FROM productos p
+
+        WHERE
+            p.categoria_id =
+                @categoriaId
+    `);
+
+const actualizarCategoriaTransaction =
+    db.transaction((
+        id,
+        nombre
+    ) => {
+
+        const categoria =
+            actualizarStmt.get(
+                nombre,
+                id
+            );
+
+
+        if (!categoria) {
+
+            throw new Error(
+                "La categoría no existe."
+            );
+
+        }
+
+
+        const fecha =
+            new Date()
+                .toISOString();
+
+
+        cerrarHistorialNombreCategoriaStmt.run({
+
+            categoriaId:
+                id,
+
+            fecha
+
+        });
+
+
+        abrirHistorialNombreCategoriaStmt.run({
+
+            categoriaId:
+                id,
+
+            nombre:
+                categoria.nombre,
+
+            fecha
+
+        });
+
+
+        return categoria;
+
+    });
 function esErrorDuplicado(error) {
 
     return (
@@ -110,11 +200,7 @@ export function actualizarCategoria(
 
     try {
 
-        const categoria =
-            actualizarStmt.get(
-                nombre,
-                id
-            );
+        const categoria = actualizarCategoriaTransaction(id, nombre);
 
 
         if (!categoria) {
