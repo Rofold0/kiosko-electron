@@ -374,7 +374,9 @@ const compraStmt =
 
         WHERE c.id = ?
     `);
-
+const fechaMovimientoStock =
+    new Date()
+        .toISOString();
 
 const itemsCompraStmt =
     db.prepare(`
@@ -987,6 +989,7 @@ function obtenerCompraCompleta(id) {
 
 
 const registrarCompraTransaction =
+
     db.transaction(({
         proveedorId,
         fecha,
@@ -995,6 +998,27 @@ const registrarCompraTransaction =
         metodoPago,
         items
     }) => {
+        const fechaCompra =
+    new Date(
+        fecha
+    );
+
+
+const ahora =
+    new Date();
+
+
+if (
+    fechaCompra.getTime() >
+    ahora.getTime() +
+    60_000
+) {
+
+    throw new Error(
+        "La fecha de compra no puede estar en el futuro."
+    );
+
+}
 
         const proveedor =
             proveedorStmt.get(
@@ -1052,7 +1076,7 @@ const registrarCompraTransaction =
             if (
                 new Date(fecha) <
                 new Date(
-                    caja.fecha_apertura
+                    fechaCompra
                 )
             ) {
 
@@ -1237,13 +1261,21 @@ const registrarCompraTransaction =
 
 
             movimientoStockStmt.run(
+
                 item.productoId,
+
                 "COMPRA",
+
                 item.cantidad,
+
                 stockAnterior,
+
                 stockNuevo,
-                `Compra #${compra.id} - ${proveedor.nombre}`,
-                fecha
+
+                `Compra #${compra.id} - ${proveedor.nombre} · Fecha compra: ${fecha}`,
+
+                fechaMovimientoStock
+
             );
 
 

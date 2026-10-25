@@ -969,65 +969,100 @@ export function registerUsuariosHandlers() {
     );
 
 
-    ipcMain.handle(
-        "usuarios:cambiar-activo",
-        (
-            event,
-            datos
-        ) => {
+   ipcMain.handle(
+    "usuarios:cambiar-activo",
 
+    (
+        event,
+        datos
+    ) => {
+
+        const sesion =
             exigirPermiso(
                 event,
                 "usuarios.desactivar"
             );
 
-            const anterior =
-                obtenerUsuario(
-                    id
-                );
 
-
-            const resultado =
-                cambiarEstadoUsuario({
-
-                    id,
-
-                    activo:
-                        datos?.activo ===
-                        true
-
-                });
-
-
-            auditar(
-                event,
-                {
-                    modulo:
-                        "USUARIOS",
-
-                    accion:
-                        resultado.activo
-                            ? "ACTIVAR"
-                            : "DESACTIVAR",
-
-                    entidad:
-                        "usuario",
-
-                    entidadId:
-                        id,
-
-                    descripcion:
-                        `Usuario ${anterior?.usuario || `#${id}`} ${resultado.activo ? "activado" : "desactivado"}.`
-                }
+        const id =
+            validarId(
+                datos?.id
             );
 
 
-            invalidarUsuario(
-                id
+        const activo =
+            datos?.activo ===
+            true;
+
+
+        if (
+            id === sesion.id &&
+            !activo
+        ) {
+
+            throw new Error(
+                "No puede desactivar su propia cuenta."
             );
 
         }
-    );
+
+
+        const anterior =
+            obtenerUsuario(
+                id
+            );
+
+
+        if (!anterior) {
+
+            throw new Error(
+                "El usuario no existe."
+            );
+
+        }
+
+
+        const resultado =
+            cambiarEstadoUsuario({
+
+                id,
+                activo
+
+            });
+
+
+        auditar(
+            event,
+            {
+                modulo:
+                    "USUARIOS",
+
+                accion:
+                    resultado.activo
+                        ? "ACTIVAR"
+                        : "DESACTIVAR",
+
+                entidad:
+                    "usuario",
+
+                entidadId:
+                    id,
+
+                descripcion:
+                    `Usuario ${anterior.usuario} ${resultado.activo ? "activado" : "desactivado"}.`
+            }
+        );
+
+
+        invalidarUsuario(
+            id
+        );
+
+
+        return resultado;
+
+    }
+);
 
 
     ipcMain.handle(
@@ -1152,11 +1187,6 @@ export function registerUsuariosHandlers() {
             invalidarRol(
                 rolId
             );
-
-            invalidarRol(
-                rolId
-            );
-
 
             return true;
 

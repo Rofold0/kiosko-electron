@@ -614,7 +614,27 @@ const registrarGastoTransaction =
         metodoPago,
         notas
     }) => {
+        const fechaGasto =
+    new Date(
+        fecha
+    );
 
+
+const ahora =
+    new Date();
+
+
+if (
+    fechaGasto.getTime() >
+    ahora.getTime() +
+    60_000
+) {
+
+    throw new Error(
+        "La fecha del gasto no puede estar en el futuro."
+    );
+
+}
         const caja =
             cajaAbiertaStmt.get();
 

@@ -469,6 +469,9 @@ const ventaStmt =
         WHERE id = ?
     `);
 
+const fechaMovimientoStock =
+    new Date()
+        .toISOString();
 
 const itemsVentaStmt =
     db.prepare(`
@@ -2230,7 +2233,7 @@ export function buscarProductosVenta({ busqueda = "", limite = 30, fecha }) {
 
         patron:
             `%${texto}%`,
-        
+
         fecha,
 
         limite
@@ -2622,9 +2625,9 @@ const registrarVentaTransaction =
 
                 stockNuevo,
 
-                `Venta #${venta.id}`,
+                `Venta #${venta.id} · Fecha venta: ${fecha}`,
 
-                fecha
+                fechaMovimientoStock
 
             );
 

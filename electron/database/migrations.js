@@ -2063,27 +2063,6 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
             `);
 
             }
-            db.exec(`
-            ALTER TABLE ofertas_combo
-            ADD COLUMN modo_precio TEXT
-                NOT NULL
-                DEFAULT 'FIJO'
-                CHECK (
-                    modo_precio IN (
-                        'FIJO',
-                        'DESCUENTO_PORCENTAJE',
-                        'PAGA_UNIDADES'
-                    )
-                );
-
-
-            ALTER TABLE ofertas_combo
-            ADD COLUMN valor_regla REAL
-                CHECK (
-                    valor_regla IS NULL
-                    OR valor_regla > 0
-                );
-        `);
 
         }
     },
@@ -2124,19 +2103,6 @@ CREATE TABLE IF NOT EXISTS combos_venta_productos (
             `);
 
             }
-
-            db.exec(`
-            ALTER TABLE ofertas_combo
-            ADD COLUMN alcance_descuento TEXT
-                NOT NULL
-                DEFAULT 'TOTAL_COMBO'
-                CHECK (
-                    alcance_descuento IN (
-                        'TOTAL_COMBO',
-                        'ULTIMA_UNIDAD'
-                    )
-                );
-        `);
 
         }
     },
