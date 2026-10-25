@@ -77,27 +77,70 @@ function createWindow() {
   }
 }
 
-
-app.whenReady().then(() => {
-
-  registerIpcHandlers();
-
-  createWindow();
+const tieneBloqueo =
+    app.requestSingleInstanceLock();
 
 
-  app.on("activate", () => {
+if (!tieneBloqueo) {
 
-    if (
-      BrowserWindow
-        .getAllWindows()
-        .length === 0
-    ) {
-      createWindow();
-    }
+    app.quit();
 
-  });
+} else {
 
-});
+    app.on(
+        "second-instance",
+        () => {
+
+            if (!mainWindow) {
+                return;
+            }
+
+
+            if (
+                mainWindow.isMinimized()
+            ) {
+
+                mainWindow.restore();
+
+            }
+
+
+            mainWindow.show();
+            mainWindow.focus();
+
+        }
+    );
+
+
+    app.whenReady()
+        .then(() => {
+
+            registerIpcHandlers();
+
+            createWindow();
+
+
+            app.on(
+                "activate",
+                () => {
+
+                    if (
+                        BrowserWindow
+                            .getAllWindows()
+                            .length === 0
+                    ) {
+
+                        createWindow();
+
+                    }
+
+                }
+            );
+
+        });
+
+}
+
 
 
 app.on("window-all-closed", () => {

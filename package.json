@@ -1,8 +1,8 @@
 {
   "name": "kiosko",
+  "productName": "Anotador de Vicios",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -10,9 +10,12 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "electron": "electron .",
-    "start": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron\""
+    "start": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron\"",
+     "postinstall": "electron-builder install-app-deps",
+    "app:dir": "npm run build && electron-builder --dir",
+    "app:dist": "npm run build && electron-builder"
   },
-  "dependencies": {
+   "dependencies": {
     "better-sqlite3": "^13.0.3",
     "exceljs": "^4.4.0",
     "react": "^19.2.8",
@@ -26,8 +29,33 @@
     "@vitejs/plugin-react": "^6.1.0",
     "concurrently": "^10.0.5",
     "electron": "^44.0.0",
+    "electron-builder": "^26.18.0",
     "oxlint": "^1.79.0",
     "vite": "^8.2.2",
     "wait-on": "^9.1.0"
-  }
+  },
+   "build": {
+    "appId": "com.vicio.anotador",
+    "productName": "Anotador de Vicios",
+
+    "directories": {
+      "output": "release"
+    },
+
+     "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "shared/**/*",
+      "package.json"
+    ],
+
+ 
+  "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
+    ],
+
+    "win": {
+      "target": "nsis"
+    }
+}
 }
