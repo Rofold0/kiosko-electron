@@ -11,7 +11,7 @@ import {
 } from "../auth/authContext.jsx";
 
 
-async function Usuarios() {
+function Usuarios() {
     const {
         puede,
         usuario:
@@ -395,82 +395,97 @@ async function Usuarios() {
         };
 
     const cambiarPassword =
-        async (event) => {
+    async (event) => {
 
-            event.preventDefault();
+        event.preventDefault();
 
 
-            if (!usuarioPassword) {
+        if (!usuarioPassword) {
+
+            return;
+
+        }
+
+
+        const esPropiaCuenta =
+            usuarioPassword.id ===
+            usuarioSesion?.id;
+
+
+        try {
+
+            await window
+                .electronAPI
+                .usuarios
+                .cambiarPassword({
+
+                    id:
+                        usuarioPassword.id,
+
+                    password:
+                        nuevaPassword,
+
+                    admin_password:
+                        passwordAdministrador
+
+                });
+
+
+            setUsuarioPassword(
+                null
+            );
+
+            setNuevaPassword("");
+
+            setPasswordAdministrador("");
+
+
+            /*
+             * Si el administrador cambió
+             * su propia contraseña,
+             * el backend ya invalidó
+             * su sesión.
+             *
+             * Recargamos para que
+             * AuthProvider consulte
+             * auth:estado nuevamente
+             * y vuelva al login.
+             */
+
+            if (esPropiaCuenta) {
+
+                window.location.reload();
 
                 return;
 
             }
 
 
-            try {
+            /*
+             * Si modificamos a otro usuario,
+             * permanecemos en la sesión
+             * del administrador y
+             * refrescamos el listado.
+             */
 
-                await window
-                    .electronAPI
-                    .usuarios
-                    .cambiarPassword({
-
-                        id:
-                            usuarioPassword.id,
-
-                        password:
-                            nuevaPassword,
-
-                        admin_password:
-                            passwordAdministrador
-
-                    });
+            await cargar();
 
 
-                setUsuarioPassword(
-                    null
+        } catch (error) {
+
+            await window
+                .electronAPI
+                .dialogos
+                .error(
+                    error?.message ||
+                    "No se pudo cambiar la contraseña."
                 );
 
-                setNuevaPassword("");
+        }
 
-                setPasswordAdministrador("");
-
-
-                await cargar();
+    };
 
 
-            } catch (error) {
-
-                await window
-                    .electronAPI
-                    .dialogos
-                    .error(
-                        error.message
-                    );
-
-            }
-
-        };
-
-    const esPropiaCuenta =
-        usuarioPassword.id ===
-        usuarioSesion?.id;
-
-
-    setUsuarioPassword(null);
-    setNuevaPassword("");
-    setPasswordAdministrador("");
-
-
-    if (esPropiaCuenta) {
-
-        await logout();
-
-        return;
-
-    }
-
-
-    await cargar();
 
     return (
 
