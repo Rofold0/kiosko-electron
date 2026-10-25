@@ -38,8 +38,33 @@ const buscarProductosStmt =
         FROM productos p
 
         INNER JOIN precios pr
-            ON pr.producto_id = p.id
-            AND pr.fecha_hasta IS NULL
+            ON pr.id = (
+
+                SELECT
+                    ph.id
+
+                FROM precios ph
+
+                WHERE
+                    ph.producto_id =
+                        p.id
+
+                    AND ph.fecha_desde <=
+                        @fecha
+
+                    AND (
+                        ph.fecha_hasta IS NULL
+                        OR ph.fecha_hasta >
+                            @fecha
+                    )
+
+                ORDER BY
+                    ph.fecha_desde DESC,
+                    ph.id DESC
+
+                LIMIT 1
+
+            )
 
         WHERE
             p.activo = 1
@@ -103,11 +128,38 @@ const productoVentaStmt =
         FROM productos p
 
         INNER JOIN precios pr
-            ON pr.producto_id = p.id
-            AND pr.fecha_hasta IS NULL
+            ON pr.id = (
+
+                SELECT
+                    ph.id
+
+                FROM precios ph
+
+                WHERE
+                    ph.producto_id =
+                        p.id
+
+                    AND ph.fecha_desde <=
+                        @fecha
+
+                    AND (
+                        ph.fecha_hasta IS NULL
+                        OR ph.fecha_hasta >
+                            @fecha
+                    )
+
+                ORDER BY
+                    ph.fecha_desde DESC,
+                    ph.id DESC
+
+                LIMIT 1
+
+            )
 
         WHERE
-            p.id = ?
+            p.id =
+                @productoId
+
             AND p.activo = 1
     `);
 
@@ -939,15 +991,20 @@ function cotizarItems({
 
 
             const producto =
-                productoVentaStmt.get(
-                    item.productoId
-                );
+                productoVentaStmt.get({
+
+                    productoId:
+                        item.productoId,
+
+                    fecha
+
+                });
 
 
             if (!producto) {
 
                 throw new Error(
-                    "Uno de los productos no existe o no tiene precio vigente."
+                    "Uno de los productos no tiene precio registrado en la fecha seleccionada."
                 );
 
             }
@@ -2173,6 +2230,8 @@ export function buscarProductosVenta({ busqueda = "", limite = 30, fecha }) {
 
         patron:
             `%${texto}%`,
+        
+        fecha,
 
         limite
 
