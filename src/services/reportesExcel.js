@@ -69,10 +69,10 @@ function estilizarEncabezado(
     fila.font = {
         bold: true,
         color:
-            {
-                argb:
-                    COLOR_TEXTO_HEADER
-            }
+        {
+            argb:
+                COLOR_TEXTO_HEADER
+        }
     };
 
 
@@ -84,10 +84,10 @@ function estilizarEncabezado(
             "solid",
 
         fgColor:
-            {
-                argb:
-                    COLOR_HEADER
-            }
+        {
+            argb:
+                COLOR_HEADER
+        }
     };
 
 
@@ -162,17 +162,17 @@ function crearHojaTabla(
 
     hoja.autoFilter = {
         from:
-            {
-                row: 1,
-                column: 1
-            },
+        {
+            row: 1,
+            column: 1
+        },
 
         to:
-            {
-                row: 1,
-                column:
-                    columnas.length
-            }
+        {
+            row: 1,
+            column:
+                columnas.length
+        }
     };
 
 
@@ -623,7 +623,7 @@ export async function exportarReportesExcel({
 
                                 hora:
                                     item.hora_pico !==
-                                    null
+                                        null
                                         ? `${String(
                                             item.hora_pico
                                         )
@@ -743,95 +743,89 @@ export async function exportarReportesExcel({
             workbook,
             {
                 nombre:
-                    "Categorías",
+                    "Facturación por categoría",
 
                 columnas: [
                     {
-                        header:
-                            "Categoría",
-
-                        key:
-                            "categoria"
+                        header: "Categoría",
+                        key: "categoria"
                     },
-
                     {
-                        header:
-                            "Unidades",
-
-                        key:
-                            "unidades"
+                        header: "Ventas",
+                        key: "ventas"
                     },
-
                     {
-                        header:
-                            "Facturación",
-
-                        key:
-                            "facturacion"
+                        header: "Unidades",
+                        key: "unidades"
                     },
-
                     {
-                        header:
-                            "Margen",
-
-                        key:
-                            "margen"
+                        header: "Facturación",
+                        key: "facturacion"
                     },
-
                     {
-                        header:
-                            "Margen %",
-
-                        key:
-                            "margenPct"
+                        header: "Participación %",
+                        key: "participacion"
+                    },
+                    {
+                        header: "Margen",
+                        key: "margen"
+                    },
+                    {
+                        header: "Margen %",
+                        key: "margenPct"
                     }
                 ],
 
                 filas:
                     (
-                        datos
-                            .categorias_top ||
+                        datos.categorias_top ||
                         []
+                    ).map(
+                        (item) => ({
+
+                            categoria:
+                                item.categoria,
+
+                            ventas:
+                                item.ventas,
+
+                            unidades:
+                                item.unidades,
+
+                            facturacion:
+                                item.facturacion,
+
+                            participacion:
+                                item.participacion_facturacion,
+
+                            margen:
+                                item.margen_bruto,
+
+                            margenPct:
+                                item.margen_porcentaje
+
+                        })
                     )
-                        .map(
-                            (item) => ({
-
-                                categoria:
-                                    item.categoria,
-
-                                unidades:
-                                    item.unidades,
-
-                                facturacion:
-                                    item.facturacion,
-
-                                margen:
-                                    item.margen_bruto,
-
-                                margenPct:
-                                    item.margen_porcentaje
-
-                            })
-                        )
             }
         );
 
 
-    aplicarMoneda(
-        hojaCategorias,
-        [
-            3,
-            4
-        ]
-    );
+aplicarMoneda(
+    hojaCategorias,
+    [
+        4,
+        6
+    ]
+);
 
 
-    aplicarPorcentaje(
-        hojaCategorias,
-        [
-            5
-        ]
-    );
+aplicarPorcentaje(
+    hojaCategorias,
+    [
+        5,
+        7
+    ]
+);
 
 
     /*

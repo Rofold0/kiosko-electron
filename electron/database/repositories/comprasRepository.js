@@ -189,6 +189,37 @@ const actualizarUltimoCostoStmt =
             AND proveedor_id = ?
     `);
 
+const ultimaCompraActivaProductoStmt =
+    db.prepare(`
+        SELECT
+            c.id
+                AS compra_id,
+
+            c.fecha,
+
+            ic.costo_unitario
+
+        FROM items_compra ic
+
+        INNER JOIN compras c
+            ON c.id =
+                ic.compra_id
+
+        WHERE
+            c.proveedor_id = ?
+
+            AND ic.producto_id = ?
+
+            AND c.estado =
+                'ACTIVA'
+
+        ORDER BY
+            c.fecha DESC,
+            c.id DESC,
+            ic.id DESC
+
+        LIMIT 1
+    `);
 
 const listaItemStmt =
     db.prepare(`
@@ -843,70 +874,63 @@ const revertirCompraTransaction =
 
         }
         for (
-    const item
-    of items
-) {
+            const item
+            of items
+        ) {
 
-    if (
-        item.producto_proveedor_id ===
-        null
-    ) {
+            if (
+                item.producto_proveedor_id ===
+                null
+            ) {
 
-        continue;
+                continue;
 
-    }
-
-
-    const costoActual =
-        costoActualProveedorStmt.get(
-            item.producto_proveedor_id
-        )
-            ?.ultimo_costo;
+            }
 
 
-    /*
-     * Sólo corregimos si el costo actual
-     * todavía era el de la compra revertida.
-     *
-     * Si alguien lo modificó manualmente
-     * después, no lo pisamos.
-     */
-
-    if (
-        Number(costoActual) !==
-        Number(item.costo_unitario)
-    ) {
-
-        continue;
-
-    }
+            const costoActual =
+                costoActualProveedorStmt.get(
+                    item.producto_proveedor_id
+                )
+                    ?.ultimo_costo;
 
 
-    const ultimaCompra =
-        ultimaCompraActivaProductoStmt.get(
+            /*
+             * Sólo corregimos si el costo actual
+             * todavía era el de la compra revertida.
+             *
+             * Si alguien lo modificó manualmente
+             * después, no lo pisamos.
+             */
 
-            compra.proveedor_id,
+            if (
+                Number(costoActual) !==
+                Number(item.costo_unitario)
+            ) {
 
-            item.producto_id
+                continue;
 
-        );
-
-
-    const costoRestaurado =
-        ultimaCompra
-            ?.costo_unitario ??
-        item.costo_anterior_proveedor;
+            }
 
 
-    restaurarCostoStmt.run(
 
-        costoRestaurado,
 
-        item.producto_proveedor_id
 
-    );
+            const costoRestaurado =
+                ultimaCompra
+                    ?.costo_unitario ??
+                item.costo_anterior_proveedor;
 
-}
+
+            restaurarCostoStmt.run(
+
+                costoRestaurado,
+
+                item.producto_proveedor_id
+
+            );
+
+        }
 
         return {
 
@@ -1190,6 +1214,7 @@ const registrarCompraTransaction =
             of normalizados
         ) {
 
+
             crearItemStmt.run(
 
                 compra.id,
@@ -1215,6 +1240,7 @@ const registrarCompraTransaction =
                     ?.comprado ?? null
 
             );
+
 
 
             const stockAnterior =
@@ -1250,76 +1276,29 @@ const registrarCompraTransaction =
                 fechaMovimientoStock
 
             );
-
-            const ultimaCompraActivaProductoStmt =
-    db.prepare(`
-        SELECT
-            c.id
-                AS compra_id,
-
-            c.fecha,
-
-            ic.costo_unitario
-
-        FROM items_compra ic
-
-        INNER JOIN compras c
-            ON c.id =
-                ic.compra_id
-
-        WHERE
-            c.proveedor_id = ?
-
-            AND ic.producto_id = ?
-
-            AND c.estado =
-                'ACTIVA'
-
-        ORDER BY
-            c.fecha DESC,
-            c.id DESC,
-            ic.id DESC
-
-        LIMIT 1
-    `);
-
             const ultimaCompra =
-    ultimaCompraActivaProductoStmt.get(
-        proveedorId,
-        item.productoId
-    );
+                ultimaCompraActivaProductoStmt.get(
+                    proveedorId,
+                    item.productoId
+                );
 
 
-if (
-    ultimaCompra?.compra_id ===
-    compra.id
-) {
+            if (
+                ultimaCompra?.compra_id ===
+                compra.id
+            ) {
 
-    const ultimaCompra =
-    ultimaCompraActivaProductoStmt.get(
-        proveedorId,
-        item.productoId
-    );
+                actualizarUltimoCostoStmt.run(
 
+                    item.costoUnitario,
 
-if (
-    ultimaCompra?.compra_id ===
-    compra.id
-) {
+                    item.productoId,
 
-    actualizarUltimoCostoStmt.run(
+                    proveedorId
 
-        item.costoUnitario,
+                );
 
-        item.productoId,
-
-        proveedorId
-
-    );
-
-}
-
-}
+            }
 
 
             if (

@@ -189,15 +189,15 @@ function porcentajeTexto(
 function Reportes() {
 
     const {
-    puede
-} =
-    useAuth();
+        puede
+    } =
+        useAuth();
 
 
-const puedeExportar =
-    puede(
-        "reportes.exportar"
-    );
+    const puedeExportar =
+        puede(
+            "reportes.exportar"
+        );
 
     const inicial =
         useMemo(
@@ -528,36 +528,36 @@ const puedeExportar =
                 </button>
 
             </form>
-                    {puedeExportar && (
-            <div className="reports-export-row">
+            {puedeExportar && (
+                <div className="reports-export-row">
 
-                <ReportExportDropdown
+                    <ReportExportDropdown
 
-                    disabled={
-                        !datos ||
-                        cargando
-                    }
+                        disabled={
+                            !datos ||
+                            cargando
+                        }
 
-                    onPdf={
-                        exportarPdf
-                    }
+                        onPdf={
+                            exportarPdf
+                        }
 
-                    onCsv={
-                        exportarCsv
-                    }
+                        onCsv={
+                            exportarCsv
+                        }
 
-                    onExcel={
-                        exportarExcel
-                    }
+                        onExcel={
+                            exportarExcel
+                        }
 
-                    onPrint={
-                        imprimir
-                    }
+                        onPrint={
+                            imprimir
+                        }
 
-                />
+                    />
 
-            </div>
-                    )}
+                </div>
+            )}
 
             <div className="report-print-meta">
 
@@ -1107,11 +1107,13 @@ const puedeExportar =
                                 <thead>
 
                                     <tr>
-                                        <th>Día</th>
+                                        <th>Categoría</th>
                                         <th>Ventas</th>
                                         <th>Unidades</th>
                                         <th>Facturación</th>
-                                        <th>Ticket promedio</th>
+                                        <th>Participación</th>
+                                        <th>Margen</th>
+                                        <th>Margen %</th>
                                     </tr>
 
                                 </thead>
@@ -1127,23 +1129,21 @@ const puedeExportar =
 
                                                     <tr
                                                         key={
-                                                            item.dia
+                                                            item.categoria_id
                                                         }
                                                     >
 
                                                         <td>
                                                             <strong>
-                                                                {
-                                                                    diaTexto(
-                                                                        item.dia
-                                                                    )
-                                                                }
+                                                                {item.categoria}
                                                             </strong>
                                                         </td>
 
                                                         <td>
                                                             {
-                                                                item.tickets
+                                                                numero.format(
+                                                                    item.ventas
+                                                                )
                                                             }
                                                         </td>
 
@@ -1165,10 +1165,28 @@ const puedeExportar =
 
                                                         <td>
                                                             {
+                                                                Number(
+                                                                    item.participacion_facturacion
+                                                                )
+                                                                    .toFixed(1)
+                                                            }%
+                                                        </td>
+
+                                                        <td>
+                                                            {
                                                                 moneda.format(
-                                                                    item.ticket_promedio
+                                                                    item.margen_bruto
                                                                 )
                                                             }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                Number(
+                                                                    item.margen_porcentaje
+                                                                )
+                                                                    .toFixed(1)
+                                                            }%
                                                         </td>
 
                                                     </tr>
@@ -1188,8 +1206,13 @@ const puedeExportar =
                     <section className="report-panel">
 
                         <h2>
-                            Categorías más vendidas
+                            Facturación por categoría
                         </h2>
+
+                        <p>
+                            Participación de cada categoría sobre
+                            la facturación total del período.
+                        </p>
 
 
                         <div className="report-table-wrapper">

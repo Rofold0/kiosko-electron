@@ -804,21 +804,31 @@ const categoriasTopStmt =
                 'Sin categoría'
             ) AS categoria,
 
-            SUM(iv.cantidad)
-                AS unidades,
+            COUNT(
+                DISTINCT d.venta_id
+            ) AS ventas,
+
+            SUM(
+                d.cantidad
+            ) AS unidades,
 
             ROUND(
-                SUM(iv.subtotal),
+                SUM(
+                    d.facturacion
+                ),
                 2
             ) AS facturacion,
 
             ROUND(
                 SUM(
-                    (
-                        iv.precio_unitario -
-                        iv.costo_unitario
-                    ) *
-                    iv.cantidad
+                    d.costo_total
+                ),
+                2
+            ) AS costo,
+
+            ROUND(
+                SUM(
+                    d.margen_bruto
                 ),
                 2
             ) AS margen_bruto,
@@ -827,51 +837,79 @@ const categoriasTopStmt =
                 CASE
 
                     WHEN
-                        SUM(iv.subtotal) > 0
+                        SUM(
+                            d.facturacion
+                        ) > 0
 
                     THEN
                         SUM(
-                            (
-                                iv.precio_unitario -
-                                iv.costo_unitario
-                            ) *
-                            iv.cantidad
+                            d.margen_bruto
                         ) *
                         100.0 /
-                        SUM(iv.subtotal)
+                        SUM(
+                            d.facturacion
+                        )
 
                     ELSE 0
 
                 END,
                 2
-            ) AS margen_porcentaje
+            ) AS margen_porcentaje,
 
-        FROM items_venta iv
+            ROUND(
+                CASE
 
-        INNER JOIN ventas v
-            ON v.id =
-                iv.venta_id
+                    WHEN
+                        SUM(
+                            SUM(
+                                d.facturacion
+                            )
+                        ) OVER () > 0
+
+                    THEN
+                        SUM(
+                            d.facturacion
+                        ) *
+                        100.0 /
+                        SUM(
+                            SUM(
+                                d.facturacion
+                            )
+                        ) OVER ()
+
+                    ELSE 0
+
+                END,
+                2
+            ) AS participacion_facturacion
+
+        FROM ventas_detalle_productos d
 
         INNER JOIN productos p
             ON p.id =
-                iv.producto_id
+                d.producto_id
 
         LEFT JOIN categorias c
             ON c.id =
                 p.categoria_id
 
         WHERE
-            v.estado = 'ACTIVA'
-            AND v.fecha >= @desde
-            AND v.fecha < @hasta
+            d.estado =
+                'ACTIVA'
+
+            AND d.fecha >=
+                @desde
+
+            AND d.fecha <
+                @hasta
 
         GROUP BY
             p.categoria_id,
             c.nombre
 
         ORDER BY
-            unidades DESC,
-            facturacion DESC
+            facturacion DESC,
+            unidades DESC
 
         LIMIT @limite
     `);

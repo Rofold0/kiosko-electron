@@ -432,33 +432,37 @@ function crearCsvReportes({
 
 
     agregarSeccion(
-        lineas,
+    lineas,
 
-        "CATEGORÍAS",
+    "FACTURACIÓN POR CATEGORÍA",
 
-        [
-            "Categoría",
-            "Unidades",
-            "Facturación",
-            "Margen",
-            "Margen %"
-        ],
+    [
+        "Categoría",
+        "Ventas",
+        "Unidades",
+        "Facturación",
+        "Participación %",
+        "Margen",
+        "Margen %"
+    ],
 
-        (
-            datos.categorias_top ||
-            []
-        ).map(
-            (item) => [
+    (
+        datos.categorias_top ||
+        []
+    ).map(
+        (item) => [
 
-                item.categoria,
-                item.unidades,
-                item.facturacion,
-                item.margen_bruto,
-                item.margen_porcentaje
+            item.categoria,
+            item.ventas,
+            item.unidades,
+            item.facturacion,
+            item.participacion_facturacion,
+            item.margen_bruto,
+            item.margen_porcentaje
 
-            ]
-        )
-    );
+        ]
+    )
+);
 
 
     agregarSeccion(

@@ -732,6 +732,9 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
     FOREIGN KEY (compra_id)
         REFERENCES compras(id)
 );
+CREATE VIEW IF NOT EXISTS
+ventas_detalle_productos
+...
     `);
 
 }
