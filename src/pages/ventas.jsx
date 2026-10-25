@@ -49,6 +49,55 @@ function fechaLocalActual() {
 
 }
 
+function descripcionCombo(
+    combo
+) {
+
+    if (
+        combo.modo_precio ===
+        "PAGA_UNIDADES"
+    ) {
+
+        const unidades =
+            combo.productos
+                ?.[0]
+                ?.cantidad;
+
+
+        return (
+            `Llevás ${unidades}, pagás ${combo.valor_regla}`
+        );
+
+    }
+
+
+    if (
+        combo.modo_precio ===
+        "DESCUENTO_PORCENTAJE"
+    ) {
+
+        if (
+            combo.alcance_descuento ===
+            "ULTIMA_UNIDAD"
+        ) {
+
+            return (
+                `${combo.valor_regla}% OFF en la última unidad`
+            );
+
+        }
+
+
+        return (
+            `${combo.valor_regla}% OFF`
+        );
+
+    }
+
+
+    return "Precio promocional";
+
+}
 
 function Ventas() {
 
@@ -1250,7 +1299,13 @@ function Ventas() {
                                                                     combo.combo_nombre
                                                                 }
                                                             </strong>
-
+                                                            <small className="sale-offer-label">
+                                                                {
+                                                                    descripcionCombo(
+                                                                        combo
+                                                                    )
+                                                                }
+                                                            </small>
 
                                                             <small className="sale-combo-products">
 

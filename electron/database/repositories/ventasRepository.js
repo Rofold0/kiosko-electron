@@ -152,6 +152,10 @@ const combosVigentesStmt =
 
             c.precio_combo,
 
+            c.modo_precio,
+            c.valor_regla,
+            c.alcance_descuento,
+
             cp.producto_id,
             cp.cantidad
 
@@ -860,6 +864,17 @@ function obtenerCombosVigentes(
                             fila.precio_combo
                         ),
 
+                    modo_precio:
+                        fila.modo_precio ||
+                        "FIJO",
+
+                    valor_regla:
+                        fila.valor_regla,
+
+                    alcance_descuento:
+                        fila.alcance_descuento ||
+                        "TOTAL_COMBO",
+
                     productos:
                         []
                 }
@@ -1029,6 +1044,283 @@ function cotizarItems({
 
 }
 
+function calcularPrecioComboVigente(
+    combo,
+    itemsPorProducto
+) {
+
+    const precioLista =
+        redondear(
+            combo.productos.reduce(
+                (
+                    total,
+                    componente
+                ) => {
+
+                    const item =
+                        itemsPorProducto.get(
+                            componente.producto_id
+                        );
+
+
+                    if (!item) {
+
+                        throw new Error(
+                            `No se encontró el producto #${componente.producto_id} del combo "${combo.nombre}".`
+                        );
+
+                    }
+
+
+                    return (
+                        total +
+                        item.precio_lista *
+                        componente.cantidad
+                    );
+
+                },
+                0
+            )
+        );
+
+
+    /*
+     * PRECIO FIJO
+     *
+     * Coca + Alfajor = $10
+     */
+
+    if (
+        combo.modo_precio ===
+        "FIJO"
+    ) {
+
+        return {
+
+            precio_lista:
+                precioLista,
+
+            precio_combo:
+                redondear(
+                    combo.precio_combo
+                )
+
+        };
+
+    }
+
+
+    /*
+     * DESCUENTO %
+     */
+
+    if (
+        combo.modo_precio ===
+        "DESCUENTO_PORCENTAJE"
+    ) {
+
+        const porcentaje =
+            Number(
+                combo.valor_regla
+            );
+
+
+        if (
+            !Number.isFinite(
+                porcentaje
+            ) ||
+            porcentaje <= 0 ||
+            porcentaje >= 100
+        ) {
+
+            throw new Error(
+                `La oferta "${combo.nombre}" tiene un porcentaje inválido.`
+            );
+
+        }
+
+
+        /*
+         * Ej:
+         *
+         * 3 Coca
+         * 20% sobre todo el combo
+         */
+
+        if (
+            combo.alcance_descuento ===
+            "TOTAL_COMBO"
+        ) {
+
+            return {
+
+                precio_lista:
+                    precioLista,
+
+                precio_combo:
+                    redondear(
+                        precioLista *
+                        (
+                            1 -
+                            porcentaje /
+                            100
+                        )
+                    )
+
+            };
+
+        }
+
+
+        /*
+         * Ej:
+         *
+         * 3 Coca
+         * 20% solamente en la tercera
+         */
+
+        if (
+            combo.alcance_descuento ===
+            "ULTIMA_UNIDAD"
+        ) {
+
+            if (
+                combo.productos.length !==
+                1
+            ) {
+
+                throw new Error(
+                    `La oferta "${combo.nombre}" aplica descuento en la última unidad pero tiene más de un producto.`
+                );
+
+            }
+
+
+            const componente =
+                combo.productos[0];
+
+
+            const item =
+                itemsPorProducto.get(
+                    componente.producto_id
+                );
+
+
+            const descuento =
+                redondear(
+                    item.precio_lista *
+                    porcentaje /
+                    100
+                );
+
+
+            return {
+
+                precio_lista:
+                    precioLista,
+
+                precio_combo:
+                    redondear(
+                        precioLista -
+                        descuento
+                    )
+
+            };
+
+        }
+
+
+        throw new Error(
+            `La oferta "${combo.nombre}" tiene un alcance de descuento inválido.`
+        );
+
+    }
+
+
+    /*
+     * LLEVÁS X, PAGÁS Y
+     *
+     * Coca ×2 → pagás 1
+     * Coca ×3 → pagás 2
+     */
+
+    if (
+        combo.modo_precio ===
+        "PAGA_UNIDADES"
+    ) {
+
+        if (
+            combo.productos.length !==
+            1
+        ) {
+
+            throw new Error(
+                `La oferta "${combo.nombre}" de tipo llevás/pagás debe contener un solo producto.`
+            );
+
+        }
+
+
+        const componente =
+            combo.productos[0];
+
+
+        const unidadesLlevadas =
+            Number(
+                componente.cantidad
+            );
+
+
+        const unidadesPagadas =
+            Number(
+                combo.valor_regla
+            );
+
+
+        if (
+            !Number.isInteger(
+                unidadesPagadas
+            ) ||
+            unidadesPagadas <= 0 ||
+            unidadesPagadas >=
+            unidadesLlevadas
+        ) {
+
+            throw new Error(
+                `La oferta "${combo.nombre}" tiene una cantidad a pagar inválida.`
+            );
+
+        }
+
+
+        const item =
+            itemsPorProducto.get(
+                componente.producto_id
+            );
+
+
+        return {
+
+            precio_lista:
+                precioLista,
+
+            precio_combo:
+                redondear(
+                    item.precio_lista *
+                    unidadesPagadas
+                )
+
+        };
+
+    }
+
+
+    throw new Error(
+        `La oferta "${combo.nombre}" tiene una modalidad de precio inválida.`
+    );
+
+}
+
 function aplicarCombos(
     items,
     fecha
@@ -1058,6 +1350,30 @@ function aplicarCombos(
                                     componente.producto_id
                                 )
                         )
+            )
+            .map(
+                (combo) => {
+
+                    const precio =
+                        calcularPrecioComboVigente(
+                            combo,
+                            itemsPorProducto
+                        );
+
+
+                    return {
+
+                        ...combo,
+
+                        precio_lista_calculado:
+                            precio.precio_lista,
+
+                        precio_calculado:
+                            precio.precio_combo
+
+                    };
+
+                }
             );
 
 
@@ -1218,7 +1534,7 @@ function aplicarCombos(
 
                 const total =
                     redondear(
-                        combo.precio_combo +
+                        combo.precio_calculado +
                         siguiente.total
                     );
 
@@ -1364,34 +1680,12 @@ function aplicarCombos(
 
 
         const precioListaUnitario =
-            redondear(
-                combo.productos.reduce(
-                    (
-                        total,
-                        componente
-                    ) => {
-
-                        const item =
-                            itemsPorProducto.get(
-                                componente.producto_id
-                            );
-
-
-                        return (
-                            total +
-                            item.precio_lista *
-                            componente.cantidad
-                        );
-
-                    },
-                    0
-                )
-            );
+            combo.precio_lista_calculado;
 
 
         const subtotal =
             redondear(
-                combo.precio_combo *
+                combo.precio_calculado *
                 cantidadCombo
             );
 
@@ -1427,6 +1721,15 @@ function aplicarCombos(
             combo_nombre:
                 combo.nombre,
 
+            modo_precio:
+                combo.modo_precio,
+
+            valor_regla:
+                combo.valor_regla,
+
+            alcance_descuento:
+                combo.alcance_descuento,
+
             cantidad:
                 cantidadCombo,
 
@@ -1434,7 +1737,7 @@ function aplicarCombos(
                 precioListaUnitario,
 
             precio_unitario:
-                combo.precio_combo,
+                combo.precio_calculado,
 
             subtotal,
 
@@ -1731,314 +2034,353 @@ const registrarVentaTransaction =
     }) => {
 
         const caja =
-        cajaAbiertaStmt.get();
+            cajaAbiertaStmt.get();
 
 
-     if (!caja) {
-
-        throw new Error(
-            "Debe abrir la caja antes de registrar una venta."
-        );
-
-    }
-
-
-    const fechaVenta =
-        new Date(
-            fecha
-        );
-
-
-    const fechaApertura =
-        new Date(
-            caja.fecha_apertura
-        );
-
-
-    if (
-        Number.isNaN(
-            fechaVenta.getTime()
-        ) ||
-        Number.isNaN(
-            fechaApertura.getTime()
-        )
-    ) {
-
-        throw new Error(
-            "No se pudo validar la fecha de la venta."
-        );
-
-    }
-
-
-    const minutoVenta =
-        new Date(
-            fechaVenta
-        );
-
-
-    minutoVenta.setSeconds(
-        0,
-        0
-    );
-
-
-    const minutoApertura =
-        new Date(
-            fechaApertura
-        );
-
-
-    minutoApertura.setSeconds(
-        0,
-        0
-    );
-
-
-    if (
-        minutoVenta <
-        minutoApertura
-    ) {
-
-        throw new Error(
-            "La fecha de venta no puede ser anterior a la apertura de caja."
-        );
-
-    }
-
-
-    const ahora =
-        new Date();
-
-
-    if (
-        fechaVenta.getTime() >
-        ahora.getTime() +
-        60_000
-    ) {
-
-        throw new Error(
-            "La fecha de venta no puede estar en el futuro."
-        );
-
-    }
-
-    if (
-        !Array.isArray(items) ||
-        items.length === 0
-    ) {
-
-        throw new Error(
-            "La venta no tiene productos."
-        );
-
-    }
-
-
-    const normalizados =
-        cotizarItems({
-
-            fecha,
-
-            items,
-
-            validarPrecio:
-                true
-
-        });
-
-
-    const detalle =
-        aplicarCombos(
-            normalizados,
-            fecha
-        );
-
-
-    const cotizacion =
-        resumirCotizacion(
-            detalle
-        );
-
-
-    const {
-        total
-    } =
-        cotizacion;
-
-    let recibido =
-        null;
-
-
-    let vuelto =
-        null;
-
-
-    if (
-        metodoPago ===
-        "EFECTIVO"
-    ) {
-
-        if (
-            efectivoRecibido === null ||
-            efectivoRecibido ===
-            undefined ||
-            efectivoRecibido ===
-            ""
-        ) {
+        if (!caja) {
 
             throw new Error(
-                "Debe indicar el efectivo recibido."
+                "Debe abrir la caja antes de registrar una venta."
             );
 
         }
 
 
-        recibido =
-            redondear(
-                efectivoRecibido
+        const fechaVenta =
+            new Date(
+                fecha
+            );
+
+
+        const fechaApertura =
+            new Date(
+                caja.fecha_apertura
             );
 
 
         if (
-            !Number.isFinite(
-                recibido
+            Number.isNaN(
+                fechaVenta.getTime()
             ) ||
-            recibido < 0
+            Number.isNaN(
+                fechaApertura.getTime()
+            )
         ) {
 
             throw new Error(
-                "El efectivo recibido es inválido."
+                "No se pudo validar la fecha de la venta."
             );
 
         }
+
+
+        const minutoVenta =
+            new Date(
+                fechaVenta
+            );
+
+
+        minutoVenta.setSeconds(
+            0,
+            0
+        );
+
+
+        const minutoApertura =
+            new Date(
+                fechaApertura
+            );
+
+
+        minutoApertura.setSeconds(
+            0,
+            0
+        );
 
 
         if (
-            recibido <
-            total
+            minutoVenta <
+            minutoApertura
         ) {
 
             throw new Error(
-                `El efectivo recibido es menor al total de la venta. Faltan $${redondear(
-                    total -
-                    recibido
-                ).toFixed(2)}.`
+                "La fecha de venta no puede ser anterior a la apertura de caja."
             );
 
         }
 
 
-        vuelto =
-            redondear(
-                recibido -
-                total
+        const ahora =
+            new Date();
+
+
+        if (
+            fechaVenta.getTime() >
+            ahora.getTime() +
+            60_000
+        ) {
+
+            throw new Error(
+                "La fecha de venta no puede estar en el futuro."
             );
 
-    }
+        }
+
+        if (
+            !Array.isArray(items) ||
+            items.length === 0
+        ) {
+
+            throw new Error(
+                "La venta no tiene productos."
+            );
+
+        }
 
 
-    const venta =
-        crearVentaStmt.get(
+        const normalizados =
+            cotizarItems({
 
-            fecha,
+                fecha,
 
-            total,
+                items,
 
-            metodoPago,
+                validarPrecio:
+                    true
 
-            recibido,
-
-            vuelto,
-
-            notas
-
-        );
+            });
 
 
-    for (
-        const item
-        of cotizacion.items
-    ) {
-        crearItemStmt.run(
+        const detalle =
+            aplicarCombos(
+                normalizados,
+                fecha
+            );
 
-            venta.id,
 
-            item.producto_id,
+        const cotizacion =
+            resumirCotizacion(
+                detalle
+            );
 
-            item.precio_id,
 
-            item.oferta_id,
+        const {
+            total
+        } =
+            cotizacion;
 
-            item.oferta_nombre,
+        let recibido =
+            null;
 
-            item.cantidad,
 
-            item.costo_unitario,
+        let vuelto =
+            null;
 
-            item.precio_lista,
 
-            item.descuento_unitario,
+        if (
+            metodoPago ===
+            "EFECTIVO"
+        ) {
 
-            item.precio_unitario,
+            if (
+                efectivoRecibido === null ||
+                efectivoRecibido ===
+                undefined ||
+                efectivoRecibido ===
+                ""
+            ) {
 
-            item.subtotal
+                throw new Error(
+                    "Debe indicar el efectivo recibido."
+                );
 
-        );
+            }
 
-    }
-    for (
-        const combo
-        of cotizacion.combos
-    ) {
 
-        const comboVenta =
-            crearComboVentaStmt.get(
+            recibido =
+                redondear(
+                    efectivoRecibido
+                );
 
-                venta.id,
 
-                combo.combo_id,
+            if (
+                !Number.isFinite(
+                    recibido
+                ) ||
+                recibido < 0
+            ) {
 
-                combo.combo_nombre,
+                throw new Error(
+                    "El efectivo recibido es inválido."
+                );
 
-                combo.cantidad,
+            }
 
-                combo.precio_unitario,
 
-                combo.subtotal
+            if (
+                recibido <
+                total
+            ) {
+
+                throw new Error(
+                    `El efectivo recibido es menor al total de la venta. Faltan $${redondear(
+                        total -
+                        recibido
+                    ).toFixed(2)}.`
+                );
+
+            }
+
+
+            vuelto =
+                redondear(
+                    recibido -
+                    total
+                );
+
+        }
+
+
+        const venta =
+            crearVentaStmt.get(
+
+                fecha,
+
+                total,
+
+                metodoPago,
+
+                recibido,
+
+                vuelto,
+
+                notas
 
             );
 
 
         for (
-            const producto
-            of combo.productos
+            const item
+            of cotizacion.items
         ) {
+            crearItemStmt.run(
 
-            crearComboVentaProductoStmt.run(
+                venta.id,
 
-                comboVenta.id,
+                item.producto_id,
 
-                producto.producto_id,
+                item.precio_id,
 
-                producto.producto_nombre,
+                item.oferta_id,
 
-                producto.cantidad,
+                item.oferta_nombre,
 
-                producto.costo_unitario
+                item.cantidad,
+
+                item.costo_unitario,
+
+                item.precio_lista,
+
+                item.descuento_unitario,
+
+                item.precio_unitario,
+
+                item.subtotal
 
             );
 
         }
+        for (
+            const combo
+            of cotizacion.combos
+        ) {
 
-    }
-    for (
-        const item
-        of normalizados
-    ) {
+            const comboVenta =
+                crearComboVentaStmt.get(
 
-        const producto =
-            item.producto;
+                    venta.id,
+
+                    combo.combo_id,
+
+                    combo.combo_nombre,
+
+                    combo.cantidad,
+
+                    combo.precio_unitario,
+
+                    combo.subtotal
+
+                );
+
+
+            for (
+                const producto
+                of combo.productos
+            ) {
+
+                crearComboVentaProductoStmt.run(
+
+                    comboVenta.id,
+
+                    producto.producto_id,
+
+                    producto.producto_nombre,
+
+                    producto.cantidad,
+
+                    producto.costo_unitario
+
+                );
+
+            }
+
+        }
+        for (
+            const item
+            of normalizados
+        ) {
+
+            const producto =
+                item.producto;
+
+
+            const stockAnterior =
+                producto.stock_actual;
+
+
+            const stockNuevo =
+                stockAnterior -
+                item.cantidad;
+
+
+            actualizarStockStmt.run(
+
+                stockNuevo,
+
+                producto.id
+
+            );
+
+
+            movimientoStockStmt.run(
+
+                producto.id,
+
+                "VENTA",
+
+                -item.cantidad,
+
+                stockAnterior,
+
+                stockNuevo,
+
+                `Venta #${venta.id}`,
+
+                fecha
+
+            );
+
+        }
 
 
         const stockAnterior =
@@ -2058,7 +2400,6 @@ const registrarVentaTransaction =
 
         );
 
-
         movimientoStockStmt.run(
 
             producto.id,
@@ -2077,85 +2418,47 @@ const registrarVentaTransaction =
 
         );
 
-    }
 
 
-    const stockAnterior =
-        producto.stock_actual;
+        const conceptoCaja =
+            metodoPago ===
+                "EFECTIVO"
+                ? (
+                    `Venta #${venta.id} · ` +
+                    `EFECTIVO · ` +
+                    `Recibido $${recibido.toFixed(2)} · ` +
+                    `Vuelto $${vuelto.toFixed(2)}`
+                )
+                : (
+                    `Venta #${venta.id} · ` +
+                    metodoPago
+                );
 
+        movimientoCajaStmt.run(
 
-    const stockNuevo =
-        stockAnterior -
-        item.cantidad;
+            "VENTA",
 
+            conceptoCaja,
 
-    actualizarStockStmt.run(
+            total,
 
-        stockNuevo,
+            fecha,
 
-        producto.id
+            caja.id,
 
-    );
+            metodoPago,
 
-    movimientoStockStmt.run(
+            venta.id,
 
-        producto.id,
+            notas
 
-        "VENTA",
-
-        -item.cantidad,
-
-        stockAnterior,
-
-        stockNuevo,
-
-        `Venta #${venta.id}`,
-
-        fecha
-
-    );
-
-
-
-const conceptoCaja =
-    metodoPago ===
-        "EFECTIVO"
-        ? (
-            `Venta #${venta.id} · ` +
-            `EFECTIVO · ` +
-            `Recibido $${recibido.toFixed(2)} · ` +
-            `Vuelto $${vuelto.toFixed(2)}`
-        )
-        : (
-            `Venta #${venta.id} · ` +
-            metodoPago
         );
 
-    movimientoCajaStmt.run(
 
-    "VENTA",
-
-    conceptoCaja,
-
-    total,
-
-    fecha,
-
-    caja.id,
-
-    metodoPago,
-
-    venta.id,
-
-    notas
-
-);
-
-
-return obtenerVentaCompleta(
-    venta.id
-);
-});
+        return obtenerVentaCompleta(
+            venta.id
+        );
+    });
 
 
 export function registrarVenta(datos) {
