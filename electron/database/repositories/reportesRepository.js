@@ -36,15 +36,14 @@ const itemsResumenStmt =
     db.prepare(`
         SELECT
             COALESCE(
-                SUM(iv.cantidad),
+                SUM(d.cantidad),
                 0
             ) AS unidades,
 
             ROUND(
                 COALESCE(
                     SUM(
-                        iv.costo_unitario *
-                        iv.cantidad
+                        d.costo_total
                     ),
                     0
                 ),
@@ -54,28 +53,24 @@ const itemsResumenStmt =
             ROUND(
                 COALESCE(
                     SUM(
-                        (
-                            iv.precio_unitario -
-                            iv.costo_unitario
-                        ) *
-                        iv.cantidad
+                        d.margen_bruto
                     ),
                     0
                 ),
                 2
             ) AS margen_bruto
 
-        FROM items_venta iv
-
-        INNER JOIN ventas v
-            ON v.id = iv.venta_id
+        FROM ventas_detalle_productos d
 
         WHERE
-            v.estado = 'ACTIVA'
-            AND v.fecha >= @desde
-            AND v.fecha < @hasta
-    `);
+            d.estado = 'ACTIVA'
 
+            AND d.fecha >=
+                @desde
+
+            AND d.fecha <
+                @hasta
+    `);
 
 const gastosResumenStmt =
     db.prepare(`
@@ -171,33 +166,36 @@ const ventasHoraStmt =
 
         unidades_hora AS (
 
-            SELECT
-                CAST(
-                    strftime(
-                        '%H',
-                        datetime(
-                            v.fecha,
-                            'localtime'
-                        )
-                    )
-                    AS INTEGER
-                ) AS hora,
+    SELECT
+        CAST(
+            strftime(
+                '%H',
+                datetime(
+                    d.fecha,
+                    'localtime'
+                )
+            )
+            AS INTEGER
+        ) AS hora,
 
-                SUM(iv.cantidad)
-                    AS unidades
+        SUM(
+            d.cantidad
+        ) AS unidades
 
-            FROM ventas v
+    FROM ventas_detalle_productos d
 
-            INNER JOIN items_venta iv
-                ON iv.venta_id = v.id
+    WHERE
+        d.estado = 'ACTIVA'
 
-            WHERE
-                v.estado = 'ACTIVA'
-                AND v.fecha >= @desde
-                AND v.fecha < @hasta
+        AND d.fecha >=
+            @desde
 
-            GROUP BY hora
-        )
+        AND d.fecha <
+            @hasta
+
+    GROUP BY
+        hora
+)
 
         SELECT
             vh.hora,
@@ -231,79 +229,81 @@ const productosTopStmt =
         WITH totales AS (
 
             SELECT
-                iv.producto_id,
+                d.producto_id,
 
                 p.nombre,
 
-                SUM(iv.cantidad)
-                    AS unidades,
+                SUM(
+                    d.cantidad
+                ) AS unidades,
 
                 ROUND(
-                    SUM(iv.subtotal),
+                    SUM(
+                        d.facturacion
+                    ),
                     2
                 ) AS facturacion,
 
                 ROUND(
                     SUM(
-                        (
-                            iv.precio_unitario -
-                            iv.costo_unitario
-                        ) *
-                        iv.cantidad
+                        d.margen_bruto
                     ),
                     2
                 ) AS margen_bruto
 
-            FROM items_venta iv
-
-            INNER JOIN ventas v
-                ON v.id = iv.venta_id
+            FROM ventas_detalle_productos d
 
             INNER JOIN productos p
                 ON p.id =
-                    iv.producto_id
+                    d.producto_id
 
             WHERE
-                v.estado = 'ACTIVA'
-                AND v.fecha >= @desde
-                AND v.fecha < @hasta
+                d.estado = 'ACTIVA'
+
+                AND d.fecha >=
+                    @desde
+
+                AND d.fecha <
+                    @hasta
 
             GROUP BY
-                iv.producto_id,
+                d.producto_id,
                 p.nombre
         ),
 
         ventas_hora AS (
 
             SELECT
-                iv.producto_id,
+                d.producto_id,
 
                 CAST(
                     strftime(
                         '%H',
                         datetime(
-                            v.fecha,
+                            d.fecha,
                             'localtime'
                         )
                     )
                     AS INTEGER
                 ) AS hora,
 
-                SUM(iv.cantidad)
-                    AS unidades_hora
+                SUM(
+                    d.cantidad
+                ) AS unidades_hora
 
-            FROM items_venta iv
-
-            INNER JOIN ventas v
-                ON v.id = iv.venta_id
+            FROM ventas_detalle_productos d
 
             WHERE
-                v.estado = 'ACTIVA'
-                AND v.fecha >= @desde
-                AND v.fecha < @hasta
+                d.estado = 'ACTIVA'
+
+                AND d.fecha >=
+                    @desde
+
+                AND d.fecha <
+                    @hasta
 
             GROUP BY
-                iv.producto_id,
+                d.producto_id,
                 hora
         ),
 
@@ -324,6 +324,7 @@ const productosTopStmt =
                 ) AS posicion
 
             FROM ventas_hora
+
         )
 
         SELECT
@@ -344,6 +345,7 @@ const productosTopStmt =
         LEFT JOIN ranking_hora rh
             ON rh.producto_id =
                 t.producto_id
+
             AND rh.posicion = 1
 
         ORDER BY
@@ -352,7 +354,6 @@ const productosTopStmt =
 
         LIMIT @limite
     `);
-
 
 /*
  * MÉTODOS DE PAGO
@@ -428,27 +429,23 @@ const sinRotacionStmt =
 
             AND NOT EXISTS (
 
-                SELECT 1
+    SELECT 1
 
-                FROM items_venta iv
+    FROM ventas_detalle_productos d
 
-                INNER JOIN ventas v
-                    ON v.id =
-                        iv.venta_id
+    WHERE
+        d.producto_id =
+            p.id
 
-                WHERE
-                    iv.producto_id =
-                        p.id
+        AND d.estado =
+            'ACTIVA'
 
-                    AND v.estado =
-                        'ACTIVA'
+        AND d.fecha >=
+            @desde
 
-                    AND v.fecha >=
-                        @desde
-
-                    AND v.fecha <
-                        @hasta
-            )
+        AND d.fecha <
+            @hasta
+)
 
         ORDER BY
             valor_stock DESC,
@@ -515,43 +512,38 @@ const balanceMensualStmt =
             GROUP BY mes
         ),
 
-        margen_mes AS (
+       margen_mes AS (
 
-            SELECT
-                strftime(
-                    '%Y-%m',
-                    datetime(
-                        v.fecha,
-                        'localtime'
-                    )
-                ) AS mes,
+    SELECT
+        strftime(
+            '%Y-%m',
+            datetime(
+                d.fecha,
+                'localtime'
+            )
+        ) AS mes,
 
-                ROUND(
-                    SUM(
-                        (
-                            iv.precio_unitario -
-                            iv.costo_unitario
-                        ) *
-                        iv.cantidad
-                    ),
-                    2
-                ) AS margen_bruto
+        ROUND(
+            SUM(
+                d.margen_bruto
+            ),
+            2
+        ) AS margen_bruto
 
-            FROM ventas v
+    FROM ventas_detalle_productos d
 
-            INNER JOIN items_venta iv
-                ON iv.venta_id =
-                    v.id
+    WHERE
+        d.estado = 'ACTIVA'
 
-            WHERE
-                v.estado = 'ACTIVA'
-                AND v.fecha >=
-                    @balanceDesde
-                AND v.fecha <
-                    @hasta
+        AND d.fecha >=
+            @balanceDesde
 
-            GROUP BY mes
-        ),
+        AND d.fecha <
+            @hasta
+
+    GROUP BY
+        mes
+),
 
         gastos_mes AS (
 
@@ -734,34 +726,36 @@ const ventasDiaSemanaStmt =
 
         unidades_dia AS (
 
-            SELECT
-                CAST(
-                    strftime(
-                        '%w',
-                        datetime(
-                            v.fecha,
-                            'localtime'
-                        )
-                    )
-                    AS INTEGER
-                ) AS dia,
+    SELECT
+        CAST(
+            strftime(
+                '%w',
+                datetime(
+                    d.fecha,
+                    'localtime'
+                )
+            )
+            AS INTEGER
+        ) AS dia,
 
-                SUM(iv.cantidad)
-                    AS unidades
+        SUM(
+            d.cantidad
+        ) AS unidades
 
-            FROM ventas v
+    FROM ventas_detalle_productos d
 
-            INNER JOIN items_venta iv
-                ON iv.venta_id =
-                    v.id
+    WHERE
+        d.estado = 'ACTIVA'
 
-            WHERE
-                v.estado = 'ACTIVA'
-                AND v.fecha >= @desde
-                AND v.fecha < @hasta
+        AND d.fecha >=
+            @desde
 
-            GROUP BY dia
-        )
+        AND d.fecha <
+            @hasta
+
+    GROUP BY
+        dia
+)
 
         SELECT
             vd.dia,
@@ -910,39 +904,35 @@ const categoriasTopStmt =
         ORDER BY
             facturacion DESC,
             unidades DESC
-
-        LIMIT @limite
     `);
 const margenProductosStmt =
     db.prepare(`
         SELECT
-            iv.producto_id,
+            d.producto_id,
 
             p.nombre,
 
-            SUM(iv.cantidad)
-                AS unidades,
+            SUM(
+                d.cantidad
+            ) AS unidades,
 
             ROUND(
-                SUM(iv.subtotal),
+                SUM(
+                    d.facturacion
+                ),
                 2
             ) AS facturacion,
 
             ROUND(
                 SUM(
-                    iv.costo_unitario *
-                    iv.cantidad
+                    d.costo_total
                 ),
                 2
             ) AS costo,
 
             ROUND(
                 SUM(
-                    (
-                        iv.precio_unitario -
-                        iv.costo_unitario
-                    ) *
-                    iv.cantidad
+                    d.margen_bruto
                 ),
                 2
             ) AS margen_bruto,
@@ -951,18 +941,18 @@ const margenProductosStmt =
                 CASE
 
                     WHEN
-                        SUM(iv.subtotal) > 0
+                        SUM(
+                            d.facturacion
+                        ) > 0
 
                     THEN
                         SUM(
-                            (
-                                iv.precio_unitario -
-                                iv.costo_unitario
-                            ) *
-                            iv.cantidad
+                            d.margen_bruto
                         ) *
                         100.0 /
-                        SUM(iv.subtotal)
+                        SUM(
+                            d.facturacion
+                        )
 
                     ELSE 0
 
@@ -970,23 +960,23 @@ const margenProductosStmt =
                 2
             ) AS margen_porcentaje
 
-        FROM items_venta iv
-
-        INNER JOIN ventas v
-            ON v.id =
-                iv.venta_id
+        FROM ventas_detalle_productos d
 
         INNER JOIN productos p
             ON p.id =
-                iv.producto_id
+                d.producto_id
 
         WHERE
-            v.estado = 'ACTIVA'
-            AND v.fecha >= @desde
-            AND v.fecha < @hasta
+            d.estado = 'ACTIVA'
+
+            AND d.fecha >=
+                @desde
+
+            AND d.fecha <
+                @hasta
 
         GROUP BY
-            iv.producto_id,
+            d.producto_id,
             p.nombre
 
         ORDER BY
@@ -1060,58 +1050,52 @@ const comparativaPeriodosStmt =
 
         items_periodo AS (
 
-            SELECT
-                CASE
+    SELECT
+        CASE
 
-                    WHEN
-                        v.fecha >= @desde
-                        AND v.fecha < @hasta
+            WHEN
+                d.fecha >= @desde
+                AND d.fecha < @hasta
 
-                    THEN 'actual'
+            THEN 'actual'
 
-                    ELSE 'anterior'
+            ELSE 'anterior'
 
-                END AS periodo,
+        END AS periodo,
 
-                SUM(iv.cantidad)
-                    AS unidades,
+        SUM(
+            d.cantidad
+        ) AS unidades,
 
-                ROUND(
-                    SUM(
-                        (
-                            iv.precio_unitario -
-                            iv.costo_unitario
-                        ) *
-                        iv.cantidad
-                    ),
-                    2
-                ) AS margen_bruto
+        ROUND(
+            SUM(
+                d.margen_bruto
+            ),
+            2
+        ) AS margen_bruto
 
-            FROM ventas v
+    FROM ventas_detalle_productos d
 
-            INNER JOIN items_venta iv
-                ON iv.venta_id =
-                    v.id
+    WHERE
+        d.estado = 'ACTIVA'
 
-            WHERE
-                v.estado = 'ACTIVA'
+        AND (
+            (
+                d.fecha >= @desde
+                AND d.fecha < @hasta
+            )
 
-                AND (
-                    (
-                        v.fecha >= @desde
-                        AND v.fecha < @hasta
-                    )
+            OR
 
-                    OR
+            (
+                d.fecha >= @anteriorDesde
+                AND d.fecha < @anteriorHasta
+            )
+        )
 
-                    (
-                        v.fecha >= @anteriorDesde
-                        AND v.fecha < @anteriorHasta
-                    )
-                )
-
-            GROUP BY periodo
-        ),
+    GROUP BY
+        periodo
+),
 
         gastos_periodo AS (
 
@@ -1218,69 +1202,63 @@ const rentabilidadCayendoStmt =
     db.prepare(`
         WITH producto_periodo AS (
 
-            SELECT
-                iv.producto_id,
+    SELECT
+        d.producto_id,
 
-                p.nombre,
+        p.nombre,
 
-                CASE
+        CASE
 
-                    WHEN
-                        v.fecha >= @desde
-                        AND v.fecha < @hasta
+            WHEN
+                d.fecha >= @desde
+                AND d.fecha < @hasta
 
-                    THEN 'actual'
+            THEN 'actual'
 
-                    ELSE 'anterior'
+            ELSE 'anterior'
 
-                END AS periodo,
+        END AS periodo,
 
-                SUM(iv.cantidad)
-                    AS unidades,
+        SUM(
+            d.cantidad
+        ) AS unidades,
 
-                SUM(iv.subtotal)
-                    AS facturacion,
+        SUM(
+            d.facturacion
+        ) AS facturacion,
 
-                SUM(
-                    (
-                        iv.precio_unitario -
-                        iv.costo_unitario
-                    ) *
-                    iv.cantidad
-                ) AS margen
+        SUM(
+            d.margen_bruto
+        ) AS margen
 
-            FROM items_venta iv
+    FROM ventas_detalle_productos d
 
-            INNER JOIN ventas v
-                ON v.id =
-                    iv.venta_id
+    INNER JOIN productos p
+        ON p.id =
+            d.producto_id
 
-            INNER JOIN productos p
-                ON p.id =
-                    iv.producto_id
+    WHERE
+        d.estado = 'ACTIVA'
 
-            WHERE
-                v.estado = 'ACTIVA'
+        AND (
+            (
+                d.fecha >= @desde
+                AND d.fecha < @hasta
+            )
 
-                AND (
-                    (
-                        v.fecha >= @desde
-                        AND v.fecha < @hasta
-                    )
+            OR
 
-                    OR
+            (
+                d.fecha >= @anteriorDesde
+                AND d.fecha < @anteriorHasta
+            )
+        )
 
-                    (
-                        v.fecha >= @anteriorDesde
-                        AND v.fecha < @anteriorHasta
-                    )
-                )
-
-            GROUP BY
-                iv.producto_id,
-                p.nombre,
-                periodo
-        ),
+    GROUP BY
+        d.producto_id,
+        p.nombre,
+        periodo
+),
 
         comparado AS (
 
@@ -1570,14 +1548,9 @@ export function obtenerDashboardReportes({
 
 
     const categorias =
-        categoriasTopStmt.all({
-
-            ...parametros,
-
-            limite:
-                limiteProductos
-
-        });
+        categoriasTopStmt.all(
+            parametros
+        );
 
 
     const margenProductos =

@@ -734,7 +734,195 @@ CREATE TABLE IF NOT EXISTS movimientos_caja (
 );
 CREATE VIEW IF NOT EXISTS
 ventas_detalle_productos
-...
+AS
+
+WITH combo_componentes AS (
+
+    SELECT
+        cv.id
+            AS combo_venta_id,
+
+        cv.venta_id,
+
+        v.fecha,
+        v.estado,
+
+        cvp.producto_id,
+        cvp.cantidad,
+        cvp.costo_unitario,
+
+        cv.subtotal
+            AS combo_subtotal,
+
+        COALESCE(
+            (
+                SELECT
+                    ph.precio_venta
+
+                FROM precios ph
+
+                WHERE
+                    ph.producto_id =
+                        cvp.producto_id
+
+                    AND ph.fecha_desde <=
+                        v.fecha
+
+                    AND (
+                        ph.fecha_hasta IS NULL
+                        OR ph.fecha_hasta >
+                            v.fecha
+                    )
+
+                ORDER BY
+                    ph.fecha_desde DESC,
+                    ph.id DESC
+
+                LIMIT 1
+            ),
+            0
+        ) AS precio_lista_unitario
+
+    FROM combos_venta cv
+
+    INNER JOIN ventas v
+        ON v.id =
+            cv.venta_id
+
+    INNER JOIN combos_venta_productos cvp
+        ON cvp.combo_venta_id =
+            cv.id
+
+),
+
+combo_base AS (
+
+    SELECT
+        *,
+
+        precio_lista_unitario *
+        cantidad
+            AS valor_lista,
+
+        SUM(
+            precio_lista_unitario *
+            cantidad
+        ) OVER (
+            PARTITION BY
+                combo_venta_id
+        )
+            AS valor_lista_combo,
+
+        SUM(
+            cantidad
+        ) OVER (
+            PARTITION BY
+                combo_venta_id
+        )
+            AS unidades_combo
+
+    FROM combo_componentes
+
+),
+
+combo_asignado AS (
+
+    SELECT
+        *,
+
+        CASE
+
+            WHEN
+                valor_lista_combo > 0
+
+            THEN
+                combo_subtotal *
+                valor_lista /
+                valor_lista_combo
+
+            WHEN
+                unidades_combo > 0
+
+            THEN
+                combo_subtotal *
+                cantidad /
+                unidades_combo
+
+            ELSE 0
+
+        END AS facturacion_asignada
+
+    FROM combo_base
+
+)
+
+SELECT
+    iv.venta_id,
+
+    v.fecha,
+    v.estado,
+
+    iv.producto_id,
+    iv.cantidad,
+
+    iv.subtotal
+        AS facturacion,
+
+    iv.costo_unitario *
+    iv.cantidad
+        AS costo_total,
+
+    iv.subtotal -
+    (
+        iv.costo_unitario *
+        iv.cantidad
+    )
+        AS margen_bruto,
+
+    'ITEM'
+        AS origen,
+
+    NULL
+        AS combo_venta_id
+
+FROM items_venta iv
+
+INNER JOIN ventas v
+    ON v.id =
+        iv.venta_id
+
+UNION ALL
+
+SELECT
+    ca.venta_id,
+
+    ca.fecha,
+    ca.estado,
+
+    ca.producto_id,
+    ca.cantidad,
+
+    ca.facturacion_asignada
+        AS facturacion,
+
+    ca.costo_unitario *
+    ca.cantidad
+        AS costo_total,
+
+    ca.facturacion_asignada -
+    (
+        ca.costo_unitario *
+        ca.cantidad
+    )
+        AS margen_bruto,
+
+    'COMBO'
+        AS origen,
+
+    ca.combo_venta_id
+
+FROM combo_asignado ca;
+
     `);
 
 }
