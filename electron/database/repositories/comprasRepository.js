@@ -374,9 +374,6 @@ const compraStmt =
 
         WHERE c.id = ?
     `);
-const fechaMovimientoStock =
-    new Date()
-        .toISOString();
 
 const itemsCompraStmt =
     db.prepare(`
@@ -491,23 +488,7 @@ const actualizarStockReversionStmt =
     `);
 
 
-const compraPosteriorActivaStmt =
-    db.prepare(`
-        SELECT 1
 
-        FROM items_compra ic
-
-        INNER JOIN compras c
-            ON c.id = ic.compra_id
-
-        WHERE
-            c.proveedor_id = ?
-            AND ic.producto_id = ?
-            AND c.id > ?
-            AND c.estado = 'ACTIVA'
-
-        LIMIT 1
-    `);
 
 
 const restaurarCostoStmt =
@@ -719,80 +700,6 @@ const revertirCompraTransaction =
 
             );
 
-
-            // ULTIMO COSTO DEL PROVEEDOR
-
-            if (
-                item.producto_proveedor_id
-                !== null
-            ) {
-
-                const hayCompraPosterior =
-                    compraPosteriorActivaStmt.get(
-
-                        compra.proveedor_id,
-
-                        item.producto_id,
-
-                        compra.id
-
-                    );
-
-
-                /*
-                 * Sólo restauramos costo si
-                 * ninguna compra posterior
-                 * activa lo volvió a cambiar.
-                 */
-
-                if (!hayCompraPosterior) {
-
-                    const vinculoActual =
-                        costoActualProveedorStmt.get(
-                            item.producto_proveedor_id
-                        );
-
-
-                    const costoActual =
-                        vinculoActual
-                            ?.ultimo_costo;
-
-
-                    const costoDeLaCompra =
-                        item.costo_unitario;
-
-
-                    /*
-                     * Sólo restauramos si el costo
-                     * actual todavía es exactamente
-                     * el que dejó esta compra.
-                     *
-                     * Si Precios u otra operación lo
-                     * modificó después, no lo tocamos.
-                     */
-
-                    if (
-                        costoActual !== null &&
-                        costoActual !== undefined &&
-                        Number(costoActual) ===
-                        Number(costoDeLaCompra)
-                    ) {
-
-                        restaurarCostoStmt.run(
-
-                            item.costo_anterior_proveedor,
-
-                            item.producto_proveedor_id
-
-                        );
-
-                    }
-
-                }
-
-            }
-
-
             // LISTA DE COMPRAS
 
             if (
@@ -935,7 +842,71 @@ const revertirCompraTransaction =
             );
 
         }
+        for (
+    const item
+    of items
+) {
 
+    if (
+        item.producto_proveedor_id ===
+        null
+    ) {
+
+        continue;
+
+    }
+
+
+    const costoActual =
+        costoActualProveedorStmt.get(
+            item.producto_proveedor_id
+        )
+            ?.ultimo_costo;
+
+
+    /*
+     * Sólo corregimos si el costo actual
+     * todavía era el de la compra revertida.
+     *
+     * Si alguien lo modificó manualmente
+     * después, no lo pisamos.
+     */
+
+    if (
+        Number(costoActual) !==
+        Number(item.costo_unitario)
+    ) {
+
+        continue;
+
+    }
+
+
+    const ultimaCompra =
+        ultimaCompraActivaProductoStmt.get(
+
+            compra.proveedor_id,
+
+            item.producto_id
+
+        );
+
+
+    const costoRestaurado =
+        ultimaCompra
+            ?.costo_unitario ??
+        item.costo_anterior_proveedor;
+
+
+    restaurarCostoStmt.run(
+
+        costoRestaurado,
+
+        item.producto_proveedor_id
+
+    );
+
+}
 
         return {
 
@@ -999,26 +970,26 @@ const registrarCompraTransaction =
         items
     }) => {
         const fechaCompra =
-    new Date(
-        fecha
-    );
+            new Date(
+                fecha
+            );
 
 
-const ahora =
-    new Date();
+        const ahora =
+            new Date();
 
 
-if (
-    fechaCompra.getTime() >
-    ahora.getTime() +
-    60_000
-) {
+        if (
+            fechaCompra.getTime() >
+            ahora.getTime() +
+            60_000
+        ) {
 
-    throw new Error(
-        "La fecha de compra no puede estar en el futuro."
-    );
+            throw new Error(
+                "La fecha de compra no puede estar en el futuro."
+            );
 
-}
+        }
 
         const proveedor =
             proveedorStmt.get(
@@ -1211,7 +1182,9 @@ if (
 
             );
 
-
+        const fechaMovimientoStock =
+            new Date()
+                .toISOString();
         for (
             const item
             of normalizados
@@ -1278,12 +1251,75 @@ if (
 
             );
 
+            const ultimaCompraActivaProductoStmt =
+    db.prepare(`
+        SELECT
+            c.id
+                AS compra_id,
 
-            actualizarUltimoCostoStmt.run(
-                item.costoUnitario,
-                item.productoId,
-                proveedorId
-            );
+            c.fecha,
+
+            ic.costo_unitario
+
+        FROM items_compra ic
+
+        INNER JOIN compras c
+            ON c.id =
+                ic.compra_id
+
+        WHERE
+            c.proveedor_id = ?
+
+            AND ic.producto_id = ?
+
+            AND c.estado =
+                'ACTIVA'
+
+        ORDER BY
+            c.fecha DESC,
+            c.id DESC,
+            ic.id DESC
+
+        LIMIT 1
+    `);
+
+            const ultimaCompra =
+    ultimaCompraActivaProductoStmt.get(
+        proveedorId,
+        item.productoId
+    );
+
+
+if (
+    ultimaCompra?.compra_id ===
+    compra.id
+) {
+
+    const ultimaCompra =
+    ultimaCompraActivaProductoStmt.get(
+        proveedorId,
+        item.productoId
+    );
+
+
+if (
+    ultimaCompra?.compra_id ===
+    compra.id
+) {
+
+    actualizarUltimoCostoStmt.run(
+
+        item.costoUnitario,
+
+        item.productoId,
+
+        proveedorId
+
+    );
+
+}
+
+}
 
 
             if (

@@ -615,26 +615,26 @@ const registrarGastoTransaction =
         notas
     }) => {
         const fechaGasto =
-    new Date(
-        fecha
-    );
+            new Date(
+                fecha
+            );
 
 
-const ahora =
-    new Date();
+        const ahora =
+            new Date();
 
 
-if (
-    fechaGasto.getTime() >
-    ahora.getTime() +
-    60_000
-) {
+        if (
+            fechaGasto.getTime() >
+            ahora.getTime() +
+            60_000
+        ) {
 
-    throw new Error(
-        "La fecha del gasto no puede estar en el futuro."
-    );
+            throw new Error(
+                "La fecha del gasto no puede estar en el futuro."
+            );
 
-}
+        }
         const caja =
             cajaAbiertaStmt.get();
 
@@ -649,7 +649,7 @@ if (
 
 
         if (
-            new Date(fecha) <
+            fechaGasto <
             new Date(
                 caja.fecha_apertura
             )

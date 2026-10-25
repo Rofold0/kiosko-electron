@@ -469,9 +469,6 @@ const ventaStmt =
         WHERE id = ?
     `);
 
-const fechaMovimientoStock =
-    new Date()
-        .toISOString();
 
 const itemsVentaStmt =
     db.prepare(`
@@ -2586,6 +2583,9 @@ const registrarVentaTransaction =
             }
 
         }
+        const fechaMovimientoStock =
+    new Date()
+        .toISOString();
         for (
             const item
             of normalizados
