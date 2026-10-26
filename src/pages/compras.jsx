@@ -1781,7 +1781,7 @@ function Compras() {
                                 )
                             }
                         >
-                            ← Anterior
+                             Anterior
                         </button>
 
 
@@ -1805,7 +1805,7 @@ function Compras() {
                                 )
                             }
                         >
-                            Siguiente →
+                            Siguiente 
                         </button>
 
                     </div>

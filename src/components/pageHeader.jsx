@@ -42,7 +42,7 @@ function PageHeader({ title, mostrarAtras=true, mostrarDashboard=true }) {
                             volverAtras
                         }
                     >
-                        ← Atrás
+                         Atrás
                     </button>
 
                 )}
@@ -56,7 +56,7 @@ function PageHeader({ title, mostrarAtras=true, mostrarDashboard=true }) {
                             volverAlDashboard
                         }
                     >
-                        ⌂ Dashboard
+                         Dashboard
                     </button>
 
                 )}

@@ -1266,7 +1266,7 @@ function Productos() {
                             pagina <= 1
                         }
                     >
-                        ← Anterior
+                         Anterior
                     </button>
 
 
@@ -1287,7 +1287,7 @@ function Productos() {
                             totalPaginas
                         }
                     >
-                        Siguiente →
+                        Siguiente 
                     </button>
 
                 </div>

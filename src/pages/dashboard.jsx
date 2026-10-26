@@ -155,7 +155,21 @@ function Dashboard() {
 
         <div className="page">
 
-            <h1>Kiosko</h1>
+           <header className="dashboard-brand">
+
+    <p className="dashboard-brand-kicker">
+        ANOTADOR DE VICIOS
+    </p>
+
+    <h1>
+        VICIO
+    </h1>
+
+    <p className="dashboard-brand-copy">
+        Gestión diaria del kiosco
+    </p>
+
+</header>
 
 
             {/* ALERTAS */}

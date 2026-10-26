@@ -1399,7 +1399,7 @@ function Gastos() {
                             )
                         }
                     >
-                        ← Anterior
+                         Anterior
                     </button>
 
 
@@ -1422,7 +1422,7 @@ function Gastos() {
                             )
                         }
                     >
-                        Siguiente →
+                        Siguiente 
                     </button>
 
                 </div>

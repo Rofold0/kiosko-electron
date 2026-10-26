@@ -870,7 +870,7 @@ function ListaCompras() {
                             <tr>
 
                                 <th>
-                                    ✓
+                                    Estado
                                 </th>
 
                                 <th>
@@ -950,8 +950,8 @@ function ListaCompras() {
                                                 ) : (<span>
                                                     {
                                                         item.comprado
-                                                            ? "✓"
-                                                            : "—"
+                                                            ? "Comprado"
+                                                            : "Pendiente"
                                                     }
                                                 </span>)}
 

@@ -1171,7 +1171,7 @@ function Precios() {
                                 )
                             }
                         >
-                            ← Anterior
+                             Anterior
                         </button>
 
 
@@ -1195,7 +1195,7 @@ function Precios() {
                                 )
                             }
                         >
-                            Siguiente →
+                            Siguiente 
                         </button>
 
                     </div>

@@ -1830,7 +1830,7 @@ function Ventas() {
                                 )
                             }
                         >
-                            ← Anterior
+                             Anterior
                         </button>
 
 
@@ -1853,7 +1853,7 @@ function Ventas() {
                                 )
                             }
                         >
-                            Siguiente →
+                            Siguiente 
                         </button>
 
                     </div>

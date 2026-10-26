@@ -458,7 +458,7 @@ function Auditoria() {
                         )
                     }
                 >
-                    ← Anterior
+                     Anterior
                 </button>
 
 
@@ -479,7 +479,7 @@ function Auditoria() {
                         )
                     }
                 >
-                    Siguiente →
+                    Siguiente 
                 </button>
 
             </div>
