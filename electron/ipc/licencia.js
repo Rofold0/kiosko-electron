@@ -7,18 +7,12 @@ import {
     formatearDeviceId
 } from "../security/licensing/deviceId.js";
 
+import {
+    obtenerEstadoLicencia
+} from "../security/licensing/license.js";
+
 
 export function registerLicenciaHandlers() {
-
-    /*
-     * Este canal es intencionalmente público.
-     *
-     * Tiene que poder consultarse antes
-     * de iniciar sesión porque luego
-     * tendremos una pantalla de activación.
-     *
-     * Nunca devuelve el MachineGuid real.
-     */
 
     ipcMain.handle(
         "licencia:equipo",
@@ -37,6 +31,30 @@ export function registerLicenciaHandlers() {
                 codigo_equipo:
                     formatearDeviceId(
                         deviceId
+                    )
+
+            };
+
+        }
+    );
+
+
+    ipcMain.handle(
+        "licencia:estado",
+
+        () => {
+
+            const estado =
+                obtenerEstadoLicencia();
+
+
+            return {
+
+                ...estado,
+
+                codigo_equipo:
+                    formatearDeviceId(
+                        estado.device_id
                     )
 
             };

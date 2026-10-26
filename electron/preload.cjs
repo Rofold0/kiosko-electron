@@ -6,6 +6,11 @@ licencia: {
     equipo: () =>
         ipcRenderer.invoke(
             "licencia:equipo"
+        ),
+
+    estado: () =>
+        ipcRenderer.invoke(
+            "licencia:estado"
         )
 
 },
