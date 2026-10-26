@@ -12,7 +12,6 @@ import ReportExportDropdown
 import PageHeader
     from "../components/pageHeader.jsx";
 
-
 const moneda =
     new Intl.NumberFormat(
         "es-AR",
