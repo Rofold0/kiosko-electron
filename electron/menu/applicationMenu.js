@@ -362,7 +362,18 @@ export function createMenu(
 
     }
 
+if (
+            puede(
+                "sistema.backup"
+            )
+        ) {
 
+            gestion.push(
+                item(
+                    "Configuración",
+                    ROUTES.configuracion
+                )
+            );
     if (
         gestion.length >
         0
@@ -377,18 +388,7 @@ export function createMenu(
                 gestion
 
         });
-        if (
-            puede(
-                "sistema.backup"
-            )
-        ) {
-
-            gestion.push(
-                item(
-                    "Configuración",
-                    ROUTES.configuracion
-                )
-            );
+        
 
         }
 

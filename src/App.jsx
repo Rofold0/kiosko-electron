@@ -320,7 +320,8 @@ function AplicacionProtegida() {
                 "gastos.revertir",
                 "usuarios.ver",
                 "ofertas.ver",
-                "ofertas.modificar"
+                "ofertas.modificar",
+                  "auditoria.ver"
               ]}
             >
               <Gestion />
