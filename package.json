@@ -46,6 +46,7 @@
     "productName": "Cuaderno de Vicios",
     "artifactName": "Cuaderno-de-Vicios-Setup-${version}.${ext}",
     "asar": true,
+    
     "directories": {
       "output": "release"
     },
@@ -59,12 +60,12 @@
       "node_modules/better-sqlite3/**/*"
     ],
     "electronFuses": {
-      "runAsNode": false,
-      "enableNodeOptionsEnvironmentVariable": false,
-      "enableNodeCliInspectArguments": false,
-      "enableEmbeddedAsarIntegrityValidation": true,
-      "onlyLoadAppFromAsar": true
-    },
+  "runAsNode": false,
+  "enableNodeOptionsEnvironmentVariable": false,
+  "enableNodeCliInspectArguments": false,
+  "enableEmbeddedAsarIntegrityValidation": true,
+  "onlyLoadAppFromAsar": true
+},
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico"
