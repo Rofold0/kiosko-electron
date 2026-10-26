@@ -41,8 +41,10 @@
     }
   },
   "build": {
-    "appId": "com.vicio.anotador",
-    "productName": "Anotador de Vicios",
+    "appId": "com.vicio.cuaderno",
+    "productName": "Cuaderno de Vicios",
+      "artifactName":
+    "Cuaderno-de-Vicios-Setup-${version}.${ext}",
     "directories": {
       "output": "release"
     },
@@ -56,7 +58,9 @@
       "node_modules/better-sqlite3/**/*"
     ],
     "win": {
-      "target": "nsis"
-    }
+  "target": "nsis",
+  "icon": "build/icon.ico"
+}
+    
   }
 }
