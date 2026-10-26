@@ -34,33 +34,64 @@
     "vite": "^8.3.5",
     "wait-on": "^9.1.0"
   },
-  
   "overrides": {
     "exceljs": {
       "uuid": "11.1.1"
     }
   },
-  "build": {
-    "appId": "com.vicio.cuaderno",
-    "productName": "Cuaderno de Vicios",
-      "artifactName":
+ "build": {
+
+  "appId": "com.vicio.cuaderno",
+
+  "productName": "Cuaderno de Vicios",
+
+  "artifactName":
     "Cuaderno-de-Vicios-Setup-${version}.${ext}",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "shared/**/*",
-      "package.json"
-    ],
-    "asarUnpack": [
-      "node_modules/better-sqlite3/**/*"
-    ],
-    "win": {
-  "target": "nsis",
-  "icon": "build/icon.ico"
-}
-    
+
+  "asar": true,
+
+  "directories": {
+    "output": "release"
+  },
+
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "shared/**/*",
+    "package.json"
+  ],
+
+  "asarUnpack": [
+    "node_modules/better-sqlite3/**/*"
+  ],
+
+  "electronFuses": {
+
+    "runAsNode": false,
+
+    "enableNodeOptionsEnvironmentVariable":
+      false,
+
+    "enableNodeCliInspectArguments":
+      false,
+
+    "enableEmbeddedAsarIntegrityValidation":
+      true,
+
+    "onlyLoadAppFromAsar":
+      true
+
+  },
+
+  "win": {
+
+    "target":
+      "nsis",
+
+    "icon":
+      "build/icon.ico"
+
   }
+
+}
 }

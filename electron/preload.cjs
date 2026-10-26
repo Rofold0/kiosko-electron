@@ -1,6 +1,14 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
+licencia: {
+
+    equipo: () =>
+        ipcRenderer.invoke(
+            "licencia:equipo"
+        )
+
+},
 backup: {
 
     estado: () =>

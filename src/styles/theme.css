@@ -431,7 +431,75 @@ input[type="radio"] {
 
 
 /* TABLAS */
+.crud-table {
+    color:
+        var(--text);
 
+    background:
+        var(--surface);
+}
+
+
+.crud-table thead {
+    background:
+        var(--surface-2);
+}
+
+
+.crud-table th {
+    color:
+        var(--text-soft);
+
+    background:
+        var(--surface-2);
+
+    border-bottom:
+        1px solid
+        var(--line-strong);
+
+    font-size:
+        0.78rem;
+
+    font-weight:
+        650;
+
+    letter-spacing:
+        0.055em;
+
+    text-transform:
+        uppercase;
+}
+
+
+.crud-table td {
+    color:
+        var(--text);
+
+    background:
+        transparent;
+
+    border-bottom:
+        1px solid
+        var(--line);
+}
+
+
+.crud-table tbody tr {
+    background:
+        var(--surface);
+}
+
+
+.crud-table tbody tr:hover {
+    background:
+        var(--surface-2);
+}
+
+
+.crud-table tbody tr:last-child td {
+    border-bottom:
+        none;
+}
 .crud-table-wrapper,
 .shopping-table-wrapper,
 .purchase-table-wrapper,

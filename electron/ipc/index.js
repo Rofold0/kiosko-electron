@@ -50,8 +50,12 @@ import {
 import {
     registerBackupHandlers
 } from "./backup.js";
+import {
+    registerLicenciaHandlers
+} from "./licencia.js";
 export function registerIpcHandlers() {
-
+    registerLicenciaHandlers();
+    
     registerUsuariosHandlers();
     
     registerAuditoriaHandlers();
@@ -83,7 +87,7 @@ export function registerIpcHandlers() {
     registerReportesHandlers();
 
     registerDialogosHandlers();
-    
+
     registerBackupHandlers();
 
 }
