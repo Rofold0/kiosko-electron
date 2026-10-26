@@ -158,7 +158,7 @@ function Dashboard() {
            <header className="dashboard-brand">
 
     <p className="dashboard-brand-kicker">
-        ANOTADOR DE VICIOS
+        CUADERNO DE VICIOS
     </p>
 
     <h1>
