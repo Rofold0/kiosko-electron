@@ -1,6 +1,6 @@
 {
   "name": "kiosko",
-  "productName": "Anotador de Vicios",
+  "productName": "Cuaderno de Vicios",
   "private": true,
   "version": "1.0.0",
   "main": "electron/main.js",

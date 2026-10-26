@@ -1,40 +1,67 @@
 :root {
     color-scheme: dark;
 
-    --bg: #09090a;
+    --bg: #0B0B0D;
 
-    --surface: #101012;
-    --surface-2: #151518;
-    --surface-3: #1b1b1f;
+    --surface: #171719;
+    --surface-2: #1D1D20;
+    --surface-3: #1D1D20;
 
-    --text: #f2f2f2;
-    --text-soft: #c6c6cb;
-    --muted: #85858e;
+    --text: #F4F4F5;
+    --text-soft: #A8A8AF;
+    --muted: #73737B;
 
-    --line: #29292f;
-    --line-strong: #3a3a42;
+    --line: #333338;
+    --line-strong: #333338;
 
-    --red: #e52b3a;
-    --red-soft: rgba(229, 43, 58, 0.12);
-    --red-border: rgba(229, 43, 58, 0.48);
+    --red: #FF1735;
 
-    --warning: #d2a53b;
-    --warning-soft: rgba(210, 165, 59, 0.1);
+    --red-soft:
+        rgba(
+            255,
+            23,
+            53,
+            0.10
+        );
 
-    --success: #78aa78;
-    --success-soft: rgba(120, 170, 120, 0.1);
+    --red-border:
+        rgba(
+            255,
+            23,
+            53,
+            0.55
+        );
+
+    --warning: #D2A53B;
+
+    --warning-soft:
+        rgba(
+            210,
+            165,
+            59,
+            0.10
+        );
+
+    --success: #78AA78;
+
+    --success-soft:
+        rgba(
+            120,
+            170,
+            120,
+            0.10
+        );
 
     --radius: 3px;
 
     --font-ui:
-        "Segoe UI",
-        Arial,
         Helvetica,
+        Arial,
         sans-serif;
 
     --font-brand:
-        "Milanesa",
-        "Arial Black",
+        Helvetica,
+        Arial,
         sans-serif;
 }
 
@@ -63,6 +90,8 @@ body {
     font-family:
         var(--font-ui);
 
+    font-size: 15px;
+
     line-height: 1.45;
 
     overflow-x: hidden;
@@ -75,18 +104,18 @@ body {
  * detalle, no fondo protagonista.
  */
 
-body::before {
+body::after {
     content: "";
 
     position: fixed;
 
-    z-index: 9999;
+    right: 24px;
+    bottom: 18px;
 
-    top: 0;
-    left: 0;
+    z-index: 1;
 
-    width: 100%;
-    height: 6px;
+    width: 112px;
+    height: 16px;
 
     pointer-events: none;
 
@@ -94,15 +123,14 @@ body::before {
         conic-gradient(
             from 90deg,
             var(--red) 25%,
-            #050505 0 50%,
+            transparent 0 50%,
             var(--red) 0 75%,
-            #050505 0
+            transparent 0
         );
 
     background-size:
-        12px 12px;
+        16px 16px;
 }
-
 
 ::selection {
     color: white;
@@ -119,30 +147,22 @@ body::before {
 }
 
 
-h1,
-h2,
-h3 {
-    color:
-        var(--text);
-
-    letter-spacing:
-        -0.02em;
-}
-
-
 h1 {
-    font-size:
-        clamp(
-            1.7rem,
-            3vw,
-            2.5rem
-        );
+    font-size: 40px;
+
+    font-weight: 500;
 }
 
 
 h2 {
-    font-size:
-        1.2rem;
+    font-size: 24px;
+
+    font-weight: 500;
+}
+
+
+h3 {
+    font-weight: 500;
 }
 
 
@@ -162,12 +182,12 @@ small {
 .page {
     max-width: 1480px;
 
-    padding:
-        clamp(
-            18px,
-            3vw,
-            36px
-        );
+    padding: 32px;
+}
+
+
+.page > section + section {
+    margin-top: 28px;
 }
 
 
@@ -246,39 +266,16 @@ small {
 /* BOTONES */
 
 button {
-    position: relative;
-
-    min-height: 38px;
+    min-height: 46px;
 
     padding:
-        9px 14px;
-
-    color:
-        var(--text);
-
-    background:
-        var(--surface-2);
-
-    border:
-        1px solid
-        var(--line-strong);
-
-    border-radius:
-        var(--radius);
-
-    font-family:
-        inherit;
-
-    font-weight:
-        600;
-
-    cursor: pointer;
+        0 16px;
 
     transition:
-        background 120ms ease,
-        border-color 120ms ease,
-        color 120ms ease,
-        transform 80ms ease;
+        background 170ms ease,
+        border-color 170ms ease,
+        color 170ms ease,
+        transform 170ms ease;
 }
 
 
@@ -364,8 +361,16 @@ button[type="submit"]:hover:not(:disabled) {
 
 
 .form-field input,
-.form-field select,
-.form-field textarea,
+.form-field select {
+    min-height: 46px;
+
+    padding:
+        0 12px;
+}
+.form-field textarea {
+    padding:
+        12px;
+}
 .shopping-quantity,
 .purchase-number,
 .purchase-cost,
@@ -446,70 +451,27 @@ input[type="radio"] {
 }
 
 
-.crud-table,
-.shopping-table,
-.purchase-table,
-.report-table,
-.offers-table,
-.price-history-table,
-.cash-table,
-.audit-table,
-.sales-cart {
-    color:
-        var(--text);
-
-    background:
-        var(--surface);
-}
-
-
 .crud-table th,
-.shopping-table th,
-.purchase-table th,
-.report-table th,
-.offers-table th,
-.price-history-table th,
-.cash-table th,
-.audit-table th,
-.sales-cart th {
-    color:
-        var(--muted);
-
-    background:
-        var(--surface-2);
-
-    border-color:
-        var(--line);
-
-    font-size:
-        0.72rem;
-
-    font-weight:
-        700;
-
-    letter-spacing:
-        0.055em;
-
-    text-transform:
-        uppercase;
-}
-
-
 .crud-table td,
 .shopping-table td,
 .purchase-table td,
+.report-table th,
 .report-table td,
+.offers-table th,
 .offers-table td,
+.price-history-table th,
 .price-history-table td,
 .cash-table td,
+.audit-table th,
 .audit-table td,
+.sales-cart th,
 .sales-cart td {
-    color:
-        var(--text-soft);
+    height: 54px;
 
-    border-color:
-        var(--line);
+    padding:
+        0 16px;
 }
+
 
 
 .crud-table tbody tr:hover,
@@ -581,17 +543,17 @@ input[type="radio"] {
     font-size:
         clamp(
             3rem,
-            8vw,
-            6rem
+            7vw,
+            5.5rem
         );
 
-    line-height:
-        0.95;
+    font-weight: 700;
+
+    line-height: 0.95;
 
     letter-spacing:
         -0.055em;
 }
-
 
 .dashboard-brand-copy {
     margin:
@@ -952,14 +914,7 @@ input[type="radio"] {
     border-radius:
         var(--radius);
 
-    box-shadow:
-        0 18px 50px
-        rgba(
-            0,
-            0,
-            0,
-            0.45
-        );
+   box-shadow: none;
 }
 
 
@@ -988,32 +943,6 @@ input[type="radio"] {
 }
 
 
-.auth-page::before {
-    content: "";
-
-    position: fixed;
-
-    right: 0;
-    bottom: 0;
-
-    width: 220px;
-    height: 220px;
-
-    opacity: 0.07;
-
-    pointer-events: none;
-
-    background:
-        conic-gradient(
-            var(--red) 25%,
-            transparent 0 50%,
-            var(--red) 0 75%,
-            transparent 0
-        );
-
-    background-size:
-        32px 32px;
-}
 
 
 .auth-card {
@@ -1066,32 +995,18 @@ input[type="radio"] {
 
 @media (max-width: 650px) {
 
-    .page-header {
-        flex-direction:
-            column-reverse;
-
-        align-items:
-            stretch;
+    .page {
+        padding:
+            20px;
     }
 
 
-    .page-header-actions {
-        width: 100%;
-    }
-
-
-    .page-header-actions button {
-        flex: 1;
-    }
-
-
-    .dashboard-card {
-        min-height:
-            110px;
+    h1 {
+        font-size:
+            32px;
     }
 
 }
-
 
 /* IMPRESIÓN / PDF */
 
