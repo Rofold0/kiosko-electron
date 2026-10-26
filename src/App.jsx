@@ -54,7 +54,19 @@ function NavegacionElectron() {
   }, [navigate]);
   return null; // Este componente no necesita renderizar nada
 }
+const cerrarSesion =
+    async () => {
 
+        await logout();
+
+        navigate(
+            ROUTES.dashboard,
+            {
+                replace: true
+            }
+        );
+
+    };
 function AplicacionProtegida() {
 
   const {
@@ -62,7 +74,8 @@ function AplicacionProtegida() {
     puede
   } =
     useAuth();
-
+const navigate =
+    useNavigate();
 
   return (
     <>
@@ -77,11 +90,11 @@ function AplicacionProtegida() {
         </span>
 
         <button
-          type="button"
-          onClick={logout}
-        >
-          Cerrar sesión
-        </button>
+  type="button"
+  onClick={cerrarSesion}
+>
+  Cerrar sesión
+</button>
 
       </div>
 

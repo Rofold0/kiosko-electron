@@ -79,9 +79,10 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   }
 }
-
 const tieneBloqueo =
-    app.requestSingleInstanceLock();
+    app.isPackaged
+        ? app.requestSingleInstanceLock()
+        : true;
 
 
 if (!tieneBloqueo) {
@@ -89,6 +90,8 @@ if (!tieneBloqueo) {
     app.quit();
 
 } else {
+
+    if (app.isPackaged) {
 
     app.on(
         "second-instance",
@@ -98,7 +101,6 @@ if (!tieneBloqueo) {
                 return;
             }
 
-
             if (
                 mainWindow.isMinimized()
             ) {
@@ -107,12 +109,13 @@ if (!tieneBloqueo) {
 
             }
 
-
             mainWindow.show();
             mainWindow.focus();
 
         }
     );
+
+}
 
 
    app.whenReady()
