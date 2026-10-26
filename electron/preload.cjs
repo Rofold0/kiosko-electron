@@ -1,7 +1,24 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
+backup: {
 
+    estado: () =>
+        ipcRenderer.invoke(
+            "backup:estado"
+        ),
+
+    crear: () =>
+        ipcRenderer.invoke(
+            "backup:crear"
+        ),
+
+    restaurar: () =>
+        ipcRenderer.invoke(
+            "backup:restaurar"
+        )
+
+},
   dialogos: {
 
     confirmar: (mensaje) =>

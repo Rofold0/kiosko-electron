@@ -2804,7 +2804,65 @@ categoria_id       INTEGER,
 
     }
 },
+{
+    version: 22,
+
+    name: "permiso-backup-restauracion",
+
+    up(db) {
+
+        db.prepare(`
+            INSERT OR IGNORE
+            INTO permisos (
+                clave,
+                descripcion
+            )
+            VALUES (?, ?)
+        `).run(
+            "sistema.backup",
+            "Crear y restaurar copias de seguridad"
+        );
+
+
+        /*
+         * El administrador recibe
+         * el permiso automáticamente.
+         */
+
+        db.exec(`
+            INSERT OR IGNORE
+            INTO roles_permisos (
+                rol_id,
+                permiso_id
+            )
+
+            SELECT
+                r.id,
+                p.id
+
+            FROM roles r
+
+            INNER JOIN permisos p
+                ON p.clave =
+                    'sistema.backup'
+
+            WHERE
+                r.clave =
+                    'ADMIN';
+        `);
+
+    }
+},
 ];
+export const LATEST_SCHEMA_VERSION =
+    migrations.reduce(
+        (maximo, migration) =>
+            Math.max(
+                maximo,
+                migration.version
+            ),
+        0
+    );
 
 
 export function runMigrations(db) {

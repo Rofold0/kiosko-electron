@@ -377,6 +377,20 @@ export function createMenu(
                 gestion
 
         });
+        if (
+            puede(
+                "sistema.backup"
+            )
+        ) {
+
+            gestion.push(
+                item(
+                    "Configuración",
+                    ROUTES.configuracion
+                )
+            );
+
+        }
 
     }
 

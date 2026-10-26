@@ -35,7 +35,7 @@ const __dirname =
     );
 
 
-const dbDirectory =
+export const dbDirectory =
     app.isPackaged
         ? path.join(
             app.getPath(
@@ -57,7 +57,7 @@ fs.mkdirSync(
 );
 
 
-const dbPath =
+export const dbPath =
     path.join(
         dbDirectory,
         "kiosko.db"

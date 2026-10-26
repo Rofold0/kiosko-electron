@@ -14,6 +14,9 @@ import {
 import {
   clearMenu
 } from "./menu/applicationMenu.js";
+import {
+  crearBackupAutomaticoSiCorresponde
+} from "./database/backup.js";
 
 
 const __filename =
@@ -112,32 +115,47 @@ if (!tieneBloqueo) {
     );
 
 
-    app.whenReady()
-        .then(() => {
+   app.whenReady()
+    .then(async () => {
 
-            registerIpcHandlers();
-
-            createWindow();
+        registerIpcHandlers();
 
 
-            app.on(
-                "activate",
-                () => {
+        try {
 
-                    if (
-                        BrowserWindow
-                            .getAllWindows()
-                            .length === 0
-                    ) {
+            await crearBackupAutomaticoSiCorresponde();
 
-                        createWindow();
+        } catch (error) {
 
-                    }
-
-                }
+            console.error(
+                "Error creando backup automático:",
+                error
             );
 
-        });
+        }
+
+
+        createWindow();
+
+
+        app.on(
+            "activate",
+            () => {
+
+                if (
+                    BrowserWindow
+                        .getAllWindows()
+                        .length === 0
+                ) {
+
+                    createWindow();
+
+                }
+
+            }
+        );
+
+    });
 
 }
 

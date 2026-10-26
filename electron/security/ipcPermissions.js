@@ -325,6 +325,18 @@ export const IPC_PERMISSIONS =
 
         "auditoria:listar":
             "auditoria.ver",
+                /*
+         * BACKUP / RESTORE
+         */
+
+        "backup:estado":
+            "sistema.backup",
+
+        "backup:crear":
+            "sistema.backup",
+
+        "backup:restaurar":
+            "sistema.backup",
 
     });
 

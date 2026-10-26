@@ -16,5 +16,6 @@ export const ROUTES = {
     gestion: "/gestion",
     usuarios: "/usuarios",
     auditoria: "/auditoria",
-    ofertas: "/ofertas"
+    ofertas: "/ofertas",
+    configuracion: "/configuracion",
 };

@@ -400,6 +400,7 @@ function Dashboard() {
                     puede("gastos.ver") ||
                     puede("usuarios.ver")||
                     puede("ofertas.ver") ||
+                    puede("sistema.backup") ||
                     puede("auditoria.ver")
                 ) && (
 

@@ -154,6 +154,20 @@ function Gestion() {
                         />
 
                     )}
+                    {puede(
+    "sistema.backup"
+) && (
+
+    <DashboardCard
+        title="Configuración"
+        onClick={() =>
+            navigate(
+                ROUTES.configuracion
+            )
+        }
+    />
+
+)}
 
             </div>
         </div>

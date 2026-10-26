@@ -23,7 +23,7 @@ import Mercaderia from "./pages/mercaderia";
 import Gestion from "./pages/gestion";
 import Auditoria from "./pages/auditoria.jsx";
 import Ofertas from "./pages/ofertas.jsx";
-
+import Configuracion from "./pages/configuracion.jsx";
 
 function NavegacionElectron() {
 
@@ -289,6 +289,7 @@ function AplicacionProtegida() {
           element={
             <RutaProtegida
               permisos={[
+                "sistema.backup",
                 "proveedores.ver",
                 "proveedores.modificar",
                 "compras.ver",
@@ -320,6 +321,16 @@ function AplicacionProtegida() {
               permisos="auditoria.ver"
             >
               <Auditoria />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path={ROUTES.configuracion}
+          element={
+            <RutaProtegida
+              permisos="sistema.backup"
+            >
+              <Configuracion />
             </RutaProtegida>
           }
         />

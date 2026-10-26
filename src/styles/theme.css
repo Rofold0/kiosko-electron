@@ -276,6 +276,7 @@ button {
         border-color 170ms ease,
         color 170ms ease,
         transform 170ms ease;
+    color:#99999c
 }
 
 
@@ -288,6 +289,7 @@ button:hover:not(:disabled) {
 
     border-color:
         var(--red-border);
+    color: #fff;
 }
 
 

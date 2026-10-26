@@ -47,6 +47,9 @@ import {
 import {
     registerOfertasHandlers
 } from "./ofertas.js";
+import {
+    registerBackupHandlers
+} from "./backup.js";
 export function registerIpcHandlers() {
 
     registerUsuariosHandlers();
@@ -80,5 +83,7 @@ export function registerIpcHandlers() {
     registerReportesHandlers();
 
     registerDialogosHandlers();
+    
+    registerBackupHandlers();
 
 }
