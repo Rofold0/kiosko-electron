@@ -40,6 +40,6 @@ release/
 /database/*.db-shm
 # Sistema
 Thumbs.db
-# Llaves privadas de licencias
+# Licencias privadas
 **/private-key.pem
 **/*.private.pem

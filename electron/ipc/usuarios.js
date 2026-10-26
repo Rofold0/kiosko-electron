@@ -1,4 +1,7 @@
 import {
+    exigirLicenciaValida
+} from "../security/licensing/license.js";
+import {
     ipcMain,
     BrowserWindow
 } from "electron";
@@ -331,7 +334,7 @@ export function registerUsuariosHandlers() {
                 obtenerSesion(
                     event
                 );
-
+                exigirLicenciaValida();
 
             if (sesion) {
 
@@ -375,7 +378,7 @@ export function registerUsuariosHandlers() {
             event,
             datos
         ) => {
-
+            exigirLicenciaValida();
             if (
                 hayUsuarios()
             ) {
@@ -484,7 +487,7 @@ export function registerUsuariosHandlers() {
             event,
             datos
         ) => {
-
+            exigirLicenciaValida();
             const usuarioTexto =
                 normalizarUsuario(
                     datos?.usuario

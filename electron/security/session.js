@@ -1,3 +1,6 @@
+import {
+    exigirLicenciaValida
+} from "./licensing/license.js";
 const sesiones =
     new Map();
 
@@ -105,6 +108,14 @@ export function exigirSesion(
     event
 ) {
 
+    /*
+     * Incluso aunque alguien manipule
+     * el frontend, ningún IPC protegido
+     * funciona sin licencia.
+     */
+    exigirLicenciaValida();
+
+
     const sesion =
         sesiones.get(
             event.sender.id
@@ -123,7 +134,6 @@ export function exigirSesion(
     return sesion;
 
 }
-
 
 export function exigirPermiso(
     event,

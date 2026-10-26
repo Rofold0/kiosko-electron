@@ -7,7 +7,10 @@ import RutaProtegida from "./auth/rutaProtegida.jsx";
 import Dashboard from "./pages/dashboard";
 import Categorias from "./pages/categorias";
 import Subcategorias from "./pages/subcategorias";
-import { useEffect } from "react";
+import {
+  useEffect,
+  useState
+} from "react";
 import { ROUTES } from "../shared/routes.js";
 import Productos from "./pages/productos";
 import Stock from "./pages/stock";
@@ -24,7 +27,125 @@ import Gestion from "./pages/gestion";
 import Auditoria from "./pages/auditoria.jsx";
 import Ofertas from "./pages/ofertas.jsx";
 import Configuracion from "./pages/configuracion.jsx";
+import Activacion
+  from "./pages/activacion.jsx";
+  function ControlLicencia() {
 
+  const [
+    cargandoLicencia,
+    setCargandoLicencia
+  ] =
+    useState(true);
+
+
+  const [
+    estadoLicencia,
+    setEstadoLicencia
+  ] =
+    useState(null);
+
+
+  useEffect(() => {
+
+    const cargar =
+      async () => {
+
+        try {
+
+          const estado =
+            await window
+              .electronAPI
+              .licencia
+              .estado();
+
+
+          setEstadoLicencia(
+            estado
+          );
+
+
+        } catch (error) {
+
+          setEstadoLicencia({
+
+            valida:
+              false,
+
+            motivo:
+              "ERROR",
+
+            error:
+              error?.message ||
+              String(error),
+
+            codigo_equipo:
+              "NO DISPONIBLE"
+
+          });
+
+
+        } finally {
+
+          setCargandoLicencia(
+            false
+          );
+
+        }
+
+      };
+
+
+    cargar();
+
+  }, []);
+
+
+  if (
+    cargandoLicencia
+  ) {
+
+    return (
+
+      <div className="auth-loading">
+        Verificando licencia...
+      </div>
+
+    );
+
+  }
+
+
+  if (
+    !estadoLicencia?.valida
+  ) {
+
+    return (
+
+      <Activacion
+        estado={
+          estadoLicencia
+        }
+        onActivada={
+          setEstadoLicencia
+        }
+      />
+
+    );
+
+  }
+
+
+  return (
+
+    <AuthProvider>
+
+      <ContenidoApp />
+
+    </AuthProvider>
+
+  );
+
+}
 function NavegacionElectron() {
 
   const navigate = useNavigate();
@@ -414,16 +535,13 @@ function App() {
 
     <HashRouter>
 
-      <AuthProvider>
-
-        <ContenidoApp />
-
-      </AuthProvider>
+      <ControlLicencia />
 
     </HashRouter>
 
   );
 
 }
+
 
 export default App;

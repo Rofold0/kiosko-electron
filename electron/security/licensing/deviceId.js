@@ -6,6 +6,8 @@ import {
     createHash
 } from "node:crypto";
 
+let deviceIdCache =
+    null;
 
 const DEVICE_NAMESPACE =
     "com.vicio.cuaderno|device|v1";
@@ -83,6 +85,13 @@ function obtenerMachineGuidWindows() {
 
 
 export function obtenerDeviceId() {
+    if (
+    deviceIdCache
+) {
+
+    return deviceIdCache;
+
+}
 
     const machineGuid =
         obtenerMachineGuidWindows();
@@ -109,14 +118,15 @@ export function obtenerDeviceId() {
             .toUpperCase();
 
 
-    /*
-     * 128 bits son más que suficientes
-     * para identificar una instalación.
-     */
-    return hash.slice(
+    
+    deviceIdCache =
+    hash.slice(
         0,
         32
     );
+
+
+return deviceIdCache;
 
 }
 

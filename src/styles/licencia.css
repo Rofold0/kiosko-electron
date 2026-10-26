@@ -1,0 +1,76 @@
+.activation-card {
+    width:
+        min(
+            100%,
+            560px
+        );
+}
+
+
+.activation-kicker {
+    margin: 0;
+
+    color:
+        var(--red);
+
+    font-size:
+        0.72rem;
+
+    font-weight:
+        750;
+
+    letter-spacing:
+        0.18em;
+
+    text-transform:
+        uppercase;
+}
+
+
+.activation-code {
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size:
+        0.95rem;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.04em;
+
+    text-align:
+        center;
+}
+
+
+.activation-help {
+    margin: 0;
+
+    font-size:
+        0.86rem;
+}
+
+
+.activation-error {
+    margin: 0;
+
+    padding:
+        12px;
+
+    color:
+        var(--text);
+
+    background:
+        var(--red-soft);
+
+    border:
+        1px solid
+        var(--red-border);
+
+    border-radius:
+        var(--radius);
+}

@@ -11,6 +11,11 @@ licencia: {
     estado: () =>
         ipcRenderer.invoke(
             "licencia:estado"
+        ),
+
+    importar: () =>
+        ipcRenderer.invoke(
+            "licencia:importar"
         )
 
 },

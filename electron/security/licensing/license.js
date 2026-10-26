@@ -39,6 +39,10 @@ const VERSION_LICENCIA =
     1;
 
 
+let publicKeyCache =
+    null;
+
+
 const publicKeyPath =
     path.join(
         __dirname,
@@ -113,10 +117,6 @@ function serializarPayload(
     payload
 ) {
 
-    /*
-     * Debe coincidir EXACTAMENTE
-     * con generarLicencia.mjs.
-     */
     return JSON.stringify({
 
         schema:
@@ -148,6 +148,15 @@ function serializarPayload(
 function leerPublicKey() {
 
     if (
+        publicKeyCache
+    ) {
+
+        return publicKeyCache;
+
+    }
+
+
+    if (
         !fs.existsSync(
             publicKeyPath
         )
@@ -160,10 +169,114 @@ function leerPublicKey() {
     }
 
 
-    return fs.readFileSync(
-        publicKeyPath,
-        "utf8"
-    );
+    publicKeyCache =
+        fs.readFileSync(
+            publicKeyPath,
+            "utf8"
+        );
+
+
+    return publicKeyCache;
+
+}
+
+
+function validarPayload(
+    payload
+) {
+
+    if (
+        payload.schema !==
+        VERSION_LICENCIA
+    ) {
+
+        throw new Error(
+            "Versión de licencia no compatible."
+        );
+
+    }
+
+
+    if (
+        payload.product !==
+        PRODUCTO
+    ) {
+
+        throw new Error(
+            "La licencia pertenece a otro producto."
+        );
+
+    }
+
+
+    if (
+        typeof payload.license_id !==
+        "string" ||
+        payload.license_id.length <
+        10
+    ) {
+
+        throw new Error(
+            "Identificador de licencia inválido."
+        );
+
+    }
+
+
+    if (
+        !/^[A-F0-9]{32}$/.test(
+            payload.device_id
+        )
+    ) {
+
+        throw new Error(
+            "Identificador de equipo inválido."
+        );
+
+    }
+
+
+    if (
+        typeof payload.cliente !==
+        "string" ||
+        payload.cliente.trim().length <
+        2
+    ) {
+
+        throw new Error(
+            "Cliente de licencia inválido."
+        );
+
+    }
+
+
+    if (
+        payload.tipo !==
+        "PERMANENTE"
+    ) {
+
+        throw new Error(
+            "Tipo de licencia no compatible."
+        );
+
+    }
+
+
+    if (
+        typeof payload.emitida !==
+        "string" ||
+        Number.isNaN(
+            Date.parse(
+                payload.emitida
+            )
+        )
+    ) {
+
+        throw new Error(
+            "Fecha de licencia inválida."
+        );
+
+    }
 
 }
 
@@ -204,53 +317,9 @@ export function verificarLicenciaDocumento(
         );
 
 
-    if (
-        payload.schema !==
-        VERSION_LICENCIA
-    ) {
-
-        throw new Error(
-            "Versión de licencia no compatible."
-        );
-
-    }
-
-
-    if (
-        payload.product !==
-        PRODUCTO
-    ) {
-
-        throw new Error(
-            "La licencia pertenece a otro producto."
-        );
-
-    }
-
-
-    if (
-        payload.tipo !==
-        "PERMANENTE"
-    ) {
-
-        throw new Error(
-            "Tipo de licencia no compatible."
-        );
-
-    }
-
-
-    if (
-        !/^[A-F0-9]{32}$/.test(
-            payload.device_id
-        )
-    ) {
-
-        throw new Error(
-            "Identificador de equipo inválido."
-        );
-
-    }
+    validarPayload(
+        payload
+    );
 
 
     const firmaValida =
@@ -325,6 +394,90 @@ export function verificarLicenciaDocumento(
 }
 
 
+export function instalarLicenciaDesdeRuta(
+    rutaOrigen
+) {
+
+    const contenido =
+        fs.readFileSync(
+            rutaOrigen,
+            "utf8"
+        );
+
+
+    let licencia;
+
+
+    try {
+
+        licencia =
+            JSON.parse(
+                contenido
+            );
+
+
+    } catch {
+
+        throw new Error(
+            "El archivo seleccionado no es una licencia válida."
+        );
+
+    }
+
+
+    const estado =
+        verificarLicenciaDocumento(
+            licencia
+        );
+
+
+    const payload =
+        extraerPayload(
+            licencia
+        );
+
+
+    const licenciaNormalizada = {
+
+        ...payload,
+
+        firma:
+            licencia.firma
+
+    };
+
+
+    const rutaDestino =
+        obtenerRutaLicencia();
+
+
+    fs.mkdirSync(
+        path.dirname(
+            rutaDestino
+        ),
+        {
+            recursive:
+                true
+        }
+    );
+
+
+    fs.writeFileSync(
+        rutaDestino,
+        JSON.stringify(
+            licenciaNormalizada,
+            null,
+            4
+        ),
+        "utf8"
+    );
+
+
+    return estado;
+
+}
+
+
 export function obtenerEstadoLicencia() {
 
     const ruta =
@@ -393,5 +546,27 @@ export function obtenerEstadoLicencia() {
         };
 
     }
+
+}
+
+
+export function exigirLicenciaValida() {
+
+    const estado =
+        obtenerEstadoLicencia();
+
+
+    if (
+        !estado.valida
+    ) {
+
+        throw new Error(
+            "Cuaderno de Vicios no está activado para este equipo."
+        );
+
+    }
+
+
+    return estado;
 
 }

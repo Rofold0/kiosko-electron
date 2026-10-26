@@ -13,7 +13,9 @@
     "start": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron\"",
     "postinstall": "electron-builder install-app-deps",
     "app:dir": "npm run build && electron-builder --dir",
-    "app:dist": "npm run build && electron-builder"
+    "app:dist": "npm run build && electron-builder",
+    "license:keys": "node scripts/licensing/generarClaves.mjs",
+    "license:create": "node scripts/licensing/generarLicencia.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -39,59 +41,33 @@
       "uuid": "11.1.1"
     }
   },
- "build": {
-
-  "appId": "com.vicio.cuaderno",
-
-  "productName": "Cuaderno de Vicios",
-
-  "artifactName":
-    "Cuaderno-de-Vicios-Setup-${version}.${ext}",
-
-  "asar": true,
-
-  "directories": {
-    "output": "release"
-  },
-
-  "files": [
-    "dist/**/*",
-    "electron/**/*",
-    "shared/**/*",
-    "package.json"
-  ],
-
-  "asarUnpack": [
-    "node_modules/better-sqlite3/**/*"
-  ],
-
-  "electronFuses": {
-
-    "runAsNode": false,
-
-    "enableNodeOptionsEnvironmentVariable":
-      false,
-
-    "enableNodeCliInspectArguments":
-      false,
-
-    "enableEmbeddedAsarIntegrityValidation":
-      true,
-
-    "onlyLoadAppFromAsar":
-      true
-
-  },
-
-  "win": {
-
-    "target":
-      "nsis",
-
-    "icon":
-      "build/icon.ico"
-
+  "build": {
+    "appId": "com.vicio.cuaderno",
+    "productName": "Cuaderno de Vicios",
+    "artifactName": "Cuaderno-de-Vicios-Setup-${version}.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "shared/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    }
   }
-
-}
 }
