@@ -1111,9 +1111,7 @@ function Ofertas() {
                             oferta.id,
 
                         activo:
-                            !Boolean(
-                                oferta.activo
-                            ),
+    !oferta.activo,
 
                         tipo:
                             oferta.tipo,

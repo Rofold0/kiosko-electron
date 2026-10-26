@@ -180,7 +180,6 @@ function AplicacionProtegida() {
 
   const {
     logout,
-    puede
   } =
     useAuth();
   const navigate =

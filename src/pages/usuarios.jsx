@@ -16,7 +16,6 @@ function Usuarios() {
         puede,
         usuario:
         usuarioSesion,
-        logout
     } =
         useAuth();
 
@@ -280,9 +279,7 @@ function Usuarios() {
                             item.id,
 
                         activo:
-                            !Boolean(
-                                item.activo
-                            )
+                            !item.activo
 
                     });
 
@@ -395,95 +392,95 @@ function Usuarios() {
         };
 
     const cambiarPassword =
-    async (event) => {
+        async (event) => {
 
-        event.preventDefault();
-
-
-        if (!usuarioPassword) {
-
-            return;
-
-        }
+            event.preventDefault();
 
 
-        const esPropiaCuenta =
-            usuarioPassword.id ===
-            usuarioSesion?.id;
-
-
-        try {
-
-            await window
-                .electronAPI
-                .usuarios
-                .cambiarPassword({
-
-                    id:
-                        usuarioPassword.id,
-
-                    password:
-                        nuevaPassword,
-
-                    admin_password:
-                        passwordAdministrador
-
-                });
-
-
-            setUsuarioPassword(
-                null
-            );
-
-            setNuevaPassword("");
-
-            setPasswordAdministrador("");
-
-
-            /*
-             * Si el administrador cambió
-             * su propia contraseña,
-             * el backend ya invalidó
-             * su sesión.
-             *
-             * Recargamos para que
-             * AuthProvider consulte
-             * auth:estado nuevamente
-             * y vuelva al login.
-             */
-
-            if (esPropiaCuenta) {
-
-                window.location.reload();
+            if (!usuarioPassword) {
 
                 return;
 
             }
 
 
-            /*
-             * Si modificamos a otro usuario,
-             * permanecemos en la sesión
-             * del administrador y
-             * refrescamos el listado.
-             */
-
-            await cargar();
+            const esPropiaCuenta =
+                usuarioPassword.id ===
+                usuarioSesion?.id;
 
 
-        } catch (error) {
+            try {
 
-            await window
-                .electronAPI
-                .dialogos
-                .error(
-                    error?.message ||
-                    "No se pudo cambiar la contraseña."
+                await window
+                    .electronAPI
+                    .usuarios
+                    .cambiarPassword({
+
+                        id:
+                            usuarioPassword.id,
+
+                        password:
+                            nuevaPassword,
+
+                        admin_password:
+                            passwordAdministrador
+
+                    });
+
+
+                setUsuarioPassword(
+                    null
                 );
 
-        }
+                setNuevaPassword("");
 
-    };
+                setPasswordAdministrador("");
+
+
+                /*
+                 * Si el administrador cambió
+                 * su propia contraseña,
+                 * el backend ya invalidó
+                 * su sesión.
+                 *
+                 * Recargamos para que
+                 * AuthProvider consulte
+                 * auth:estado nuevamente
+                 * y vuelva al login.
+                 */
+
+                if (esPropiaCuenta) {
+
+                    window.location.reload();
+
+                    return;
+
+                }
+
+
+                /*
+                 * Si modificamos a otro usuario,
+                 * permanecemos en la sesión
+                 * del administrador y
+                 * refrescamos el listado.
+                 */
+
+                await cargar();
+
+
+            } catch (error) {
+
+                await window
+                    .electronAPI
+                    .dialogos
+                    .error(
+                        error?.message ||
+                        "No se pudo cambiar la contraseña."
+                    );
+
+            }
+
+        };
 
 
 
