@@ -597,7 +597,17 @@ auditoria: {
 
   },
   reportes: {
+    usuarios: () =>
+    ipcRenderer.invoke(
+        "reportes:usuarios"
+    ),
 
+    porUsuario: (filtros) =>
+    ipcRenderer.invoke(
+        "reportes:por-usuario",
+        filtros
+    ),
+    
     dashboard: (filtros) =>
       ipcRenderer.invoke(
         "reportes:dashboard",

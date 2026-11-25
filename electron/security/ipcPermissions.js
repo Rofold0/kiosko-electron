@@ -219,7 +219,7 @@ export const IPC_PERMISSIONS =
 
         "ventas:productos":
             "ventas.crear",
-        
+
         "ventas:cotizar":
             "ventas.crear",
 
@@ -318,6 +318,12 @@ export const IPC_PERMISSIONS =
 
         "reportes:imprimir":
             "reportes.exportar",
+            
+        "reportes:usuarios":
+            "reportes.ver",
+
+        "reportes:por-usuario":
+            "reportes.ver",
 
         /*
          * AUDITORÍA
@@ -325,9 +331,9 @@ export const IPC_PERMISSIONS =
 
         "auditoria:listar":
             "auditoria.ver",
-                /*
-         * BACKUP / RESTORE
-         */
+        /*
+ * BACKUP / RESTORE
+ */
 
         "backup:estado":
             "sistema.backup",

@@ -1395,6 +1395,7 @@ const rentabilidadCayendoStmt =
 
         LIMIT @limite
     `);
+    
 function redondear(
     valor
 ) {
@@ -1914,6 +1915,209 @@ export function obtenerDashboardReportes({
 
         rentabilidad_cayendo:
             rentabilidadCayendo
+
+    };
+
+}
+
+const resumenUsuarioStmt =
+    db.prepare(`
+        WITH margen_por_venta AS (
+
+            SELECT
+                venta_id,
+                SUM(margen_bruto) AS margen_bruto
+
+            FROM ventas_detalle_productos
+
+            WHERE estado = 'ACTIVA'
+
+            GROUP BY venta_id
+
+        )
+
+        SELECT
+
+            COUNT(*) AS total_ventas,
+
+            ROUND(
+                COALESCE(SUM(v.total), 0),
+                2
+            ) AS facturacion,
+
+            ROUND(
+                COALESCE(
+                    SUM(
+                        COALESCE(mpv.margen_bruto, 0)
+                    ),
+                    0
+                ),
+                2
+            ) AS margen_bruto
+
+        FROM ventas v
+
+        LEFT JOIN margen_por_venta mpv
+            ON mpv.venta_id = v.id
+
+        WHERE
+            v.estado = 'ACTIVA'
+            AND v.usuario_id = @usuarioId
+            AND v.fecha >= @desde
+            AND v.fecha < @hasta
+    `);
+
+
+const ventasUsuarioPorDiaStmt =
+    db.prepare(`
+        WITH margen_por_venta AS (
+
+            SELECT
+                venta_id,
+                SUM(margen_bruto) AS margen_bruto
+
+            FROM ventas_detalle_productos
+
+            WHERE estado = 'ACTIVA'
+
+            GROUP BY venta_id
+
+        )
+
+        SELECT
+
+            date(
+                v.fecha,
+                'localtime'
+            ) AS dia,
+
+            COUNT(*) AS ventas,
+
+            ROUND(
+                SUM(v.total),
+                2
+            ) AS facturacion,
+
+            ROUND(
+                SUM(
+                    COALESCE(mpv.margen_bruto, 0)
+                ),
+                2
+            ) AS margen_bruto
+
+        FROM ventas v
+
+        LEFT JOIN margen_por_venta mpv
+            ON mpv.venta_id = v.id
+
+        WHERE
+            v.estado = 'ACTIVA'
+            AND v.usuario_id = @usuarioId
+            AND v.fecha >= @desde
+            AND v.fecha < @hasta
+
+        GROUP BY date(
+            v.fecha,
+            'localtime'
+        )
+
+        ORDER BY dia
+    `);
+
+
+// Días con actividad registrada en auditoría
+
+const actividadUsuarioStmt =
+    db.prepare(`
+        SELECT
+
+            date(
+                fecha,
+                'localtime'
+            ) AS dia,
+
+            COUNT(*) AS acciones
+
+        FROM auditoria
+
+        WHERE
+            usuario_id = @usuarioId
+
+            AND fecha >= @desde
+            AND fecha < @hasta
+
+            AND modulo NOT IN (
+                'REPORTES',
+                'USUARIOS'
+            )
+
+        GROUP BY date(
+            fecha,
+            'localtime'
+        )
+
+        ORDER BY dia
+    `);
+
+
+export function obtenerReporteUsuario({
+    usuarioId,
+    desde,
+    hasta
+}) {
+
+    const parametros = {
+        usuarioId,
+        desde,
+        hasta
+    };
+
+    const resumen =
+        resumenUsuarioStmt.get(
+            parametros
+        );
+
+    const dias =
+        ventasUsuarioPorDiaStmt.all(
+            parametros
+        );
+
+    const diasActividad =
+        actividadUsuarioStmt.all(
+            parametros
+        );
+
+    const facturacion =
+        Number(resumen.facturacion) || 0;
+
+    const margen =
+        Number(resumen.margen_bruto) || 0;
+
+    return {
+
+        resumen: {
+
+            ...resumen,
+
+            margen_porcentaje:
+                facturacion > 0
+                    ? Math.round(
+                        margen * 10000 /
+                        facturacion
+                    ) / 100
+                    : 0,
+
+            dias_con_ventas:
+                dias.length,
+
+            dias_con_actividad:
+                diasActividad.length
+
+        },
+
+        dias,
+
+        diasActividad
 
     };
 

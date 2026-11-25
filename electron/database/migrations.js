@@ -2853,6 +2853,122 @@ categoria_id       INTEGER,
 
     }
 },
+{
+    version: 23,
+
+    name: "atribucion-ventas-usuarios",
+
+    up(db) {
+
+        const columnasVentas =
+            new Set(
+                db.pragma(
+                    "table_info(ventas)"
+                ).map(
+                    columna => columna.name
+                )
+            );
+
+        // Agregar usuario_id
+        if (!columnasVentas.has("usuario_id")) {
+
+            db.exec(`
+                ALTER TABLE ventas
+                ADD COLUMN usuario_id INTEGER
+                REFERENCES usuarios(id)
+                ON DELETE SET NULL;
+            `);
+
+        }
+
+        // Agregar nombre histórico
+        if (!columnasVentas.has("usuario_nombre")) {
+
+            db.exec(`
+                ALTER TABLE ventas
+                ADD COLUMN usuario_nombre TEXT;
+            `);
+
+        }
+
+        /*
+         * Recuperar ventas anteriores
+         * utilizando los registros de auditoría.
+         */
+
+        db.exec(`
+
+            UPDATE ventas
+
+            SET
+
+                usuario_id = COALESCE(
+                    usuario_id,
+                    (
+                        SELECT a.usuario_id
+                        FROM auditoria a
+
+                        WHERE
+                            a.modulo = 'VENTAS'
+                            AND a.accion = 'CREAR'
+                            AND a.entidad = 'venta'
+                            AND a.entidad_id = ventas.id
+
+                        ORDER BY a.id ASC
+                        LIMIT 1
+                    )
+                ),
+
+                usuario_nombre = COALESCE(
+                    usuario_nombre,
+                    (
+                        SELECT COALESCE(
+                            NULLIF(a.usuario_nombre, ''),
+                            NULLIF(a.usuario, '')
+                        )
+
+                        FROM auditoria a
+
+                        WHERE
+                            a.modulo = 'VENTAS'
+                            AND a.accion = 'CREAR'
+                            AND a.entidad = 'venta'
+                            AND a.entidad_id = ventas.id
+
+                        ORDER BY a.id ASC
+                        LIMIT 1
+                    )
+                )
+
+            WHERE EXISTS (
+
+                SELECT 1
+                FROM auditoria a
+
+                WHERE
+                    a.modulo = 'VENTAS'
+                    AND a.accion = 'CREAR'
+                    AND a.entidad = 'venta'
+                    AND a.entidad_id = ventas.id
+
+            );
+
+        `);
+
+        // Índice para consultas por usuario y fecha
+
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS
+            idx_ventas_usuario_fecha
+
+            ON ventas(
+                usuario_id,
+                fecha DESC
+            );
+        `);
+
+    }
+},
 ];
 export const LATEST_SCHEMA_VERSION =
     migrations.reduce(

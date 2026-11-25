@@ -15,6 +15,10 @@ import {
     auditar
 } from "../security/audit.js";
 
+import {
+    exigirSesion
+} from "../security/session.js";
+
 
 const METODOS_PAGO =
     new Set([
@@ -303,6 +307,7 @@ export function registerVentasHandlers() {
             datos
         ) => {
 
+            const sesion = exigirSesion(event);
             const metodoPago =
                 validarMetodoPago(
                     datos?.metodo_pago
@@ -312,6 +317,9 @@ export function registerVentasHandlers() {
             const venta =
                 registrarVenta({
 
+                    usuarioId: sesion.id,
+                    usuarioNombre: sesion.nombre,
+                    
                     fecha:
                         validarFecha(
                             datos?.fecha

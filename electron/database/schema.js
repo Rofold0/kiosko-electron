@@ -611,6 +611,12 @@ CREATE TABLE IF NOT EXISTS ventas (
     estado           TEXT NOT NULL DEFAULT 'ACTIVA',
     fecha_reversion  TEXT,
     motivo_reversion TEXT
+    usuario_id INTEGER,
+    usuario_nombre TEXT,
+
+    FOREIGN KEY (usuario_id)
+    REFERENCES usuarios(id)
+    ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS items_venta (

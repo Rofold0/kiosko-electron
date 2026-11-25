@@ -9,11 +9,16 @@ import {
     writeFile
 } from "node:fs/promises";
 import {
-    obtenerDashboardReportes
+    obtenerDashboardReportes,
+    obtenerReporteUsuario
 } from "../database/repositories/reportesRepository.js";
 import {
     auditar
 } from "../security/audit.js";
+import {
+    listarUsuarios
+} from "../database/repositories/usuariosRepository.js";
+
 
 
 const PATRON_FECHA =
@@ -432,37 +437,37 @@ function crearCsvReportes({
 
 
     agregarSeccion(
-    lineas,
+        lineas,
 
-    "FACTURACIÓN POR CATEGORÍA",
+        "FACTURACIÓN POR CATEGORÍA",
 
-    [
-        "Categoría",
-        "Ventas",
-        "Unidades",
-        "Facturación",
-        "Participación %",
-        "Margen",
-        "Margen %"
-    ],
+        [
+            "Categoría",
+            "Ventas",
+            "Unidades",
+            "Facturación",
+            "Participación %",
+            "Margen",
+            "Margen %"
+        ],
 
-    (
-        datos.categorias_top ||
-        []
-    ).map(
-        (item) => [
+        (
+            datos.categorias_top ||
+            []
+        ).map(
+            (item) => [
 
-            item.categoria,
-            item.ventas,
-            item.unidades,
-            item.facturacion,
-            item.participacion_facturacion,
-            item.margen_bruto,
-            item.margen_porcentaje
+                item.categoria,
+                item.ventas,
+                item.unidades,
+                item.facturacion,
+                item.participacion_facturacion,
+                item.margen_bruto,
+                item.margen_porcentaje
 
-        ]
-    )
-);
+            ]
+        )
+    );
 
 
     agregarSeccion(
@@ -797,6 +802,70 @@ function prepararRango({
 
 
 export function registerReportesHandlers() {
+
+    handleProtegido(
+        "reportes:usuarios",
+
+        () => {
+
+            return listarUsuarios().map(
+                ({
+                    id,
+                    usuario,
+                    nombre,
+                    activo
+                }) => ({
+                    id,
+                    usuario,
+                    nombre,
+                    activo
+                })
+            );
+
+        }
+    );
+
+
+    handleProtegido(
+        "reportes:por-usuario",
+
+        (
+            _event,
+            filtros = {}
+        ) => {
+
+            const usuarioId =
+                Number(filtros.usuario_id);
+
+            if (
+                !Number.isInteger(usuarioId) ||
+                usuarioId <= 0
+            ) {
+
+                throw new Error(
+                    "Usuario inválido."
+                );
+
+            }
+
+            const rango =
+                prepararRango({
+
+                    desde: filtros.desde,
+                    hasta: filtros.hasta
+
+                });
+
+            return obtenerReporteUsuario({
+
+                usuarioId,
+
+                ...rango
+
+            });
+
+        }
+    );
 
     handleProtegido(
         "reportes:dashboard",
@@ -1135,7 +1204,7 @@ export function registerReportesHandlers() {
                                             descripcion:
                                                 "Reporte impreso.",
 
-                                            
+
                                         }
                                     );
                                     return;

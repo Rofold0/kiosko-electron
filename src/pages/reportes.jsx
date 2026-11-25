@@ -11,6 +11,8 @@ import ReportExportDropdown
     from "../components/reportExportDropdown.jsx";
 import PageHeader
     from "../components/pageHeader.jsx";
+import ReporteUsuario
+    from "../components/reporteUsuario.jsx";
 
 const moneda =
     new Intl.NumberFormat(
@@ -552,11 +554,17 @@ function Reportes() {
                         onPrint={
                             imprimir
                         }
-
                     />
-
+                    
+                    <ReporteUsuario
+                        desde={desde}
+                        hasta={hasta}
+                    />
                 </div>
+                
+
             )}
+
 
             <div className="report-print-meta">
 
@@ -723,21 +731,21 @@ function Reportes() {
 
                             <strong>
                                 {
+                                    moneda.format(
+                                        resumen
+                                            .margen_bruto
+                                    )
+                                }
+                            </strong>
+
+                            <small>
+                                {
                                     Number(
                                         resumen
                                             .margen_porcentaje
                                     )
                                         .toFixed(1)
                                 }%
-                            </strong>
-
-                            <small>
-                                {
-                                    moneda.format(
-                                        resumen
-                                            .margen_bruto
-                                    )
-                                }
                             </small>
 
                         </article>

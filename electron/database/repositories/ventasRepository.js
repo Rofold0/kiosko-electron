@@ -282,11 +282,13 @@ const crearVentaStmt =
             metodo_pago,
             efectivo_recibido,
             vuelto,
-            notas
+            notas,
+            usuario_id,
+            usuario_nombre
         )
 
         VALUES (
-            ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?
         )
 
         RETURNING id
@@ -2336,7 +2338,9 @@ const registrarVentaTransaction =
         metodoPago,
         efectivoRecibido,
         notas,
-        items
+        items,
+        usuario_id,
+        usuario_nombre
     }) => {
 
         const caja =
@@ -2560,7 +2564,11 @@ const registrarVentaTransaction =
 
                 vuelto,
 
-                notas
+                notas,
+                
+                usuario_id,
+
+                usuario_nombre
 
             );
 
