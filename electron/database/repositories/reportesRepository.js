@@ -1929,6 +1929,8 @@ const resumenUsuarioStmt =
 
             SELECT
                 venta_id,
+                SUM(costo_total) AS costo_vendido,
+                
                 SUM(margen_bruto) AS margen_bruto
 
             FROM ventas_detalle_productos
@@ -1947,7 +1949,15 @@ const resumenUsuarioStmt =
                 COALESCE(SUM(v.total), 0),
                 2
             ) AS facturacion,
-
+            ROUND(
+    COALESCE(
+        SUM(
+            COALESCE(mpv.costo_vendido, 0)
+        ),
+        0
+    ),
+    2
+) AS costo_vendido,
             ROUND(
                 COALESCE(
                     SUM(
@@ -1977,6 +1987,7 @@ const ventasUsuarioPorDiaStmt =
 
             SELECT
                 venta_id,
+                SUM(costo_total) AS costo_vendido,
                 SUM(margen_bruto) AS margen_bruto
 
             FROM ventas_detalle_productos
@@ -2000,7 +2011,15 @@ const ventasUsuarioPorDiaStmt =
                 SUM(v.total),
                 2
             ) AS facturacion,
-
+        ROUND(
+    COALESCE(
+        SUM(
+            COALESCE(mpv.costo_vendido, 0)
+        ),
+        0
+    ),
+    2
+) AS costo_vendido,
             ROUND(
                 SUM(
                     COALESCE(mpv.margen_bruto, 0)

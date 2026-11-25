@@ -393,12 +393,12 @@ function ReporteUsuario({
 
                             <article className="report-stat">
 
-                                <span>Margen porcentual</span>
+                                <span>Margen</span>
 
                                 <strong>
-                                    {Number(
-                                        resumen.margen_porcentaje
-                                    ).toFixed(1)}%
+                                    $ {Number(
+                                        resumen.margen_bruto
+                                    ).toFixed(2)}
                                 </strong>
 
                             </article>
