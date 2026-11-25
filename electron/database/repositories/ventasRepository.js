@@ -2339,8 +2339,8 @@ const registrarVentaTransaction =
         efectivoRecibido,
         notas,
         items,
-        usuario_id,
-        usuario_nombre
+        usuarioId,
+        usuarioNombre
     }) => {
 
         const caja =
@@ -2566,9 +2566,9 @@ const registrarVentaTransaction =
 
                 notas,
                 
-                usuario_id,
+                usuarioId,
 
-                usuario_nombre
+                usuarioNombre
 
             );
 
@@ -2707,7 +2707,7 @@ const registrarVentaTransaction =
         }
 
 
-
+        
 
         const conceptoCaja =
             metodoPago ===

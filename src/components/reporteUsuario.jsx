@@ -6,6 +6,7 @@ import {
 } from "react";
 
 
+
 const moneda =
     new Intl.NumberFormat(
         "es-AR",
@@ -14,50 +15,11 @@ const moneda =
             currency: "ARS"
         }
     );
-
-
-function redondear(valor) {
-
-    return Math.round(
-        (
-            Number(valor) +
-            Number.EPSILON
-        ) * 100
-    ) / 100;
-
-}
-
-
-function textoNumero(valor) {
-
-    if (
-        !Number.isFinite(valor)
-    ) {
-
-        return "";
-    }
-
-
-    return String(
-        redondear(valor)
+    const numero =
+    new Intl.NumberFormat(
+        "es-AR"
     );
 
-}
-
-
-function numero(valor) {
-
-    const resultado =
-        Number(valor);
-
-
-    return Number.isFinite(
-        resultado
-    )
-        ? resultado
-        : 0;
-
-}
 
 
 const DIAS = [
@@ -413,23 +375,21 @@ function ReporteUsuario({
 
                             </article>
 
+                             <article className="report-stat">
 
-                            <article className="report-stat">
+                                <span>Costo de Ventas</span>
 
-                                <span>Margen bruto</span>
-
-                                <strong>
-                                    {moneda.format(
-                                        resumen.margen_bruto
-                                    )}
-                                </strong>
-
+                                 <strong>
+                                {moneda.format(resumen.costo_vendido || 0)}
+                            </strong>
                                 <small>
-                                    Ganancia sobre productos vendidos
+                                    {resumen.total_ventas} ventas
                                 </small>
 
                             </article>
 
+
+                      
 
                             <article className="report-stat">
 
@@ -453,7 +413,7 @@ function ReporteUsuario({
                                 onChange={(e) => setSueldo(e.target.value)}
                                 />
                                 <strong>
-                                    {moneda.format(resumen.margen_bruto / (sueldo))}
+                                    {moneda.format(resumen.margen_bruto / (sueldo)) || 0}
                                 </strong>
 
                             </article>

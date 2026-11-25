@@ -457,7 +457,8 @@ function Reportes() {
 
 
     const resumen =
-        datos?.resumen;
+        datos?.resumen; 
+    
 
 
     return (
@@ -619,7 +620,30 @@ function Reportes() {
                             </small>
 
                         </article>
+                        <article className="report-stat">
 
+                            <span>
+                                Costo de ventas
+                            </span>
+
+                            <strong>
+                                {
+                                    moneda.format(
+                                        resumen.costo_vendido
+                                    )
+                                }
+                            </strong>
+
+                            <small>
+                                {
+                                    numero.format(
+                                        resumen
+                                            .total_ventas
+                                    )
+                                } ventas
+                            </small>
+
+                        </article>            
 
                         <article className="report-stat">
 

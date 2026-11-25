@@ -1217,7 +1217,7 @@ const rentabilidadCayendoStmt =
         SUM(
             d.facturacion
         ) AS facturacion,
-
+        
         SUM(
             d.margen_bruto
         ) AS margen
@@ -1847,6 +1847,9 @@ export function obtenerDashboardReportes({
 
             facturacion:
                 ventas.facturacion,
+
+            costo_vendido:
+                items.costo_vendido,
 
             ticket_promedio:
                 ventas.ticket_promedio,

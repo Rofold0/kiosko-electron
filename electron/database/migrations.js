@@ -2969,6 +2969,111 @@ categoria_id       INTEGER,
 
     }
 },
+{
+    version: 24,
+
+    name: "reparar-atribucion-ventas-usuarios",
+
+    up(db) {
+
+        /*
+         * Recuperar la atribución de ventas registradas
+         * que quedaron sin usuario_id o usuario_nombre.
+         *
+         * Se utilizan los registros de auditoría de cada venta.
+         */
+
+        db.exec(`
+
+            UPDATE ventas
+
+            SET
+
+                usuario_id = COALESCE(
+                    usuario_id,
+                    (
+                        SELECT a.usuario_id
+
+                        FROM auditoria a
+
+                        WHERE
+                            a.modulo = 'VENTAS'
+                            AND a.accion = 'CREAR'
+                            AND a.entidad = 'venta'
+                            AND a.entidad_id = ventas.id
+                            AND a.usuario_id IS NOT NULL
+
+                        ORDER BY
+                            a.id ASC
+
+                        LIMIT 1
+                    )
+                ),
+
+                usuario_nombre = COALESCE(
+                    NULLIF(
+                        TRIM(usuario_nombre),
+                        ''
+                    ),
+                    (
+                        SELECT COALESCE(
+
+                            NULLIF(
+                                TRIM(a.usuario_nombre),
+                                ''
+                            ),
+
+                            NULLIF(
+                                TRIM(a.usuario),
+                                ''
+                            )
+
+                        )
+
+                        FROM auditoria a
+
+                        WHERE
+                            a.modulo = 'VENTAS'
+                            AND a.accion = 'CREAR'
+                            AND a.entidad = 'venta'
+                            AND a.entidad_id = ventas.id
+
+                        ORDER BY
+                            a.id ASC
+
+                        LIMIT 1
+                    )
+                )
+
+            WHERE
+
+                (
+                    usuario_id IS NULL
+
+                    OR NULLIF(
+                        TRIM(usuario_nombre),
+                        ''
+                    ) IS NULL
+                )
+
+                AND EXISTS (
+
+                    SELECT 1
+
+                    FROM auditoria a
+
+                    WHERE
+                        a.modulo = 'VENTAS'
+                        AND a.accion = 'CREAR'
+                        AND a.entidad = 'venta'
+                        AND a.entidad_id = ventas.id
+
+                );
+
+        `);
+
+    }
+},
 ];
 export const LATEST_SCHEMA_VERSION =
     migrations.reduce(

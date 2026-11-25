@@ -736,6 +736,7 @@ function Ventas() {
 
                                         })
                                     )
+                                
 
                         });
 

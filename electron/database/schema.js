@@ -610,7 +610,7 @@ CREATE TABLE IF NOT EXISTS ventas (
 
     estado           TEXT NOT NULL DEFAULT 'ACTIVA',
     fecha_reversion  TEXT,
-    motivo_reversion TEXT
+    motivo_reversion TEXT,
     usuario_id INTEGER,
     usuario_nombre TEXT,
 
